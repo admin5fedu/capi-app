@@ -109,9 +109,18 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           return
         }
 
+        const currentState = get()
+        // Nếu đã có session và user, chỉ refresh nếu cần (không set loading)
+        const hasExistingData = currentState.session && currentState.user && currentState.nguoiDung
+
         try {
           console.log('[Auth Store] ⏳ Starting layPhienLamViecHienTai...')
-          set({ isLoading: true, isFetchingSession: true })
+          // Chỉ set loading nếu chưa có data (lần đầu load)
+          if (!hasExistingData) {
+            set({ isLoading: true, isFetchingSession: true })
+          } else {
+            set({ isFetchingSession: true }) // Chỉ set flag, không set loading
+          }
 
           // Lấy session hiện tại từ Supabase Auth
           console.log('[Auth Store] 📡 Fetching session from Supabase Auth...')

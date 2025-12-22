@@ -14,13 +14,27 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const { layPhienLamViecHienTai, reset } = useAuthStore()
   const isInitialized = useRef(false)
+  const initPromiseRef = useRef<Promise<void> | null>(null)
 
   useEffect(() => {
     // Lấy session ban đầu khi component mount
     const initAuth = async () => {
+      // Tránh gọi nhiều lần đồng thời
+      if (initPromiseRef.current) {
+        return initPromiseRef.current
+      }
+
       if (!isInitialized.current) {
         isInitialized.current = true
-        await layPhienLamViecHienTai()
+        // Check trong store trước khi gọi
+        const currentState = useAuthStore.getState()
+        if (currentState.session && currentState.user && currentState.nguoiDung) {
+          console.log('[Auth Provider] ✅ Already have session and user, skipping init')
+          return
+        }
+        initPromiseRef.current = layPhienLamViecHienTai()
+        await initPromiseRef.current
+        initPromiseRef.current = null
       }
     }
     initAuth()
@@ -61,9 +75,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Cleanup subscription khi unmount
     return () => {
       subscription.unsubscribe()
-      isInitialized.current = false
+      // KHÔNG reset isInitialized khi unmount vì có thể remount khi quay lại tab
     }
-  }, [layPhienLamViecHienTai, reset])
+  }, []) // Bỏ dependencies để không trigger lại khi quay lại tab
 
   return <>{children}</>
 }
