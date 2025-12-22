@@ -167,6 +167,11 @@ export function ListToolbar<TData extends Record<string, any>>({
 
         {/* Desktop: Hiển thị riêng lẻ */}
         <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
+          {/* Bulk Actions - Di chuyển lên hàng 1, bên trái Column visibility */}
+          {enableRowSelection && selectedRows.length > 0 && bulkActions.length > 0 && (
+            <BulkActionsBar selectedRows={selectedRows} bulkActions={bulkActions} />
+          )}
+
           {/* Column visibility */}
           <ColumnVisibilityMenu
             cotHienThi={cotHienThi}
@@ -237,12 +242,6 @@ export function ListToolbar<TData extends Record<string, any>>({
         </div>
       )}
 
-      {/* Hàng 2 Desktop: Bulk Actions */}
-      {enableRowSelection && selectedRows.length > 0 && bulkActions.length > 0 && (
-        <div className="hidden sm:flex items-center gap-2 flex-wrap">
-          <BulkActionsBar selectedRows={selectedRows} bulkActions={bulkActions} />
-        </div>
-      )}
     </div>
   )
 }

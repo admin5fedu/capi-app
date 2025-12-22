@@ -8,6 +8,7 @@ export const breadcrumbConfig: Record<string, string> = {
   '/tai-chinh/danh-muc': 'Danh mục',
   '/tai-chinh/tai-khoan': 'Tài khoản',
   '/tai-chinh/thu-chi': 'Thu chi',
+  '/tai-chinh/ty-gia': 'Tỷ giá',
   '/doi-tac': 'Đối tác',
   '/doi-tac/nha-cung-cap': 'Nhà cung cấp',
   '/doi-tac/khach-hang': 'Khách hàng',
@@ -49,22 +50,23 @@ export function getBreadcrumbLabels(pathname: string, hasDetailLabel: boolean = 
     if (breadcrumbConfig[currentPath]) {
       labels.push(breadcrumbConfig[currentPath])
     } else {
+      // Kiểm tra xem có phải là ID không (số thuần túy, UUID, hoặc pattern ID)
+      const formattedPart = formatPathPart(part)
+      
+      // Nếu là ID (formattedPart === null), skip
+      if (formattedPart === null) {
+        // Skip ID, không thêm vào breadcrumb
+        continue
+      }
+      
       // Nếu là phần cuối cùng và có detailLabel, skip (sẽ được thêm vào bởi detail label)
       if (i === parts.length - 1 && hasDetailLabel) {
-        // Kiểm tra xem có phải là ID không
-        const formattedPart = formatPathPart(part)
-        // Nếu là ID (formattedPart === null), skip
-        // Nếu không phải ID (như "sua", "moi"), vẫn thêm vào
-        if (formattedPart) {
-          labels.push(formattedPart)
-        }
-      } else {
-        // Nếu không phải phần cuối hoặc không có detailLabel, format và thêm vào
-        const formattedPart = formatPathPart(part)
-        if (formattedPart) {
-          labels.push(formattedPart)
-        }
+        // Không thêm vào vì sẽ có detail label
+        continue
       }
+      
+      // Thêm vào breadcrumb
+      labels.push(formattedPart)
     }
   }
 
@@ -87,6 +89,12 @@ function formatPathPart(part: string): string | null {
   // Nếu là UUID hoặc ID dài (>20 ký tự), không format (sẽ được xử lý bởi detail label)
   if (part.length > 20) {
     return null // Return null để skip, sẽ được thay bằng detail label
+  }
+
+  // Detect ID số thuần túy (chỉ chứa chữ số, ví dụ: 12, 123, 1)
+  const numericIdPattern = /^\d+$/
+  if (numericIdPattern.test(part)) {
+    return null // Return null để skip ID số, sẽ được thay bằng detail label
   }
 
   // Detect ID pattern (vd: kh-1, ncc-2, dt-ncc-1, dt-kh-1, user-123, uuid với dấu gạch ngang)

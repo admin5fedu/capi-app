@@ -3,6 +3,7 @@ import {
   DollarSign,
   FileText,
   CreditCard,
+  TrendingUp,
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card'
 
@@ -35,6 +36,13 @@ const taiChinhModules: ModuleCard[] = [
     description: 'Quản lý các khoản thu chi, dòng tiền',
     icon: DollarSign,
     path: '/tai-chinh/thu-chi',
+  },
+  {
+    id: 'ty-gia',
+    title: 'Tỷ giá',
+    description: 'Quản lý tỷ giá hối đoái và chuyển đổi tiền tệ',
+    icon: TrendingUp,
+    path: '/tai-chinh/ty-gia',
   },
 ]
 

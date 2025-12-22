@@ -30,7 +30,7 @@ const functionCards: FunctionCard[] = [
     gradientFrom: 'from-emerald-50',
     gradientTo: 'to-teal-50',
     iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-600',
-    moduleCount: 3,
+    moduleCount: 4,
   },
   {
     id: 'doi-tac',

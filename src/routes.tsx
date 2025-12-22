@@ -9,6 +9,7 @@ import { PhanQuyenModule } from '@/features/thiet-lap/phan-quyen'
 import { CaiDatModule } from '@/features/thiet-lap/cai-dat/index'
 import { TaiKhoanModule } from '@/features/tai-chinh/tai-khoan'
 import { DanhMucModule } from '@/features/tai-chinh/danh-muc'
+import { TyGiaModule } from '@/features/tai-chinh/ty-gia'
 import { NhomDoiTacModule } from '@/features/doi-tac/nhom-doi-tac'
 import { DanhSachDoiTacModule } from '@/features/doi-tac/danh-sach-doi-tac'
 import { HoSoPage } from '@/pages/ho-so'
@@ -81,6 +82,22 @@ export const router = createBrowserRouter([
             description="Module quản lý các khoản thu chi và dòng tiền đang được phát triển."
           />
         ),
+      },
+      {
+        path: 'tai-chinh/ty-gia',
+        element: <TyGiaModule />,
+      },
+      {
+        path: 'tai-chinh/ty-gia/moi',
+        element: <TyGiaModule />,
+      },
+      {
+        path: 'tai-chinh/ty-gia/:id',
+        element: <TyGiaModule />,
+      },
+      {
+        path: 'tai-chinh/ty-gia/:id/sua',
+        element: <TyGiaModule />,
       },
       {
         path: 'doi-tac',
