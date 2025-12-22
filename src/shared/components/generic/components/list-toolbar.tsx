@@ -99,7 +99,7 @@ export function ListToolbar<TData extends Record<string, any>>({
         )}
 
         {/* Search input - Compact trên mobile */}
-        <div className="relative flex-1 min-w-0 max-w-[calc(100%-180px)] sm:max-w-none">
+        <div className="relative flex-1 min-w-0 max-w-[calc(100%-180px)] sm:flex-none sm:max-w-[320px]">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
           <input
             type="text"
@@ -108,10 +108,13 @@ export function ListToolbar<TData extends Record<string, any>>({
               setTimKiem(e.target.value)
               onTimKiem?.(e.target.value)
             }}
-            placeholder={timKiemPlaceholder}
+            placeholder="Tìm kiếm..."
             className="w-full pl-9 pr-3 py-1.5 sm:py-2 text-xs sm:text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
+
+        {/* Spacer để đẩy actions sang bên phải trên desktop */}
+        <div className="hidden sm:block flex-1" />
 
         {/* Mobile: Filter Popover - Chỉ hiển thị nếu có quickFilters */}
         {quickFilters.length > 0 && setQuickFilterValues && (
