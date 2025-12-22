@@ -1,0 +1,50 @@
+# Cursor Rules for CAPI App
+
+## ⚠️ CRITICAL: Module Entry Files
+
+### Rule #1: Module Root MUST use `index.tsx` (NOT `index.ts`)
+- **ALWAYS** create `index.tsx` for module entry files
+- **NEVER** create empty `index.ts` files in module root directories
+- If you accidentally create `index.ts` in module root, **DELETE IT IMMEDIATELY**
+
+### Why?
+Vite/TypeScript bundler resolves `index.ts` before `index.tsx`. An empty `index.ts` will break imports:
+```
+Error: The requested module does not provide an export named 'XxxModule'
+```
+
+### Module Naming Convention
+- Module entry component: `{ModuleName}Module` (e.g., `TaiKhoanModule`, `VaiTroModule`)
+- Export both named and default:
+  ```typescript
+  export function TaiKhoanModule() { ... }
+  export default TaiKhoanModule
+  ```
+
+### File Structure Rules
+When creating a new module:
+1. ✅ Create `index.tsx` as the main entry point
+2. ❌ DO NOT create `index.ts` in module root
+3. ✅ `index.ts` is OK in subdirectories (components/, hooks/, services/)
+4. ✅ Ensure `index.tsx` exports the module component
+
+### Import Pattern
+```typescript
+// ✅ Correct
+import { TaiKhoanModule } from '@/features/tai-chinh/tai-khoan'
+
+// Bundler resolves: tai-khoan/index.tsx automatically
+```
+
+### Checklist Before Committing
+- [ ] Module root has `index.tsx` (not `index.ts`)
+- [ ] No empty `index.ts` files in module root
+- [ ] Both named and default exports exist
+- [ ] Run `npm run check-modules` to verify
+
+### If You See Import Errors
+1. Check for conflicting `index.ts` file
+2. Delete it: `rm src/features/module-name/index.ts`
+3. Restart dev server
+4. See `MODULE_GUIDE.md` for details
+
