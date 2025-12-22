@@ -229,6 +229,7 @@ export function GenericListView<TData extends Record<string, any>>({
       {/* Mobile Card View */}
       {isMobile ? (
         <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          {/* Scrollable content */}
           <div className="flex-1 overflow-y-auto">
             <MobileCardView
               data={listState.filteredData}
@@ -248,7 +249,9 @@ export function GenericListView<TData extends Record<string, any>>({
                 setDeleteDialogOpen(true)
               }}
             />
-            {/* Mobile Footer - Nằm trong scroll container */}
+          </div>
+          {/* Mobile Footer - Cố định ở dưới cùng của trang nội dung */}
+          <div className="flex-shrink-0">
             <MobilePagination
               table={table}
               currentPageSize={listState.currentPageSize}
