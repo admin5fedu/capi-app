@@ -32,3 +32,14 @@ export interface PhanQuyenMatrix {
   }[]
 }
 
+// Ma trận phân quyền theo vai trò và module
+export interface PhanQuyenVaiTroMatrix {
+  vai_tro_id: string
+  vai_tro_ten: string
+  permissions: {
+    action: string
+    allowed: boolean
+    id?: string
+  }[]
+}
+

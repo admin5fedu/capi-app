@@ -1,9 +1,12 @@
 import {
   getPhanQuyenByVaiTro,
+  getPhanQuyenByModule,
   upsertPhanQuyen,
   bulkUpdatePhanQuyen,
+  bulkUpdatePhanQuyenByModule,
 } from '@/api/phan-quyen'
-import type { PhanQuyen, PhanQuyenMatrix } from '@/types/phan-quyen'
+import { getVaiTroList } from '@/api/vai-tro'
+import type { PhanQuyen, PhanQuyenMatrix, PhanQuyenVaiTroMatrix } from '@/types/phan-quyen'
 import { MODULES, ACTIONS } from '../config'
 
 /**
@@ -78,5 +81,63 @@ export async function updatePhanQuyenMatrix(
   )
 
   await bulkUpdatePhanQuyen(vaiTroId, updates)
+}
+
+/**
+ * Lấy ma trận phân quyền theo module (vai trò x quyền)
+ */
+export async function getPhanQuyenVaiTroMatrix(module: string): Promise<PhanQuyenVaiTroMatrix[]> {
+  // Lấy tất cả vai trò
+  const vaiTroList = await getVaiTroList()
+  
+  // Lấy tất cả phân quyền của module
+  const permissions = await getPhanQuyenByModule(module)
+
+  // Tạo map để tra cứu nhanh
+  const permissionMap = new Map<string, PhanQuyen>()
+  permissions.forEach((p) => {
+    const key = `${p.vai_tro_id}:${p.action}`
+    permissionMap.set(key, p)
+  })
+
+  // Tạo matrix cho từng vai trò
+  const matrix: PhanQuyenVaiTroMatrix[] = vaiTroList.map((vaiTro) => {
+    const permissions = ACTIONS.map((action) => {
+      const key = `${vaiTro.id}:${action.key}`
+      const permission = permissionMap.get(key)
+
+      return {
+        action: action.key,
+        allowed: permission?.allowed ?? false,
+        id: permission?.id,
+      }
+    })
+
+    return {
+      vai_tro_id: vaiTro.id,
+      vai_tro_ten: vaiTro.ten,
+      permissions,
+    }
+  })
+
+  return matrix
+}
+
+/**
+ * Cập nhật phân quyền cho một module (nhiều vai trò)
+ */
+export async function updatePhanQuyenVaiTroMatrix(
+  module: string,
+  matrix: PhanQuyenVaiTroMatrix[]
+): Promise<void> {
+  const updates = matrix.flatMap((item) =>
+    item.permissions.map((permission) => ({
+      vai_tro_id: item.vai_tro_id,
+      action: permission.action,
+      allowed: permission.allowed,
+    }))
+  )
+
+  await bulkUpdatePhanQuyenByModule(module, updates)
 }
 

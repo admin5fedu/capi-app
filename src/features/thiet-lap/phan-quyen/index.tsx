@@ -9,12 +9,6 @@ export function PhanQuyenModule() {
   return (
     <KiemTraQuyen>
       <div className="flex-1 flex flex-col min-h-0 p-6">
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold">Phân quyền</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Cấu hình phân quyền truy cập hệ thống theo vai trò
-          </p>
-        </div>
         <div className="flex-1 flex flex-col min-h-0 bg-card border rounded-lg p-6">
           <PhanQuyenMatrixView />
         </div>

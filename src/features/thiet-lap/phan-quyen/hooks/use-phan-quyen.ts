@@ -1,8 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getPhanQuyenMatrix, updatePhanQuyenItem, updatePhanQuyenMatrix } from '../services'
+import { 
+  getPhanQuyenMatrix, 
+  updatePhanQuyenItem, 
+  updatePhanQuyenMatrix,
+  getPhanQuyenVaiTroMatrix,
+  updatePhanQuyenVaiTroMatrix,
+} from '../services'
 import { getVaiTroList } from '@/api/vai-tro'
 import { toast } from 'sonner'
-import type { PhanQuyenMatrix } from '@/types/phan-quyen'
+import type { PhanQuyenMatrix, PhanQuyenVaiTroMatrix } from '@/types/phan-quyen'
 
 /**
  * Hook để lấy danh sách vai trò
@@ -66,6 +72,38 @@ export function useUpdatePhanQuyenMatrix() {
     onSuccess: (_, variables) => {
       // Invalidate và refetch matrix
       queryClient.invalidateQueries({ queryKey: ['phan-quyen-matrix', variables.vaiTroId] })
+      toast.success('Cập nhật phân quyền thành công')
+    },
+    onError: (error: Error) => {
+      toast.error(`Lỗi: ${error.message || 'Không thể cập nhật phân quyền'}`)
+    },
+  })
+}
+
+/**
+ * Hook để lấy ma trận phân quyền theo module (vai trò x quyền)
+ */
+export function usePhanQuyenVaiTroMatrix(module: string | null) {
+  return useQuery({
+    queryKey: ['phan-quyen-vai-tro-matrix', module],
+    queryFn: () => getPhanQuyenVaiTroMatrix(module!),
+    enabled: !!module,
+  })
+}
+
+/**
+ * Hook để cập nhật ma trận phân quyền theo module
+ */
+export function useUpdatePhanQuyenVaiTroMatrix() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ module, matrix }: { module: string; matrix: PhanQuyenVaiTroMatrix[] }) =>
+      updatePhanQuyenVaiTroMatrix(module, matrix),
+    onSuccess: (_, variables) => {
+      // Invalidate và refetch matrix
+      queryClient.invalidateQueries({ queryKey: ['phan-quyen-vai-tro-matrix', variables.module] })
+      queryClient.invalidateQueries({ queryKey: ['phan-quyen-matrix'] })
       toast.success('Cập nhật phân quyền thành công')
     },
     onError: (error: Error) => {
