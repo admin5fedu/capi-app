@@ -1,64 +1,65 @@
-import { mockDoiTacStore } from './mock/doi-tac-mock'
+import { supabase } from '@/lib/supabase'
 import type { DoiTac, DoiTacInsert, DoiTacUpdate } from '@/types/doi-tac'
 
 /**
  * API layer cho module Danh sách đối tác
- * Tạm thời sử dụng mock data
+ * Sử dụng Supabase để kết nối với database
  */
 
-const TABLE_NAME = 'zz_cst_doi_tac'
+const TABLE_NAME = 'zz_cst_danh_sach_doi_tac'
 
 /**
  * Lấy danh sách đối tác
  */
 export async function getDoiTacList(loai?: 'nha_cung_cap' | 'khach_hang'): Promise<DoiTac[]> {
-  // Tạm thời dùng mock data
-  const allData = mockDoiTacStore.getAll()
-  
+  let query = supabase
+    .from(TABLE_NAME)
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  // Filter theo loại nếu có
   if (loai) {
-    return allData.filter((item) => item.loai === loai)
+    query = query.eq('loai', loai)
   }
-  
-  return allData
+
+  const { data, error } = await query
+
+  if (error) throw error
+  return (data || []) as DoiTac[]
 }
 
 /**
  * Lấy thông tin một đối tác theo ID
  */
 export async function getDoiTacById(id: string): Promise<DoiTac> {
-  // Tạm thời dùng mock data
-  const item = mockDoiTacStore.getById(id)
-  if (!item) {
+  const { data, error } = await supabase
+    .from(TABLE_NAME)
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error) throw error
+  if (!data) {
     throw new Error('Không tìm thấy đối tác')
   }
-  return item
+  return data as DoiTac
 }
 
 /**
  * Tạo mới đối tác
  */
 export async function createDoiTac(data: DoiTacInsert): Promise<DoiTac> {
-  // Tạm thời dùng mock data
-  const newItem: DoiTac = {
-    id: `dt-${Date.now()}`,
-    ma: data.ma,
-    ten: data.ten,
-    loai: data.loai,
-    nhom_doi_tac_id: data.nhom_doi_tac_id || null,
-    email: data.email || null,
-    dien_thoai: data.dien_thoai || null,
-    dia_chi: data.dia_chi || null,
-    ma_so_thue: data.ma_so_thue || null,
-    nguoi_lien_he: data.nguoi_lien_he || null,
-    ghi_chu: data.ghi_chu || null,
-    trang_thai: data.trang_thai ?? true,
-    nguoi_tao_id: data.nguoi_tao_id || null,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  }
-  
-  mockDoiTacStore.add(newItem)
-  return newItem
+  const { data: result, error } = await supabase
+    .from(TABLE_NAME)
+    .insert({
+      ...data,
+      trang_thai: data.trang_thai ?? true,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return result as DoiTac
 }
 
 /**
@@ -68,33 +69,30 @@ export async function updateDoiTac(
   id: string,
   data: DoiTacUpdate
 ): Promise<DoiTac> {
-  // Tạm thời dùng mock data
-  const existing = mockDoiTacStore.getById(id)
-  if (!existing) {
-    throw new Error('Không tìm thấy đối tác')
-  }
-  
-  const updated: DoiTac = {
-    ...existing,
-    ...data,
-    updated_at: new Date().toISOString(),
-  }
-  
-  mockDoiTacStore.update(id, updated)
-  return updated
+  const { data: result, error } = await supabase
+    .from(TABLE_NAME)
+    .update({
+      ...data,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) throw error
+  return result as DoiTac
 }
 
 /**
  * Xóa đối tác
  */
 export async function deleteDoiTac(id: string): Promise<{ success: boolean }> {
-  // Tạm thời dùng mock data
-  const existing = mockDoiTacStore.getById(id)
-  if (!existing) {
-    throw new Error('Không tìm thấy đối tác')
-  }
-  
-  mockDoiTacStore.delete(id)
+  const { error } = await supabase
+    .from(TABLE_NAME)
+    .delete()
+    .eq('id', id)
+
+  if (error) throw error
   return { success: true }
 }
 
@@ -102,17 +100,15 @@ export async function deleteDoiTac(id: string): Promise<{ success: boolean }> {
  * Tìm kiếm đối tác theo từ khóa
  */
 export async function searchDoiTac(keyword: string): Promise<DoiTac[]> {
-  // Tạm thời dùng mock data
-  const allData = mockDoiTacStore.getAll()
-  const lowerKeyword = keyword.toLowerCase()
-  
-  return allData.filter(
-    (item) =>
-      item.ma.toLowerCase().includes(lowerKeyword) ||
-      item.ten.toLowerCase().includes(lowerKeyword) ||
-      (item.email && item.email.toLowerCase().includes(lowerKeyword)) ||
-      (item.dien_thoai && item.dien_thoai.includes(keyword)) ||
-      (item.ghi_chu && item.ghi_chu.toLowerCase().includes(lowerKeyword))
-  )
+  const { data, error } = await supabase
+    .from(TABLE_NAME)
+    .select('*')
+    .or(
+      `ma.ilike.%${keyword}%,ten.ilike.%${keyword}%,email.ilike.%${keyword}%,dien_thoai.ilike.%${keyword}%,ghi_chu.ilike.%${keyword}%`
+    )
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return (data || []) as DoiTac[]
 }
 

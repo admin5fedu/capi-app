@@ -1,5 +1,5 @@
 /**
- * Type definitions cho bảng zz_cst_doi_tac (Đối tác)
+ * Type definitions cho bảng zz_cst_danh_sach_doi_tac (Đối tác)
  */
 
 export type LoaiDoiTac = 'nha_cung_cap' | 'khach_hang'

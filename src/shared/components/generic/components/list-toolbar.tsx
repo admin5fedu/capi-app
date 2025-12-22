@@ -113,6 +113,25 @@ export function ListToolbar<TData extends Record<string, any>>({
           />
         </div>
 
+        {/* Clear All Filters Button - Desktop: Ngay bên phải ô tìm kiếm */}
+        {activeFiltersCount > 0 && (
+          <div className="hidden sm:flex flex-shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onClearFilters}
+              title="Xóa tất cả bộ lọc"
+              className="h-8 sm:h-9 px-2 sm:px-3 gap-1.5 sm:gap-2 border-destructive/30 text-destructive hover:bg-destructive/10 hover:border-destructive/50"
+            >
+              <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="text-xs sm:text-sm font-medium">Xóa lọc</span>
+              <Badge variant="destructive" className="h-4 sm:h-5 px-1.5 sm:px-2 text-[10px] sm:text-xs font-semibold">
+                {activeFiltersCount}
+              </Badge>
+            </Button>
+          </div>
+        )}
+
         {/* Spacer để đẩy actions sang bên phải trên desktop */}
         <div className="hidden sm:block flex-1" />
 
@@ -193,19 +212,19 @@ export function ListToolbar<TData extends Record<string, any>>({
         )}
       </div>
 
-      {/* Hàng 2: Clear filters + Bulk Actions */}
+      {/* Hàng 2: Mobile Clear filters + Bulk Actions */}
       {(activeFiltersCount > 0 || (enableRowSelection && selectedRows.length > 0 && bulkActions.length > 0)) && (
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Clear All Filters Button - Compact trên mobile */}
+        <div className="flex items-center gap-2 flex-wrap sm:hidden">
+          {/* Clear All Filters Button - Mobile: Compact */}
           {activeFiltersCount > 0 && (
             <div
-              className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-1 bg-destructive/10 border border-destructive/20 rounded-md hover:bg-destructive/20 transition-colors cursor-pointer group flex-shrink-0"
+              className="flex items-center gap-1 px-1.5 py-1 bg-destructive/10 border border-destructive/20 rounded-md hover:bg-destructive/20 transition-colors cursor-pointer group flex-shrink-0"
               onClick={onClearFilters}
               title="Xóa tất cả bộ lọc"
             >
-              <X className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-destructive" />
-              <span className="hidden sm:inline text-xs font-medium text-destructive">Xóa lọc</span>
-              <Badge variant="destructive" className="h-3.5 sm:h-4 px-1 sm:px-1.5 text-[10px] font-semibold">
+              <X className="h-3 w-3 text-destructive" />
+              <span className="text-xs font-medium text-destructive">Xóa lọc</span>
+              <Badge variant="destructive" className="h-3.5 px-1 text-[10px] font-semibold">
                 {activeFiltersCount}
               </Badge>
             </div>
@@ -215,6 +234,13 @@ export function ListToolbar<TData extends Record<string, any>>({
           {enableRowSelection && selectedRows.length > 0 && bulkActions.length > 0 && (
             <BulkActionsBar selectedRows={selectedRows} bulkActions={bulkActions} />
           )}
+        </div>
+      )}
+
+      {/* Hàng 2 Desktop: Bulk Actions */}
+      {enableRowSelection && selectedRows.length > 0 && bulkActions.length > 0 && (
+        <div className="hidden sm:flex items-center gap-2 flex-wrap">
+          <BulkActionsBar selectedRows={selectedRows} bulkActions={bulkActions} />
         </div>
       )}
     </div>
