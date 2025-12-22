@@ -48,7 +48,7 @@ const thietLapModules: ModuleCard[] = [
 
 export function ThietLapSubmenuPage() {
   return (
-    <div className="space-y-8">
+    <div className="h-full overflow-y-auto space-y-8">
       {/* Header */}
       <div>
         <div className="flex items-center gap-3 mb-2">

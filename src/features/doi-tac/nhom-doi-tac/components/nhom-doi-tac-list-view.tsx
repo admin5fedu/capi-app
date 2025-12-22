@@ -176,16 +176,16 @@ export function NhomDoiTacListView({
 
   return (
     <>
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full overflow-hidden">
         {/* Tab Navigation - Shadcn UI Style */}
-        <Tabs value={activeTab} onValueChange={(value) => handleTabChange(value as TabType)} className="w-full">
-          <TabsList className="grid w-full max-w-xs grid-cols-2 mb-4">
+        <Tabs value={activeTab} onValueChange={(value) => handleTabChange(value as TabType)} className="w-full flex flex-col h-full overflow-hidden">
+          <TabsList className="grid w-full max-w-xs grid-cols-2 mb-4 flex-shrink-0">
             <TabsTrigger value="nha_cung_cap">Nhà cung cấp</TabsTrigger>
             <TabsTrigger value="khach_hang">Khách hàng</TabsTrigger>
           </TabsList>
 
           {/* Tab Content - Chỉ render content của tab hiện tại */}
-          <TabsContent value={activeTab} className="mt-0 flex-1 min-h-0">
+          <TabsContent value={activeTab} className="mt-0 flex-1 min-h-0 overflow-hidden">
             <GenericListView<NhomDoiTac>
               data={danhSach || []}
               cotHienThi={filteredCotHienThi}

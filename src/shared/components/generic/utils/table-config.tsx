@@ -102,7 +102,17 @@ export function createDataColumns<TData extends Record<string, any>>(
             ? cot.accessorKey(row.original)
             : row.original[cot.accessorKey as keyof TData]
           : null
-        return cot.cell ? cot.cell(value, row.original) : <span>{String(value ?? '')}</span>
+        const cellContent = cot.cell ? cot.cell(value, row.original) : <span>{String(value ?? '')}</span>
+        return (
+          <div className={cn(
+            'flex items-center',
+            cot.align === 'center' && 'justify-center',
+            cot.align === 'right' && 'justify-end',
+            cot.align === 'left' && 'justify-start'
+          )}>
+            {cellContent}
+          </div>
+        )
       },
       size: typeof cot.width === 'number' ? cot.width : undefined,
       minSize: 50,

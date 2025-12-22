@@ -60,7 +60,7 @@ export function HomePage() {
   const { nguoiDung } = useAuthStore()
 
   return (
-    <div className="space-y-10">
+    <div className="h-full overflow-y-auto space-y-10">
       {/* Header */}
       <div className="space-y-2">
         <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">

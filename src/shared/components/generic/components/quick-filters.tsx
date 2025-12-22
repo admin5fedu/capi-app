@@ -18,6 +18,7 @@ interface QuickFiltersProps<TData extends Record<string, any>> {
   quickFilterValues: Record<string, any>
   setQuickFilterValues: (values: Record<string, any> | ((prev: Record<string, any>) => Record<string, any>)) => void
   dataAfterSearch: TData[]
+  onClearFilters?: () => void
 }
 
 export function QuickFilters<TData extends Record<string, any>>({
@@ -25,6 +26,7 @@ export function QuickFilters<TData extends Record<string, any>>({
   quickFilterValues,
   setQuickFilterValues,
   dataAfterSearch,
+  onClearFilters,
 }: QuickFiltersProps<TData>) {
   if (quickFilters.length === 0) return null
 
@@ -95,9 +97,10 @@ export function QuickFilters<TData extends Record<string, any>>({
   }
 
   return (
-    <div className="space-y-2.5 flex-shrink-0">
-      <div className="flex flex-wrap gap-2 items-center px-2.5 py-1.5 bg-muted/30 border border-border/50 rounded-md">
-        {/* Filter Buttons */}
+    <div className="hidden sm:block space-y-2.5 flex-shrink-0">
+      {/* Desktop: Wrap */}
+      <div className="flex gap-2 items-center flex-wrap px-2.5 py-1.5 bg-muted/30 border border-border/50 rounded-md">
+        {/* Filter Buttons - Compact trên mobile */}
         {quickFilters.map((filter) => {
           const isMultiSelect = filter.multiSelect === true
           const currentValue = quickFilterValues[filter.key]
@@ -116,12 +119,12 @@ export function QuickFilters<TData extends Record<string, any>>({
                   <Button
                     variant={hasValue ? 'default' : 'outline'}
                     size="sm"
-                    className="h-8 gap-1.5 text-xs font-medium"
+                    className="h-7 sm:h-8 gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-medium flex-shrink-0 px-2 sm:px-3"
                   >
-                    <Plus className="h-3.5 w-3.5" />
-                    {filter.label}
+                    <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                    <span className="whitespace-nowrap">{filter.label}</span>
                     {selectedCount > 0 && (
-                      <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-[10px] font-semibold">
+                      <Badge variant="secondary" className="ml-0.5 h-3.5 sm:h-4 px-1 sm:px-1.5 text-[10px]">
                         {selectedCount}
                       </Badge>
                     )}
@@ -201,12 +204,12 @@ export function QuickFilters<TData extends Record<string, any>>({
                   <Button
                     variant={hasValue ? 'default' : 'outline'}
                     size="sm"
-                    className="h-8 gap-1.5 text-xs font-medium"
+                    className="h-7 sm:h-8 gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-medium flex-shrink-0 px-2 sm:px-3"
                   >
-                    <Plus className="h-3.5 w-3.5" />
-                    {filter.label}
+                    <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                    <span className="whitespace-nowrap">{filter.label}</span>
                     {selectedCount > 0 && (
-                      <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-[10px] font-semibold">
+                      <Badge variant="secondary" className="ml-0.5 h-3.5 sm:h-4 px-1 sm:px-1.5 text-[10px]">
                         {selectedCount}
                       </Badge>
                     )}
@@ -291,7 +294,7 @@ export function QuickFilters<TData extends Record<string, any>>({
 
           if (filter.type === 'text') {
             return (
-              <div key={filter.key} className="relative">
+              <div key={filter.key} className="relative flex-shrink-0">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <input
                   type="text"
@@ -303,7 +306,7 @@ export function QuickFilters<TData extends Record<string, any>>({
                     }))
                   }
                   placeholder={filter.placeholder || filter.label}
-                  className="h-8 pl-9 pr-3 text-xs border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 min-w-[160px]"
+                  className="h-7 sm:h-8 pl-9 pr-3 text-xs border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 min-w-[140px] sm:min-w-[160px]"
                 />
               </div>
             )
@@ -316,69 +319,94 @@ export function QuickFilters<TData extends Record<string, any>>({
         {hasActiveFilters && (
           <>
             {/* Divider */}
-            <div className="h-5 w-px bg-border/60" />
+            <div className="h-5 w-px bg-border/60 flex-shrink-0" />
+            
+            {/* Mobile: Summary badge nếu có nhiều filters */}
+            {activeFiltersCount > 3 ? (
+              <Badge
+                variant="secondary"
+                className="gap-1 py-0.5 px-1.5 text-[11px] font-medium h-5.5 bg-secondary/80 hover:bg-secondary border border-border/50 transition-all flex-shrink-0"
+              >
+                <span>{activeFiltersCount} bộ lọc</span>
+                {onClearFilters && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onClearFilters()
+                    }}
+                    className="ml-0.5 rounded-full hover:bg-destructive/20 hover:text-destructive p-0.5 transition-colors flex-shrink-0"
+                    aria-label="Xóa tất cả bộ lọc"
+                  >
+                    <X className="h-2.5 w-2.5" />
+                  </button>
+                )}
+              </Badge>
+            ) : (
+              // Hiển thị từng chip nếu ít filters (≤ 3)
+              <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide flex-shrink-0">
+                {quickFilters.map((filter) => {
+                  const value = quickFilterValues[filter.key]
+                  if (
+                    value === undefined ||
+                    value === null ||
+                    value === '' ||
+                    (Array.isArray(value) && value.length === 0)
+                  ) {
+                    return null
+                  }
 
-            {quickFilters.map((filter) => {
-              const value = quickFilterValues[filter.key]
-              if (
-                value === undefined ||
-                value === null ||
-                value === '' ||
-                (Array.isArray(value) && value.length === 0)
-              ) {
-                return null
-              }
+                  // Lấy danh sách giá trị đã chọn (hỗ trợ cả single và multi-select)
+                  const selectedValues = Array.isArray(value) ? value : [value]
 
-              // Lấy danh sách giá trị đã chọn (hỗ trợ cả single và multi-select)
-              const selectedValues = Array.isArray(value) ? value : [value]
+                  return (
+                    <React.Fragment key={filter.key}>
+                      {selectedValues.map((val, index) => {
+                        let displayLabel = String(val)
+                        if (filter.type === 'select' && filter.options) {
+                          const selectedOption = filter.options.find(
+                            (opt) => String(opt.value) === String(val)
+                          )
+                          displayLabel = selectedOption?.label || String(val)
+                        } else if (filter.type === 'boolean') {
+                          displayLabel = val === true ? 'Hoạt động' : 'Vô hiệu hóa'
+                        }
 
-              return (
-                <React.Fragment key={filter.key}>
-                  {selectedValues.map((val, index) => {
-                    let displayLabel = String(val)
-                    if (filter.type === 'select' && filter.options) {
-                      const selectedOption = filter.options.find(
-                        (opt) => String(opt.value) === String(val)
-                      )
-                      displayLabel = selectedOption?.label || String(val)
-                    } else if (filter.type === 'boolean') {
-                      displayLabel = val === true ? 'Hoạt động' : 'Vô hiệu hóa'
-                    }
-
-                    return (
-                      <Badge
-                        key={`${filter.key}-${index}-${val}`}
-                        variant="secondary"
-                        className="gap-1 py-0.5 px-2 text-xs font-medium h-6 bg-secondary/80 hover:bg-secondary border border-border/50 transition-all"
-                      >
-                        <span className="text-xs font-semibold">{displayLabel}</span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            if (Array.isArray(value)) {
-                              const newArray = value.filter((v) => String(v) !== String(val))
-                              setQuickFilterValues((prev) => ({
-                                ...prev,
-                                [filter.key]: newArray.length > 0 ? newArray : undefined,
-                              }))
-                            } else {
-                              setQuickFilterValues((prev) => ({
-                                ...prev,
-                                [filter.key]: undefined,
-                              }))
-                            }
-                          }}
-                          className="ml-0.5 rounded-full hover:bg-destructive/20 hover:text-destructive p-0.5 transition-colors"
-                          aria-label={`Xóa ${displayLabel}`}
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </Badge>
-                    )
-                  })}
-                </React.Fragment>
-              )
-            })}
+                        return (
+                          <Badge
+                            key={`${filter.key}-${index}-${val}`}
+                            variant="secondary"
+                            className="gap-0.5 py-0.5 px-1.5 text-[11px] font-medium h-5.5 bg-secondary/80 hover:bg-secondary border border-border/50 transition-all flex-shrink-0"
+                          >
+                            <span className="text-[11px] line-clamp-1 max-w-[80px]">{displayLabel}</span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (Array.isArray(value)) {
+                                  const newArray = value.filter((v) => String(v) !== String(val))
+                                  setQuickFilterValues((prev) => ({
+                                    ...prev,
+                                    [filter.key]: newArray.length > 0 ? newArray : undefined,
+                                  }))
+                                } else {
+                                  setQuickFilterValues((prev) => ({
+                                    ...prev,
+                                    [filter.key]: undefined,
+                                  }))
+                                }
+                              }}
+                              className="ml-0.5 rounded-full hover:bg-destructive/20 hover:text-destructive p-0.5 transition-colors flex-shrink-0"
+                              aria-label={`Xóa ${displayLabel}`}
+                            >
+                              <X className="h-2.5 w-2.5" />
+                            </button>
+                          </Badge>
+                        )
+                      })}
+                    </React.Fragment>
+                  )
+                })}
+              </div>
+            )}
           </>
         )}
       </div>

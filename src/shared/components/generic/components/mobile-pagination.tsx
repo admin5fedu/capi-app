@@ -20,7 +20,7 @@ export function MobilePagination<TData extends Record<string, any>>({
   selectedRowsCount,
 }: MobilePaginationProps<TData>) {
   return (
-    <div className="fixed bottom-16 left-0 right-0 z-40 bg-card/95 backdrop-blur-sm border-t shadow-lg">
+    <div className="bg-card border-t">
       <div className="flex items-center justify-between gap-2 px-3 py-2 text-xs">
         {/* Left: Info */}
         <div className="flex items-center gap-2 flex-1 min-w-0">

@@ -2,10 +2,12 @@ import { Search, RefreshCw, Plus, ArrowLeft, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import type { GenericListViewProps, BulkActionItem } from '../types'
+import type { GenericListViewProps, BulkActionItem, QuickFilter } from '../types'
 import { ColumnVisibilityMenu } from './column-visibility-menu'
 import { ExcelActions } from './excel-actions'
 import { BulkActionsBar } from './bulk-actions-bar'
+import { MoreMenu } from './more-menu'
+import { MobileFilterPopover } from './mobile-filter-popover'
 
 interface ListToolbarProps<TData extends Record<string, any>> {
   // Search
@@ -15,8 +17,11 @@ interface ListToolbarProps<TData extends Record<string, any>> {
   onTimKiem?: (keyword: string) => void
 
   // Quick filters
+  quickFilters?: QuickFilter[]
   quickFilterValues: Record<string, any>
+  setQuickFilterValues?: (values: Record<string, any> | ((prev: Record<string, any>) => Record<string, any>)) => void
   onClearFilters: () => void
+  dataAfterSearch?: any[] // Data sau khi search để tính số lượng trong filter
 
   // Bulk actions
   selectedRows: TData[]
@@ -45,8 +50,11 @@ export function ListToolbar<TData extends Record<string, any>>({
   setTimKiem,
   timKiemPlaceholder = 'Tìm kiếm...',
   onTimKiem,
+  quickFilters = [],
   quickFilterValues,
+  setQuickFilterValues,
   onClearFilters,
+  dataAfterSearch = [],
   selectedRows,
   bulkActions,
   enableRowSelection,
@@ -75,17 +83,24 @@ export function ListToolbar<TData extends Record<string, any>>({
   }, 0)
 
   return (
-    <div className="flex flex-wrap gap-3 items-center justify-between flex-shrink-0">
-      <div className="flex items-center gap-3 flex-1 min-w-0">
+    <div className="flex flex-col gap-2 flex-shrink-0">
+      {/* Hàng 1: Back + Search + MoreMenu + Add button */}
+      <div className="flex items-center gap-2 flex-1 min-w-0">
         {onBack && (
-          <Button variant="ghost" size="icon" onClick={onBack} title="Quay lại">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={onBack} 
+            title="Quay lại"
+            className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0"
+          >
             <ArrowLeft className="h-4 w-4" />
           </Button>
         )}
 
-        {/* Search input */}
-        <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        {/* Search input - Compact trên mobile */}
+        <div className="relative flex-1 min-w-0 max-w-[calc(100%-180px)] sm:max-w-none">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
           <input
             type="text"
             value={timKiem}
@@ -94,71 +109,111 @@ export function ListToolbar<TData extends Record<string, any>>({
               onTimKiem?.(e.target.value)
             }}
             placeholder={timKiemPlaceholder}
-            className="w-full pl-10 pr-4 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full pl-9 pr-3 py-1.5 sm:py-2 text-xs sm:text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
 
-        {/* Clear All Filters Button */}
-        {activeFiltersCount > 0 && (
-          <div
-            className="flex items-center gap-1.5 px-2 py-1 bg-destructive/10 border border-destructive/20 rounded-md hover:bg-destructive/20 transition-colors cursor-pointer group"
-            onClick={onClearFilters}
-            title="Xóa tất cả bộ lọc"
-          >
-            <X className="h-3.5 w-3.5 text-destructive group-hover:text-destructive" />
-            <span className="text-xs font-medium text-destructive">Xóa lọc</span>
-            <Badge variant="destructive" className="h-4 px-1.5 text-[10px] font-semibold">
-              {activeFiltersCount}
-            </Badge>
+        {/* Mobile: Filter Popover - Chỉ hiển thị nếu có quickFilters */}
+        {quickFilters.length > 0 && setQuickFilterValues && (
+          <div className="sm:hidden flex-shrink-0">
+            <MobileFilterPopover
+              quickFilters={quickFilters}
+              quickFilterValues={quickFilterValues}
+              setQuickFilterValues={setQuickFilterValues}
+              dataAfterSearch={dataAfterSearch}
+              onClearFilters={onClearFilters}
+            />
           </div>
         )}
 
-        {/* Bulk Actions */}
-        {enableRowSelection && selectedRows.length > 0 && bulkActions.length > 0 && (
-          <BulkActionsBar selectedRows={selectedRows} bulkActions={bulkActions} />
-        )}
-      </div>
+        {/* Mobile: MoreMenu - Gom tất cả actions ít dùng */}
+        <div className="sm:hidden flex-shrink-0">
+          <MoreMenu
+            cotHienThi={cotHienThi}
+            columnVisibility={columnVisibility}
+            setColumnVisibility={setColumnVisibility}
+            showColumnMenu={showColumnMenu}
+            setShowColumnMenu={setShowColumnMenu}
+            onXuatExcel={onXuatExcel}
+            onNhapExcel={onNhapExcel}
+            selectedRows={selectedRows}
+            filteredData={filteredData}
+            onRefresh={onRefresh}
+            isLoading={isLoading}
+          />
+        </div>
 
-      {/* Right side toolbar */}
-      <div className="flex items-center gap-2 flex-shrink-0">
-        {/* Column visibility */}
-        <ColumnVisibilityMenu
-          cotHienThi={cotHienThi}
-          columnVisibility={columnVisibility}
-          setColumnVisibility={setColumnVisibility}
-          showColumnMenu={showColumnMenu}
-          setShowColumnMenu={setShowColumnMenu}
-        />
+        {/* Desktop: Hiển thị riêng lẻ */}
+        <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
+          {/* Column visibility */}
+          <ColumnVisibilityMenu
+            cotHienThi={cotHienThi}
+            columnVisibility={columnVisibility}
+            setColumnVisibility={setColumnVisibility}
+            showColumnMenu={showColumnMenu}
+            setShowColumnMenu={setShowColumnMenu}
+          />
 
-        {/* Excel actions */}
-        <ExcelActions
-          onXuatExcel={onXuatExcel}
-          onNhapExcel={onNhapExcel}
-          selectedRows={selectedRows}
-          filteredData={filteredData}
-        />
+          {/* Excel actions */}
+          <ExcelActions
+            onXuatExcel={onXuatExcel}
+            onNhapExcel={onNhapExcel}
+            selectedRows={selectedRows}
+            filteredData={filteredData}
+          />
 
-        {/* Refresh */}
-        {onRefresh && (
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={onRefresh}
-            disabled={isLoading}
-            title="Làm mới"
-          >
-            <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
-          </Button>
-        )}
+          {/* Refresh */}
+          {onRefresh && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={onRefresh}
+              disabled={isLoading}
+              title="Làm mới"
+            >
+              <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
+            </Button>
+          )}
+        </div>
 
-        {/* Add new */}
+        {/* Add new - Luôn hiển thị */}
         {onAddNew && (
-          <Button onClick={onAddNew} size="sm" className="gap-2">
-            <Plus className="h-4 w-4" />
-            Thêm mới
+          <Button 
+            onClick={onAddNew} 
+            size="sm" 
+            className="h-8 sm:h-9 px-2 sm:px-3 gap-1 sm:gap-2 flex-shrink-0"
+          >
+            <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="text-xs sm:text-sm">Thêm</span>
+            <span className="hidden sm:inline"> mới</span>
           </Button>
         )}
       </div>
+
+      {/* Hàng 2: Clear filters + Bulk Actions */}
+      {(activeFiltersCount > 0 || (enableRowSelection && selectedRows.length > 0 && bulkActions.length > 0)) && (
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Clear All Filters Button - Compact trên mobile */}
+          {activeFiltersCount > 0 && (
+            <div
+              className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-1 bg-destructive/10 border border-destructive/20 rounded-md hover:bg-destructive/20 transition-colors cursor-pointer group flex-shrink-0"
+              onClick={onClearFilters}
+              title="Xóa tất cả bộ lọc"
+            >
+              <X className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-destructive" />
+              <span className="hidden sm:inline text-xs font-medium text-destructive">Xóa lọc</span>
+              <Badge variant="destructive" className="h-3.5 sm:h-4 px-1 sm:px-1.5 text-[10px] font-semibold">
+                {activeFiltersCount}
+              </Badge>
+            </div>
+          )}
+
+          {/* Bulk Actions */}
+          {enableRowSelection && selectedRows.length > 0 && bulkActions.length > 0 && (
+            <BulkActionsBar selectedRows={selectedRows} bulkActions={bulkActions} />
+          )}
+        </div>
+      )}
     </div>
   )
 }

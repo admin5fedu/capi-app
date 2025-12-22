@@ -21,7 +21,7 @@ export function MainLayout() {
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Sidebar - Desktop */}
       <aside className="hidden lg:block">
-        <Sidebar isCollapsed={isSidebarCollapsed} />
+        <Sidebar isCollapsed={isSidebarCollapsed} onToggleCollapse={toggleSidebar} />
       </aside>
 
       {/* Sidebar - Mobile: Slide in từ trái, nằm trong layout */}
@@ -30,7 +30,7 @@ export function MainLayout() {
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <Sidebar isCollapsed={false} />
+        <Sidebar isCollapsed={false} onMobileMenuClose={() => setIsMobileMenuOpen(false)} />
       </aside>
 
       {/* Overlay - Mobile: Chỉ hiện khi sidebar mở */}
@@ -45,7 +45,7 @@ export function MainLayout() {
       <div className="flex-1 flex flex-col overflow-hidden w-full lg:w-auto">
         <BreadcrumbProvider>
           <Navbar onToggleSidebar={toggleMobileMenu} onToggleDesktopSidebar={toggleSidebar} />
-          <main className="flex-1 overflow-y-auto p-4 lg:p-6 pb-20 lg:pb-6 flex flex-col min-h-0">
+          <main className="flex-1 overflow-hidden p-4 lg:p-4 pb-20 lg:pb-4 flex flex-col min-h-0">
             <Outlet />
           </main>
           {/* Mobile Footer Navigation */}

@@ -18,6 +18,7 @@ interface MobileCardViewProps<TData extends Record<string, any>> {
   imageField?: string // Field key chứa URL ảnh (ví dụ: 'avatar_url', 'image_url')
   currentPage?: number // Trang hiện tại (0-indexed)
   pageSize?: number // Số items mỗi trang
+  onDeleteClick?: (item: TData, action: HanhDongItem<TData>) => void // Callback để xử lý delete với confirmation
 }
 
 /**
@@ -38,6 +39,7 @@ export function MobileCardView<TData extends Record<string, any>>({
   imageField,
   currentPage = 0,
   pageSize = 6, // Mặc định 6 cards (3 hàng x 2 cột)
+  onDeleteClick,
 }: MobileCardViewProps<TData>) {
   // Lấy các cột chính để hiển thị (bỏ qua actions, ẩn các cột không cần thiết)
   const mainColumns = cotHienThi.filter(
@@ -52,10 +54,40 @@ export function MobileCardView<TData extends Record<string, any>>({
     (cot) => cot.key === 'is_active' || cot.key === 'status' || cot.key?.toLowerCase().includes('trạng thái')
   )
   
-  // Các cột phụ (bỏ qua trạng thái)
+  // Tìm cột mã số (ma, code, etc.)
+  const codeColumn = mainColumns.find(
+    (cot) => cot.key === 'ma' || cot.key?.toLowerCase().includes('code') || cot.key?.toLowerCase().includes('mã')
+  )
+  
+  // Tìm các cột thông tin quan trọng (email, phone, địa chỉ, etc.)
+  // Ưu tiên: email > phone/sdt > địa chỉ > tài khoản ngân hàng
+  const importantKeys = [
+    'email',
+    'phone', 'sdt', 'dien_thoai', 'so_dien_thoai',
+    'dia_chi', 'address', 'diachi',
+    'so_tai_khoan', 'ngan_hang', 'chu_tai_khoan',
+    'ten_nhom', 'nhom', 'loai', 'phan_loai'
+  ]
+  const importantColumn = mainColumns.find(
+    (cot) => {
+      if (!cot.key) return false
+      const keyLower = cot.key.toLowerCase()
+      // Ưu tiên email trước
+      if (keyLower.includes('email')) return true
+      // Sau đó phone
+      if (keyLower.includes('phone') || keyLower.includes('sdt') || keyLower.includes('dien_thoai')) return true
+      // Sau đó địa chỉ
+      if (keyLower.includes('dia_chi') || keyLower.includes('address')) return true
+      // Cuối cùng các key khác
+      return importantKeys.some(key => keyLower.includes(key.toLowerCase()))
+    }
+  )
+  
+  // Các cột phụ (bỏ qua title, trạng thái, mã số, và cột quan trọng)
+  // Lấy tối đa 2 cột phụ để hiển thị ở dòng 2 (cột 1 và cột 2)
   const otherColumns = mainColumns.filter(
-    (cot) => cot !== titleColumn && cot !== statusColumn
-  ).slice(0, 3) // Tối đa 3 cột phụ
+    (cot) => cot !== titleColumn && cot !== statusColumn && cot !== codeColumn && cot !== importantColumn
+  ).slice(0, 2) // Lấy tối đa 2 cột phụ
 
   // Hàm lấy giá trị từ accessorKey
   const getValue = (cot: CotHienThi<TData>, row: TData): any => {
@@ -138,7 +170,7 @@ export function MobileCardView<TData extends Record<string, any>>({
   const displayData = data.slice(startIndex, endIndex)
 
   return (
-    <div className="space-y-3 p-4 w-full">
+    <div className="space-y-2 p-2 sm:p-3 w-full">
       {displayData.map((row, displayIndex) => {
         const rowIndex = startIndex + displayIndex
         const isSelected = selectedRows.some((r) => r === row)
@@ -182,42 +214,27 @@ export function MobileCardView<TData extends Record<string, any>>({
               }
             }}
           >
-            <CardContent className="p-4 space-y-3">
-              {/* Hàng 1: Thông tin chính - Layout 3 cột nếu có ảnh, 2 cột nếu không */}
-              <div className={cn('grid gap-3', imageField ? 'grid-cols-[auto_1fr_auto]' : 'grid-cols-[1fr_auto]')}>
-                {/* Cột 1: Ảnh/Icon (nếu có) */}
-                {imageField && (
-                  <div className="flex items-start pt-1">
-                    {renderImage(row)}
-                  </div>
-                )}
-
-                {/* Cột 2: Thông tin chính */}
-                <div className="flex-1 min-w-0 space-y-1.5">
-                  <h3 className="font-semibold text-sm leading-tight line-clamp-2">
+            <CardContent className="p-2.5 sm:p-3 space-y-1.5">
+              {/* Dòng 1: Ảnh + Label + Trạng thái - Grid 2 cột */}
+              <div className="grid grid-cols-2 gap-2">
+                {/* Cột 1: Ảnh (nếu có) + Label */}
+                <div className="flex items-start gap-2 min-w-0">
+                  {/* Ảnh/Icon (nếu có) */}
+                  {imageField && (
+                    <div className="flex-shrink-0 pt-0.5">
+                      {renderImage(row)}
+                    </div>
+                  )}
+                  
+                  {/* Title - line-clamp-1 để chỉ 1 dòng */}
+                  <h3 className="font-bold text-base leading-tight line-clamp-1 flex-1 min-w-0 text-foreground">
                     {titleText}
                   </h3>
-                  
-                  {/* Hiển thị các cột phụ */}
-                  {otherColumns.map((cot) => {
-                    const value = getValue(cot, row)
-                    const displayValue = cot.cell
-                      ? cot.cell(value, row)
-                      : value != null
-                      ? String(value)
-                      : '—'
-
-                    return (
-                      <div key={cot.key} className="text-xs text-foreground">
-                        {displayValue}
-                      </div>
-                    )
-                  })}
                 </div>
-
-                {/* Cột 3: Trạng thái (nếu có) */}
+                
+                {/* Cột 2: Trạng thái (nếu có) */}
                 {statusColumn && (
-                  <div className="flex items-start pt-1">
+                  <div className="flex items-start justify-end pt-0.5">
                     {(() => {
                       const value = getValue(statusColumn, row)
                       return statusColumn.cell
@@ -230,9 +247,103 @@ export function MobileCardView<TData extends Record<string, any>>({
                 )}
               </div>
 
-              {/* Hàng 2: Actions - nằm dưới cùng */}
+              {/* Dòng 2: Mã số + Thông tin quan trọng - Grid 2 cột (tùy module, còn k thì trống) */}
+              {(codeColumn || importantColumn || otherColumns.length > 0) && (
+                <div className="grid grid-cols-2 gap-2">
+                  {/* Cột 1: Mã số + Thông tin quan trọng */}
+                  <div className="space-y-0.5 min-w-0">
+                    {/* Mã số */}
+                    {codeColumn && (() => {
+                      const codeValue = getValue(codeColumn, row)
+                      const codeDisplay = codeColumn.cell
+                        ? codeColumn.cell(codeValue, row)
+                        : codeValue != null
+                        ? String(codeValue)
+                        : null
+                      
+                      if (codeDisplay) {
+                        return (
+                          <div className="text-sm font-semibold text-primary line-clamp-1">
+                            {codeDisplay}
+                          </div>
+                        )
+                      }
+                      return null
+                    })()}
+                    
+                    {/* Thông tin quan trọng (email, phone, etc.) */}
+                    {importantColumn && (() => {
+                      const value = getValue(importantColumn, row)
+                      const displayValue = importantColumn.cell
+                        ? importantColumn.cell(value, row)
+                        : value != null
+                        ? String(value)
+                        : null
+                      
+                      if (displayValue && displayValue !== '—') {
+                        return (
+                          <div className="text-xs text-muted-foreground line-clamp-1">
+                            {displayValue}
+                          </div>
+                        )
+                      }
+                      return null
+                    })()}
+                    
+                    {/* Cột phụ đầu tiên (nếu không có mã số và thông tin quan trọng) */}
+                    {!codeColumn && !importantColumn && otherColumns.length > 0 && (() => {
+                      const cot = otherColumns[0]
+                      const value = getValue(cot, row)
+                      const displayValue = cot.cell
+                        ? cot.cell(value, row)
+                        : value != null
+                        ? String(value)
+                        : '—'
+
+                      if (displayValue && displayValue !== '—') {
+                        return (
+                          <div className="text-xs text-muted-foreground line-clamp-1">
+                            {displayValue}
+                          </div>
+                        )
+                      }
+                      return null
+                    })()}
+                  </div>
+                  
+                  {/* Cột 2: Thông tin phụ (hoặc trống) */}
+                  {(() => {
+                    // Xác định cột phụ nào hiển thị ở cột 2
+                    const hasPrimaryInfo = codeColumn || importantColumn
+                    const rightColumnIndex = hasPrimaryInfo ? 0 : 1
+                    
+                    if (otherColumns.length > rightColumnIndex && otherColumns[rightColumnIndex]) {
+                      const cot = otherColumns[rightColumnIndex]
+                      const value = getValue(cot, row)
+                      const displayValue = cot.cell
+                        ? cot.cell(value, row)
+                        : value != null
+                        ? String(value)
+                        : '—'
+
+                      if (displayValue && displayValue !== '—') {
+                        return (
+                          <div className="space-y-0.5 min-w-0">
+                            <div className="text-xs text-muted-foreground line-clamp-1">
+                              {displayValue}
+                            </div>
+                          </div>
+                        )
+                      }
+                    }
+                    return null
+                  })()}
+                </div>
+              )}
+
+              {/* Dòng 3: Actions - nằm dưới cùng */}
               {(enableRowSelection || editAction || deleteAction || otherActions.length > 0) && (
-                <div className="flex items-center justify-between gap-2 pt-2 border-t">
+                <div className="flex items-center justify-between gap-1.5 pt-1.5 border-t">
                   {/* Checkbox chọn - ngoài cùng bên trái */}
                   {enableRowSelection && (
                     <div className="flex-shrink-0">
@@ -256,14 +367,14 @@ export function MobileCardView<TData extends Record<string, any>>({
                           key={idx}
                           variant="ghost"
                           size="sm"
-                          className="h-7 px-2 text-xs"
+                          className="h-6 px-1.5 text-xs"
                           onClick={(e) => {
                             e.stopPropagation()
                             action.onClick(row)
                           }}
                           title={action.label}
                         >
-                          {action.icon && <action.icon className="h-3 w-3 mr-1" />}
+                          {action.icon && <action.icon className="h-3 w-3 mr-0.5" />}
                           {action.label}
                         </Button>
                       ))}
@@ -276,14 +387,14 @@ export function MobileCardView<TData extends Record<string, any>>({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 px-2 text-xs"
+                        className="h-6 px-1.5 text-xs"
                         onClick={(e) => {
                           e.stopPropagation()
                           editAction.onClick(row)
                         }}
                         title={editAction.label}
                       >
-                        <Pencil className="h-3 w-3 mr-1" />
+                        <Pencil className="h-3 w-3 mr-0.5" />
                         Sửa
                       </Button>
                     )}
@@ -291,14 +402,20 @@ export function MobileCardView<TData extends Record<string, any>>({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                        className="h-6 px-1.5 text-xs text-destructive hover:text-destructive"
                         onClick={(e) => {
                           e.stopPropagation()
+                          // Nếu có requiresConfirm và có onDeleteClick callback, dùng callback
+                          // Nếu không, gọi trực tiếp onClick
+                          if (deleteAction.requiresConfirm && onDeleteClick) {
+                            onDeleteClick(row, deleteAction)
+                          } else {
                           deleteAction.onClick(row)
+                          }
                         }}
                         title={deleteAction.label}
                       >
-                        <Trash2 className="h-3 w-3 mr-1" />
+                        <Trash2 className="h-3 w-3 mr-0.5" />
                         Xóa
                       </Button>
                     )}

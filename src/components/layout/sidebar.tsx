@@ -38,9 +38,10 @@ const menuItems: MenuItem[] = [
 interface SidebarProps {
   isCollapsed: boolean
   onToggleCollapse?: () => void
+  onMobileMenuClose?: () => void // Callback để đóng mobile menu khi click vào menu item
 }
 
-export function Sidebar({ isCollapsed }: SidebarProps) {
+export function Sidebar({ isCollapsed, onToggleCollapse, onMobileMenuClose }: SidebarProps) {
   const location = useLocation()
 
   const isPathActive = (path: string) => {
@@ -50,12 +51,13 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
   const isHomeActive = location.pathname === '/'
 
   return (
-    <div
-      className={cn(
-        'bg-card border-r transition-all duration-300 flex flex-col h-screen relative',
-        isCollapsed ? 'w-16' : 'w-64'
-      )}
-    >
+    <div className="relative group">
+      <div
+        className={cn(
+          'bg-card border-r transition-all duration-300 flex flex-col h-screen relative',
+          isCollapsed ? 'w-16' : 'w-56'
+        )}
+      >
       {/* Header */}
       <div className="h-16 border-b flex items-center justify-center px-4 flex-shrink-0">
         {!isCollapsed ? (
@@ -80,6 +82,12 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
         {/* Trang chủ */}
         <NavLink
           to="/"
+          onClick={() => {
+            // Đóng mobile menu khi click vào trang chủ trên mobile
+            if (onMobileMenuClose) {
+              onMobileMenuClose()
+            }
+          }}
           className={({ isActive }) =>
             cn(
               'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 mb-2',
@@ -104,6 +112,12 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
             <NavLink
               key={item.id}
               to={item.path}
+              onClick={() => {
+                // Đóng mobile menu khi click vào menu item trên mobile
+                if (onMobileMenuClose) {
+                  onMobileMenuClose()
+                }
+              }}
               className={({ isActive: navIsActive }) =>
                 cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200',
@@ -120,8 +134,18 @@ export function Sidebar({ isCollapsed }: SidebarProps) {
               {!isCollapsed && <span className="font-medium text-sm">{item.label}</span>}
             </NavLink>
           )
-        })}
-      </nav>
+         })}
+       </nav>
+      </div>
+      {/* Resize handle - click ở cạnh để toggle */}
+      {onToggleCollapse && (
+        <button
+          onClick={onToggleCollapse}
+          className="absolute right-0 top-0 bottom-0 w-1 hover:w-2 bg-transparent hover:bg-primary/20 transition-all duration-200 cursor-col-resize z-10 group-hover:w-2"
+          aria-label={isCollapsed ? 'Mở sidebar' : 'Thu gọn sidebar'}
+          title={isCollapsed ? 'Mở sidebar' : 'Thu gọn sidebar'}
+        />
+      )}
     </div>
   )
 }

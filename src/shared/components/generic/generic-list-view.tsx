@@ -169,7 +169,7 @@ export function GenericListView<TData extends Record<string, any>>({
   }
 
   return (
-    <div className="flex flex-col h-full space-y-4">
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Confirm Delete Dialog */}
       {deleteItem && deleteAction && (
         <ConfirmDeleteDialog
@@ -183,45 +183,53 @@ export function GenericListView<TData extends Record<string, any>>({
         />
       )}
 
-      {/* Toolbar */}
-      <ListToolbar
-        timKiem={listState.timKiem}
-        setTimKiem={listState.setTimKiem}
-        timKiemPlaceholder={timKiemPlaceholder}
-        onTimKiem={onTimKiem}
-        quickFilterValues={listState.quickFilterValues}
-        onClearFilters={handleClearFilters}
-        selectedRows={listState.selectedRows}
-        bulkActions={bulkActions}
-        enableRowSelection={enableRowSelection}
-        cotHienThi={cotHienThi}
-        columnVisibility={columnVisibility.columnVisibility}
-        setColumnVisibility={columnVisibility.setColumnVisibility}
-        showColumnMenu={columnVisibility.showColumnMenu}
-        setShowColumnMenu={columnVisibility.setShowColumnMenu}
-        onBack={onBack}
-        onRefresh={onRefresh}
-        isLoading={isLoading}
-        onAddNew={onAddNew}
-        onXuatExcel={onXuatExcel}
-        onNhapExcel={onNhapExcel}
-        filteredData={listState.filteredData}
-      />
-
-      {/* Quick Filters */}
-      {quickFilters.length > 0 && (
-        <QuickFilters
+      {/* Toolbar - Fixed */}
+      <div className="flex-shrink-0 mb-3">
+        <ListToolbar
+          timKiem={listState.timKiem}
+          setTimKiem={listState.setTimKiem}
+          timKiemPlaceholder={timKiemPlaceholder}
+          onTimKiem={onTimKiem}
           quickFilters={quickFilters}
           quickFilterValues={listState.quickFilterValues}
           setQuickFilterValues={listState.setQuickFilterValues}
+          onClearFilters={handleClearFilters}
           dataAfterSearch={listState.dataAfterSearch}
+          selectedRows={listState.selectedRows}
+          bulkActions={bulkActions}
+          enableRowSelection={enableRowSelection}
+          cotHienThi={cotHienThi}
+          columnVisibility={columnVisibility.columnVisibility}
+          setColumnVisibility={columnVisibility.setColumnVisibility}
+          showColumnMenu={columnVisibility.showColumnMenu}
+          setShowColumnMenu={columnVisibility.setShowColumnMenu}
+          onBack={onBack}
+          onRefresh={onRefresh}
+          isLoading={isLoading}
+          onAddNew={onAddNew}
+          onXuatExcel={onXuatExcel}
+          onNhapExcel={onNhapExcel}
+          filteredData={listState.filteredData}
         />
+      </div>
+
+      {/* Quick Filters - Fixed */}
+      {quickFilters.length > 0 && (
+        <div className="flex-shrink-0 mb-3">
+          <QuickFilters
+            quickFilters={quickFilters}
+            quickFilterValues={listState.quickFilterValues}
+            setQuickFilterValues={listState.setQuickFilterValues}
+            dataAfterSearch={listState.dataAfterSearch}
+            onClearFilters={handleClearFilters}
+          />
+        </div>
       )}
 
       {/* Mobile Card View */}
       {isMobile ? (
-        <div className="flex flex-col flex-1 min-h-0">
-          <div className="flex-1 overflow-y-auto pb-20">
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="flex-1 overflow-y-auto">
             <MobileCardView
               data={listState.filteredData}
               cotHienThi={cotHienThi}
@@ -234,38 +242,45 @@ export function GenericListView<TData extends Record<string, any>>({
               imageField={imageField}
               currentPage={table.getState().pagination.pageIndex}
               pageSize={listState.currentPageSize}
+              onDeleteClick={(item, action) => {
+                setDeleteItem(item)
+                setDeleteAction(action)
+                setDeleteDialogOpen(true)
+              }}
+            />
+            {/* Mobile Footer - Nằm trong scroll container */}
+            <MobilePagination
+              table={table}
+              currentPageSize={listState.currentPageSize}
+              setCurrentPageSize={listState.setCurrentPageSize}
+              filteredDataLength={listState.filteredData.length}
+              enableRowSelection={enableRowSelection}
+              selectedRowsCount={listState.selectedRows.length}
             />
           </div>
-          {/* Mobile Footer */}
-          <MobilePagination
-            table={table}
-            currentPageSize={listState.currentPageSize}
-            setCurrentPageSize={listState.setCurrentPageSize}
-            filteredDataLength={listState.filteredData.length}
-            enableRowSelection={enableRowSelection}
-            selectedRowsCount={listState.selectedRows.length}
-          />
         </div>
       ) : (
-        /* Desktop Table View */
-        <>
-          <TableView
-            table={table}
-            columns={columns}
-            isLoading={isLoading}
-            onRowClick={onRowClick}
-          />
-          <TablePagination
-            table={table}
-            currentPageSize={listState.currentPageSize}
-            setCurrentPageSize={listState.setCurrentPageSize}
-            pageInputValue={listState.pageInputValue}
-            setPageInputValue={listState.setPageInputValue}
-            filteredDataLength={listState.filteredData.length}
-            enableRowSelection={enableRowSelection}
-            selectedRowsCount={listState.selectedRows.length}
-          />
-        </>
+        /* Desktop Table View - Scrollable container */
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="border rounded-lg overflow-hidden flex flex-col h-full bg-card">
+            <TableView
+              table={table}
+              columns={columns}
+              isLoading={isLoading}
+              onRowClick={onRowClick}
+            />
+            <TablePagination
+              table={table}
+              currentPageSize={listState.currentPageSize}
+              setCurrentPageSize={listState.setCurrentPageSize}
+              pageInputValue={listState.pageInputValue}
+              setPageInputValue={listState.setPageInputValue}
+              filteredDataLength={listState.filteredData.length}
+              enableRowSelection={enableRowSelection}
+              selectedRowsCount={listState.selectedRows.length}
+            />
+          </div>
+        </div>
       )}
     </div>
   )
