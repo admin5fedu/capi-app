@@ -6,6 +6,8 @@ import {
   createDanhMuc,
   updateDanhMuc,
   deleteDanhMuc,
+  deleteDanhMucCascade,
+  deleteAllDanhMuc,
   searchDanhMuc,
   checkDanhMucHasChildren,
 } from '@/api/danh-muc'
@@ -45,6 +47,16 @@ export async function updateDanhMucService(
 
 export async function deleteDanhMucService(id: string): Promise<{ success: boolean }> {
   return deleteDanhMuc(id)
+}
+
+export async function deleteDanhMucCascadeService(
+  id: string
+): Promise<{ success: boolean; deletedChildren: number }> {
+  return deleteDanhMucCascade(id)
+}
+
+export async function deleteAllDanhMucService(): Promise<{ success: boolean; deletedCount: number }> {
+  return deleteAllDanhMuc()
 }
 
 export async function searchDanhMucService(keyword: string): Promise<DanhMucWithParent[]> {

@@ -112,8 +112,13 @@ export async function updateDanhMuc(id: string, danhMuc: DanhMucUpdate) {
 
 /**
  * Xóa danh mục
+ * Tự động set danh_muc_id = null trong các giao dịch liên quan
  */
 export async function deleteDanhMuc(id: string) {
+  // Set danh_muc_id = null trong các giao dịch liên quan
+  await updateGiaoDichDanhMucToNull([id])
+
+  // Xóa danh mục
   const { error } = await supabase
     .from(TABLE_NAME)
     .delete()
@@ -155,5 +160,84 @@ export async function checkDanhMucHasChildren(id: string) {
 
   if (error) throw error
   return (data?.length ?? 0) > 0
+}
+
+/**
+ * Xóa danh mục và tất cả danh mục con (cascade delete)
+ */
+export async function deleteDanhMucCascade(id: string) {
+  // Lấy tất cả danh mục con
+  const { data: children, error: childrenError } = await supabase
+    .from(TABLE_NAME)
+    .select('id')
+    .eq('parent_id', id)
+
+  if (childrenError) throw childrenError
+
+  // Xóa tất cả danh mục con trước (và set danh_muc_id = null trong giao dịch)
+  if (children && children.length > 0) {
+    const childIds = children.map((child) => child.id)
+    
+    // Set danh_muc_id = null trong các giao dịch liên quan
+    await updateGiaoDichDanhMucToNull(childIds)
+    
+    // Xóa danh mục con
+    const { error: deleteChildrenError } = await supabase
+      .from(TABLE_NAME)
+      .delete()
+      .in('id', childIds)
+
+    if (deleteChildrenError) throw deleteChildrenError
+  }
+
+  // Set danh_muc_id = null trong các giao dịch liên quan đến danh mục cha
+  await updateGiaoDichDanhMucToNull([id])
+
+  // Xóa danh mục cha
+  const { error } = await supabase.from(TABLE_NAME).delete().eq('id', id)
+
+  if (error) throw error
+  return { success: true, deletedChildren: children?.length ?? 0 }
+}
+
+/**
+ * Xóa tất cả danh mục (dùng cho migration)
+ */
+export async function deleteAllDanhMuc() {
+  // Lấy tất cả danh mục
+  const { data: allDanhMuc, error: fetchError } = await supabase
+    .from(TABLE_NAME)
+    .select('id')
+
+  if (fetchError) throw fetchError
+
+  if (!allDanhMuc || allDanhMuc.length === 0) {
+    return { success: true, deletedCount: 0 }
+  }
+
+  const allIds = allDanhMuc.map((dm) => dm.id)
+
+  // Set danh_muc_id = null trong tất cả giao dịch
+  await updateGiaoDichDanhMucToNull(allIds)
+
+  // Xóa tất cả danh mục
+  const { error } = await supabase.from(TABLE_NAME).delete().in('id', allIds)
+
+  if (error) throw error
+  return { success: true, deletedCount: allIds.length }
+}
+
+/**
+ * Helper: Set danh_muc_id = null trong các giao dịch có danh_muc_id trong danh sách
+ */
+async function updateGiaoDichDanhMucToNull(danhMucIds: string[]) {
+  if (danhMucIds.length === 0) return
+
+  const { error } = await supabase
+    .from('zz_cst_giao_dich')
+    .update({ danh_muc_id: null })
+    .in('danh_muc_id', danhMucIds)
+
+  if (error) throw error
 }
 

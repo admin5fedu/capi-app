@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
-import { useDanhMucById, useDeleteDanhMuc, useDanhMucChildren } from '../hooks/use-danh-muc'
+import { useDanhMucById, useDeleteDanhMuc, useDeleteDanhMucCascade, useDanhMucChildren } from '../hooks/use-danh-muc'
+import { isLevel1, isLevel2 } from '../utils/danh-muc-helpers'
 import { GenericDetailView, DetailFieldGroup } from '@/shared/components/generic/generic-detail-view'
 import { useBreadcrumb } from '@/components/layout/breadcrumb-context'
 import { LOAI_DANH_MUC } from '../config'
@@ -8,7 +9,7 @@ import { toast } from 'sonner'
 import dayjs from 'dayjs'
 import 'dayjs/locale/vi'
 import { Badge } from '@/components/ui/badge'
-import { getDanhMucLoaiBadgeVariant, getStatusBadgeVariant } from '@/shared/utils/color-utils'
+import { getThuChiBadgeVariant, getStatusBadgeVariant } from '@/shared/utils/color-utils'
 
 interface DanhMucDetailViewProps {
   id: string
@@ -25,17 +26,20 @@ export function DanhMucDetailView({ id, onEdit, onDelete, onBack }: DanhMucDetai
   const { data: danhMucCon } = useDanhMucChildren(id)
   const { setDetailLabel } = useBreadcrumb()
   const deleteDanhMuc = useDeleteDanhMuc()
+  const deleteDanhMucCascade = useDeleteDanhMucCascade()
 
   const handleDelete = async () => {
     try {
-      // Kiểm tra xem có danh mục con không
-      if (danhMucCon && danhMucCon.length > 0) {
-        toast.error('Không thể xóa danh mục này vì có danh mục con')
-        return
+      if (!danhMuc) return
+
+      // Nếu là cấp 1, dùng cascade delete (tự động xóa cấp 2)
+      if (isLevel1(danhMuc)) {
+        await deleteDanhMucCascade.mutateAsync(id)
+      } else {
+        // Nếu là cấp 2, xóa bình thường
+        await deleteDanhMuc.mutateAsync(id)
       }
 
-      await deleteDanhMuc.mutateAsync(id)
-      toast.success('Xóa danh mục thành công')
       onDelete?.()
       if (!onDelete) {
         onBack()
@@ -71,6 +75,9 @@ export function DanhMucDetailView({ id, onEdit, onDelete, onBack }: DanhMucDetai
     )
   }
 
+  // Xác định cấp độ
+  const level = isLevel1(danhMuc) ? 1 : isLevel2(danhMuc) ? 2 : 0
+
   const fieldGroups: DetailFieldGroup<DanhMucWithParent>[] = [
     {
       title: 'Thông tin cơ bản',
@@ -81,13 +88,23 @@ export function DanhMucDetailView({ id, onEdit, onDelete, onBack }: DanhMucDetai
           accessor: 'ten',
         },
         {
+          key: 'level',
+          label: 'Cấp độ',
+          accessor: () => level,
+          render: () => (
+            <Badge variant={level === 1 ? 'default' : 'secondary'}>
+              Cấp {level}
+            </Badge>
+          ),
+        },
+        {
           key: 'loai',
           label: 'Loại danh mục',
           accessor: 'loai',
           render: (value) => {
             const loai = LOAI_DANH_MUC.find((l) => l.value === value)
             const label = loai ? loai.label : value || '—'
-            return <Badge variant={getDanhMucLoaiBadgeVariant(value)}>{label}</Badge>
+            return <Badge variant={getThuChiBadgeVariant(value)}>{label}</Badge>
           },
         },
         {
@@ -124,6 +141,31 @@ export function DanhMucDetailView({ id, onEdit, onDelete, onBack }: DanhMucDetai
           span: 3,
           render: (value) => value || <span className="text-muted-foreground">—</span>,
         },
+        ...(isLevel1(danhMuc) && danhMucCon && danhMucCon.length > 0
+          ? [
+              {
+                key: 'children',
+                label: 'Danh mục con',
+                accessor: () => danhMucCon,
+                span: 3 as 1 | 2 | 3,
+                render: () => (
+                  <div className="space-y-1">
+                    {danhMucCon.map((child) => (
+                      <div
+                        key={child.id}
+                        className="flex items-center justify-between p-2 border rounded-md hover:bg-accent/50"
+                      >
+                        <span>{child.ten}</span>
+                        <Badge variant={getStatusBadgeVariant(child.is_active)}>
+                          {child.is_active ? 'Hoạt động' : 'Vô hiệu hóa'}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                ),
+              },
+            ]
+          : []),
         {
           key: 'created_at',
           label: 'Ngày tạo',

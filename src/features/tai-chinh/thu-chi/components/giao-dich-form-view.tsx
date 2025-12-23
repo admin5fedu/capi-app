@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useGiaoDichById, useCreateGiaoDich, useUpdateGiaoDich } from '../hooks/use-giao-dich'
-import { useDanhMucByLoai } from '@/features/tai-chinh/danh-muc'
+import { useDanhMucList, DanhMucCombobox } from '@/features/tai-chinh/danh-muc'
 import { useTaiKhoanList } from '@/features/tai-chinh/tai-khoan'
 import { useDoiTacList } from '@/features/doi-tac/danh-sach-doi-tac'
 import { useTyGiaList, useCreateTyGia } from '@/features/tai-chinh/ty-gia'
@@ -293,8 +293,7 @@ export function GiaoDichFormView({
   onCancel,
 }: GiaoDichFormViewProps) {
   const { data: chiTiet, isLoading: dangTaiChiTiet } = useGiaoDichById(editId || null)
-  const { data: danhSachDanhMucThu } = useDanhMucByLoai('thu')
-  const { data: danhSachDanhMucChi } = useDanhMucByLoai('chi')
+  const { data: danhSachDanhMuc } = useDanhMucList()
   const { data: danhSachTaiKhoan } = useTaiKhoanList()
   const { data: danhSachDoiTac } = useDoiTacList()
   const { data: danhSachTyGia } = useTyGiaList()
@@ -334,14 +333,14 @@ export function GiaoDichFormView({
   const ngay = watch('ngay')
   const taiKhoanId = watch('tai_khoan_id')
   const taiKhoanDenId = watch('tai_khoan_den_id')
-  const soTien = watch('so_tien')
   const tyGiaValue = watch('ty_gia_value')
 
   // Tự động tạo mã phiếu khi thay đổi loại (chỉ khi tạo mới)
   useEffect(() => {
     if (!editId && loai) {
-      const maPhieu = getNextMaPhieuService(loai as LoaiGiaoDich)
-      setValue('ma_phieu', maPhieu)
+      getNextMaPhieuService(loai as LoaiGiaoDich).then((maPhieu) => {
+        setValue('ma_phieu', maPhieu)
+      })
     }
   }, [loai, editId, setValue])
 
@@ -384,17 +383,6 @@ export function GiaoDichFormView({
     setValue,
   ])
 
-  // Tính so_tien_vnd khi có tỷ giá
-  useEffect(() => {
-    if (tyGiaValue && soTien) {
-      const taiKhoan =
-        danhSachTaiKhoan?.find((tk) => tk.id === taiKhoanId) ||
-        danhSachTaiKhoan?.find((tk) => tk.id === taiKhoanDenId)
-      if (taiKhoan?.loai_tien === 'USD') {
-        // Không cần tính vì sẽ tính trong onSubmit
-      }
-    }
-  }, [tyGiaValue, soTien, taiKhoanId, taiKhoanDenId, danhSachTaiKhoan])
 
   // Load dữ liệu khi chỉnh sửa
   useEffect(() => {
@@ -420,22 +408,48 @@ export function GiaoDichFormView({
 
   const onSubmit = async (data: GiaoDichFormData) => {
     try {
-      // Tính so_tien_vnd nếu có tỷ giá USD
+      // Tính so_tien_vnd nếu có tỷ giá USD (tính theo tỷ giá hiện tại)
       let soTienVnd: number | null = null
-      if (data.ty_gia_value && data.so_tien) {
-        const taiKhoan =
-          danhSachTaiKhoan?.find((tk) => tk.id === data.tai_khoan_id) ||
-          danhSachTaiKhoan?.find((tk) => tk.id === data.tai_khoan_den_id)
-        if (taiKhoan?.loai_tien === 'USD') {
+      if (data.ty_gia_value && data.so_tien && data.ty_gia_value > 0) {
+        // Xác định tài khoản nào cần tính VND
+        let taiKhoanCanTinh: { id: string; loai_tien: string } | null = null
+        
+        if (data.loai === 'thu') {
+          // Thu: tính theo tài khoản đến
+          taiKhoanCanTinh = danhSachTaiKhoan?.find((tk) => tk.id === data.tai_khoan_den_id) || null
+        } else if (data.loai === 'chi') {
+          // Chi: tính theo tài khoản đi
+          taiKhoanCanTinh = danhSachTaiKhoan?.find((tk) => tk.id === data.tai_khoan_id) || null
+        } else if (data.loai === 'luan_chuyen') {
+          // Luân chuyển: tính theo tỷ giá hiện tại của tài khoản đi (hoặc tài khoản đến nếu tài khoản đi không phải USD)
+          const taiKhoanDi = danhSachTaiKhoan?.find((tk) => tk.id === data.tai_khoan_id)
+          const taiKhoanDen = danhSachTaiKhoan?.find((tk) => tk.id === data.tai_khoan_den_id)
+          
+          // Ưu tiên tài khoản đi, nếu không phải USD thì lấy tài khoản đến
+          if (taiKhoanDi?.loai_tien === 'USD') {
+            taiKhoanCanTinh = taiKhoanDi
+          } else if (taiKhoanDen?.loai_tien === 'USD') {
+            taiKhoanCanTinh = taiKhoanDen
+          }
+        }
+        
+        // Tính VND nếu tài khoản là USD
+        if (taiKhoanCanTinh?.loai_tien === 'USD') {
           soTienVnd = data.so_tien * data.ty_gia_value
         }
       }
 
       // Kiểm tra xem có cần tạo tỷ giá mới không (nếu điều chỉnh tỷ giá)
       let finalTyGiaId = data.ty_gia_id
-      if (data.ty_gia_value && data.ty_gia_id) {
+      if (data.ty_gia_value && data.ty_gia_id && data.ty_gia_value > 0) {
         const tyGiaHienTai = danhSachTyGia?.find((tg) => tg.id === data.ty_gia_id)
         if (tyGiaHienTai && tyGiaHienTai.ty_gia !== data.ty_gia_value) {
+          // Validate tỷ giá không được âm
+          if (data.ty_gia_value <= 0) {
+            toast.error('Tỷ giá phải lớn hơn 0')
+            return
+          }
+          
           // Tạo tỷ giá mới
           const newTyGia = await taoTyGia.mutateAsync({
             ty_gia: data.ty_gia_value,
@@ -488,19 +502,6 @@ export function GiaoDichFormView({
 
   const title = editId ? 'Chỉnh sửa giao dịch' : 'Thêm giao dịch mới'
   const isLoading = isSubmitting || taoMoi.isPending || capNhat.isPending
-
-  // Lọc danh mục theo loại giao dịch
-  const danhMucOptions = useMemo(() => {
-    const danhMucList = loai === 'thu' ? danhSachDanhMucThu : danhSachDanhMucChi
-    return (
-      danhMucList
-        ?.filter((dm) => dm.is_active)
-        .map((dm) => ({
-          value: dm.id,
-          label: dm.ten + (dm.parent_ten ? ` (${dm.parent_ten})` : ''),
-        })) || []
-    )
-  }, [loai, danhSachDanhMucThu, danhSachDanhMucChi])
 
   // Đối tác options với group cho AutocompleteInput
   const doiTacAutocompleteOptions = useMemo(() => {
@@ -580,6 +581,9 @@ export function GiaoDichFormView({
                         if (loaiOption.value === 'chi') {
                           setValue('tai_khoan_den_id', null)
                         }
+                        // Reset tỷ giá khi đổi loại (vì có thể thay đổi tài khoản)
+                        setValue('ty_gia_id', null)
+                        setValue('ty_gia_value', null)
                       }}
                       disabled={isLoading}
                       className="flex-1"
@@ -602,19 +606,38 @@ export function GiaoDichFormView({
         {
           key: 'danh_muc_id',
           label: 'Danh mục',
-          type: 'select',
+          type: 'custom',
           required: loai !== 'luan_chuyen',
-          options: [
-            { value: '', label: '-- Chọn danh mục --' },
-            ...danhMucOptions,
-          ],
           disabled: loai === 'luan_chuyen',
           helperText:
             loai === 'luan_chuyen'
               ? 'Luân chuyển không cần danh mục'
               : loai === 'thu'
-                ? 'Chọn danh mục thu'
-                : 'Chọn danh mục chi',
+                ? 'Chọn danh mục thu (chỉ hiển thị danh mục cấp 2)'
+                : 'Chọn danh mục chi (chỉ hiển thị danh mục cấp 2)',
+          render: (form) => {
+            const { watch, setValue } = form
+            const currentValue = watch('danh_muc_id')
+
+            if (loai === 'luan_chuyen') {
+              return (
+                <div className="text-sm text-muted-foreground">
+                  Luân chuyển không cần danh mục
+                </div>
+              )
+            }
+
+            return (
+              <DanhMucCombobox
+                value={currentValue}
+                onChange={(value) => setValue('danh_muc_id', value, { shouldValidate: true })}
+                loai={loai as 'thu' | 'chi'}
+                danhSachDanhMuc={danhSachDanhMuc || []}
+                placeholder="Chọn danh mục..."
+                disabled={isLoading}
+              />
+            )
+          },
         },
         {
           key: 'mo_ta',
@@ -684,10 +707,19 @@ export function GiaoDichFormView({
                   {...register('ty_gia_value', {
                     valueAsNumber: true,
                     required: canCoTyGia ? 'Tỷ giá là bắt buộc' : false,
-                    min: { value: 0, message: 'Tỷ giá phải lớn hơn 0' },
+                    min: { value: 0.01, message: 'Tỷ giá phải lớn hơn 0' },
+                    validate: (value) => {
+                      if (canCoTyGia && value !== null && value !== undefined) {
+                        if (value <= 0) {
+                          return 'Tỷ giá phải lớn hơn 0'
+                        }
+                      }
+                      return true
+                    },
                   })}
                   type="number"
                   step="0.01"
+                  min="0.01"
                   disabled={!canCoTyGia || isLoading}
                   className={cn(
                     'flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm',

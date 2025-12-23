@@ -70,7 +70,7 @@ export function FormFieldWrapper<TFormData extends Record<string, any>>({
         span === 3 && 'col-span-3'
       )}
     >
-      <Label htmlFor={String(fieldKey)}>
+      <Label htmlFor={String(fieldKey)} id={`${String(fieldKey)}-label`}>
         {label}
         {required && <span className="text-destructive ml-1">*</span>}
       </Label>

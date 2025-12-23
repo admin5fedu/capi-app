@@ -39,3 +39,8 @@ export interface DanhMucWithParent extends DanhMuc {
   parent_ten?: string | null
 }
 
+// Danh mục với children (cho tree view)
+export interface DanhMucWithChildren extends DanhMucWithParent {
+  children?: DanhMucWithChildren[]
+}
+

@@ -141,6 +141,7 @@ export function createActionsColumn<TData extends Record<string, any>>(
     (item) => item.label.toLowerCase().includes('xóa') || item.label.toLowerCase().includes('delete')
   )
   // Các actions khác (không phải View, Edit và Delete)
+  // Sắp xếp: View -> Other -> Edit -> Delete
   const otherActions = hanhDongItems.filter(
     (item) =>
       !item.label.toLowerCase().includes('xem') &&
@@ -148,6 +149,7 @@ export function createActionsColumn<TData extends Record<string, any>>(
       !item.label.toLowerCase().includes('chi tiết') &&
       !item.label.toLowerCase().includes('sửa') &&
       !item.label.toLowerCase().includes('edit') &&
+      !item.label.toLowerCase().includes('chỉnh sửa') &&
       !item.label.toLowerCase().includes('xóa') &&
       !item.label.toLowerCase().includes('delete')
   )
@@ -157,37 +159,41 @@ export function createActionsColumn<TData extends Record<string, any>>(
   return {
     id: 'actions',
     header: 'Thao tác',
-    cell: ({ row }: { row: any }) => (
-      <div className="flex items-center justify-center gap-2">
-        {/* View/Eye action - hiển thị đầu tiên */}
-        {viewAction && !(viewAction.hidden && viewAction.hidden(row.original)) && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={(e) => {
-              e.stopPropagation()
-              viewAction.onClick(row.original)
-            }}
-            title={viewAction.label}
-          >
-            {viewAction.icon ? (
-              <viewAction.icon className="h-4 w-4" />
-            ) : (
-              <Pencil className="h-4 w-4" />
-            )}
-          </Button>
-        )}
-        {/* Other actions (trước Edit) */}
-        {otherActions.map((action, index) => {
-          if (action.hidden && action.hidden(row.original)) return null
-          return (
+    cell: ({ row }: { row: any }) => {
+      const showView = viewAction && !(viewAction.hidden && viewAction.hidden(row.original))
+      const showOtherActions = otherActions.filter((action) => !(action.hidden && action.hidden(row.original)))
+      const showEdit = editAction && !(editAction.hidden && editAction.hidden(row.original))
+      const showDelete = deleteAction && !(deleteAction.hidden && deleteAction.hidden(row.original))
+      
+      return (
+        <div className="flex items-center justify-end gap-1">
+          {/* View/Eye action - hiển thị đầu tiên */}
+          {showView && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 flex-shrink-0"
+              onClick={(e) => {
+                e.stopPropagation()
+                viewAction.onClick(row.original)
+              }}
+              title={viewAction.label}
+            >
+              {viewAction.icon ? (
+                <viewAction.icon className="h-4 w-4" />
+              ) : (
+                <Pencil className="h-4 w-4" />
+              )}
+            </Button>
+          )}
+          {/* Other actions (trước Edit) */}
+          {showOtherActions.map((action, index) => (
             <Button
               key={index}
               variant="ghost"
               size="icon"
               className={cn(
-                'h-8 w-8',
+                'h-8 w-8 flex-shrink-0',
                 action.variant === 'destructive' && 'text-destructive hover:text-destructive hover:bg-destructive/10'
               )}
               onClick={(e) => {
@@ -202,48 +208,48 @@ export function createActionsColumn<TData extends Record<string, any>>(
                 <Pencil className="h-4 w-4" />
               )}
             </Button>
-          )
-        })}
-        {/* Edit action */}
-        {editAction && !(editAction.hidden && editAction.hidden(row.original)) && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={(e) => {
-              e.stopPropagation()
-              editAction.onClick(row.original)
-            }}
-            title={editAction.label}
-          >
-            {editAction.icon ? (
-              <editAction.icon className="h-4 w-4" />
-            ) : (
-              <Pencil className="h-4 w-4" />
-            )}
-          </Button>
-        )}
-        {/* Delete action */}
-        {deleteAction && !(deleteAction.hidden && deleteAction.hidden(row.original)) && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={(e) => {
-              e.stopPropagation()
-              onDeleteClick(row.original, deleteAction)
-            }}
-            title={deleteAction.label}
-          >
-            {deleteAction.icon ? (
-              <deleteAction.icon className="h-4 w-4" />
-            ) : (
-              <Trash2 className="h-4 w-4" />
-            )}
-          </Button>
-        )}
-      </div>
-    ),
+          ))}
+          {/* Edit action */}
+          {showEdit && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 flex-shrink-0"
+              onClick={(e) => {
+                e.stopPropagation()
+                editAction.onClick(row.original)
+              }}
+              title={editAction.label}
+            >
+              {editAction.icon ? (
+                <editAction.icon className="h-4 w-4" />
+              ) : (
+                <Pencil className="h-4 w-4" />
+              )}
+            </Button>
+          )}
+          {/* Delete action */}
+          {showDelete && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 flex-shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={(e) => {
+                e.stopPropagation()
+                onDeleteClick(row.original, deleteAction)
+              }}
+              title={deleteAction.label}
+            >
+              {deleteAction.icon ? (
+                <deleteAction.icon className="h-4 w-4" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
+            </Button>
+          )}
+        </div>
+      )
+    },
     enableSorting: false,
     size: 100,
   } as ColumnDef<TData>

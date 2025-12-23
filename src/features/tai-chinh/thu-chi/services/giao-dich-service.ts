@@ -42,7 +42,7 @@ export async function searchGiaoDichService(keyword: string): Promise<GiaoDich[]
   return searchGiaoDich(keyword)
 }
 
-export function getNextMaPhieuService(loai: 'thu' | 'chi' | 'luan_chuyen'): string {
+export async function getNextMaPhieuService(loai: 'thu' | 'chi' | 'luan_chuyen'): Promise<string> {
   return getNextMaPhieuByLoai(loai)
 }
 

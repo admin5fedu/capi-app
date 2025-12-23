@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { DanhMucListView } from './components'
 import { DanhMucFormView } from './components'
 import { DanhMucDetailView } from './components'
@@ -9,6 +10,9 @@ import { useModuleNavigation } from '@/shared/hooks/use-module-navigation'
  * Sử dụng React Router với nested routes để URL thay đổi
  */
 export function DanhMucModule() {
+  const navigate = useNavigate()
+  const basePath = '/tai-chinh/danh-muc'
+  
   const {
     isNew,
     isEdit,
@@ -21,8 +25,22 @@ export function DanhMucModule() {
     navigateToList,
     currentId,
   } = useModuleNavigation({
-    basePath: '/tai-chinh/danh-muc',
+    basePath,
   })
+
+  // Handler để thêm danh mục con (truyền parent_id qua location.state)
+  const handleAddChild = (parentId: string, parentLoai: string) => {
+    navigate(`${basePath}/moi`, {
+      state: {
+        from: 'list',
+        returnPath: basePath,
+        initialData: {
+          parent_id: parentId,
+          loai: parentLoai,
+        },
+      },
+    })
+  }
 
   return (
     <KiemTraQuyen>
@@ -50,6 +68,7 @@ export function DanhMucModule() {
             <DanhMucListView
               onEdit={(id) => handleEdit(id, 'list')}
               onAddNew={() => handleAddNew('list')}
+              onAddChild={handleAddChild}
               onView={handleView}
             />
           </div>

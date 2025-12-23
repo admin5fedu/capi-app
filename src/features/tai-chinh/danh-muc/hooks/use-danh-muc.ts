@@ -7,6 +7,8 @@ import {
   createDanhMucService,
   updateDanhMucService,
   deleteDanhMucService,
+  deleteDanhMucCascadeService,
+  deleteAllDanhMucService,
   searchDanhMucService,
   checkDanhMucHasChildrenService,
 } from '../services/danh-muc-service'
@@ -141,6 +143,46 @@ export function useDeleteDanhMuc() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: danhMucKeys.all })
       toast.success('Xóa danh mục thành công')
+    },
+    onError: (error: Error) => {
+      toast.error(`Lỗi: ${error.message}`)
+    },
+  })
+}
+
+/**
+ * Hook: Xóa danh mục và tất cả danh mục con (cascade delete)
+ */
+export function useDeleteDanhMucCascade() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => deleteDanhMucCascadeService(id),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: danhMucKeys.all })
+      if (result.deletedChildren > 0) {
+        toast.success(`Đã xóa danh mục và ${result.deletedChildren} danh mục con`)
+      } else {
+        toast.success('Xóa danh mục thành công')
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(`Lỗi: ${error.message}`)
+    },
+  })
+}
+
+/**
+ * Hook: Xóa tất cả danh mục (dùng cho migration)
+ */
+export function useDeleteAllDanhMuc() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => deleteAllDanhMucService(),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: danhMucKeys.all })
+      toast.success(`Đã xóa ${result.deletedCount} danh mục`)
     },
     onError: (error: Error) => {
       toast.error(`Lỗi: ${error.message}`)

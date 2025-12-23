@@ -1,19 +1,18 @@
 import type { CotHienThi } from '@/shared/components/generic/types'
 import type { DanhMucWithParent } from '@/types/danh-muc'
 import { Badge } from '@/components/ui/badge'
-import { getDanhMucLoaiBadgeVariant, getStatusBadgeVariant } from '@/shared/utils/color-utils'
+import { getThuChiBadgeVariant, getStatusBadgeVariant } from '@/shared/utils/color-utils'
+import { isLevel1, isLevel2 } from './utils/danh-muc-helpers'
+import { cn } from '@/lib/utils'
 
 /**
  * Cấu hình module Danh mục
  */
 
-// Các loại danh mục
+// Các loại danh mục tài chính
 export const LOAI_DANH_MUC = [
-  { value: 'khach_hang', label: 'Khách hàng' },
-  { value: 'nha_cung_cap', label: 'Nhà cung cấp' },
-  { value: 'san_pham', label: 'Sản phẩm' },
-  { value: 'dich_vu', label: 'Dịch vụ' },
-  { value: 'khac', label: 'Khác' },
+  { value: 'thu', label: 'Thu' },
+  { value: 'chi', label: 'Chi' },
 ] as const
 
 // Các cột hiển thị trong bảng
@@ -23,9 +22,29 @@ export const COT_HIEN_THI: CotHienThi<DanhMucWithParent>[] = [
     label: 'Tên danh mục',
     accessorKey: 'ten',
     sortable: true,
-    width: 250,
+    width: 300,
     align: 'left',
     defaultVisible: true,
+    cell: (value, row) => {
+      const danhMuc = row as DanhMucWithParent
+      const isLevel1Item = isLevel1(danhMuc)
+      const isLevel2Item = isLevel2(danhMuc)
+
+      return (
+        <div
+          className={cn(
+            'flex items-center',
+            isLevel1Item && 'font-semibold',
+            isLevel2Item && 'pl-6 text-muted-foreground'
+          )}
+        >
+          {isLevel2Item && (
+            <span className="mr-2 text-muted-foreground">└─</span>
+          )}
+          <span>{value || '—'}</span>
+        </div>
+      )
+    },
   },
   {
     key: 'loai',
@@ -39,7 +58,7 @@ export const COT_HIEN_THI: CotHienThi<DanhMucWithParent>[] = [
       const loai = LOAI_DANH_MUC.find((l) => l.value === value)
       const label = loai ? loai.label : value || '—'
       return (
-        <Badge variant={getDanhMucLoaiBadgeVariant(value)}>
+        <Badge variant={getThuChiBadgeVariant(value)}>
           {label}
         </Badge>
       )
@@ -52,7 +71,7 @@ export const COT_HIEN_THI: CotHienThi<DanhMucWithParent>[] = [
     sortable: false,
     width: 200,
     align: 'left',
-    defaultVisible: true,
+    defaultVisible: false, // Ẩn vì đã có indent trong cột tên
     cell: (value) => value || <span className="text-muted-foreground">—</span>,
   },
   {
