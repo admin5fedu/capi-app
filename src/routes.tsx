@@ -12,6 +12,7 @@ import { DanhMucModule } from '@/features/tai-chinh/danh-muc'
 import { TyGiaModule } from '@/features/tai-chinh/ty-gia'
 import { GiaoDichModule } from '@/features/tai-chinh/thu-chi'
 import { BaoCaoTaiChinhModule } from '@/features/tai-chinh/bao-cao-tai-chinh'
+import { BaoCaoTaiKhoanModule } from '@/features/tai-chinh/bao-cao-tai-khoan'
 import { NhomDoiTacModule } from '@/features/doi-tac/nhom-doi-tac/index.tsx'
 import { DanhSachDoiTacModule } from '@/features/doi-tac/danh-sach-doi-tac'
 import { HoSoPage } from '@/pages/ho-so'
@@ -111,6 +112,10 @@ export const router = createBrowserRouter([
       {
         path: 'tai-chinh/bao-cao',
         element: <BaoCaoTaiChinhModule />,
+      },
+      {
+        path: 'tai-chinh/bao-cao-tai-khoan',
+        element: <BaoCaoTaiKhoanModule />,
       },
       {
         path: 'doi-tac',

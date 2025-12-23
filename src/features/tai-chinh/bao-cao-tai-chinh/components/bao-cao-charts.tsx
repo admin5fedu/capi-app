@@ -1,24 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from '@/components/ui/chart'
-import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  PieChart,
-  Pie,
-  Cell,
-  AreaChart,
-  Area,
-} from 'recharts'
+  GenericLineChart,
+  GenericBarChart,
+  GenericPieChart,
+  GenericAreaChart,
+} from '@/components/charts'
+import type { ChartConfig } from '@/components/ui/chart'
 import type {
   BaoCaoGroupedByTime,
   BaoCaoGroupedByDanhMuc,
@@ -38,15 +24,6 @@ interface BaoCaoChartsProps {
   topDoiTac?: TopItem[]
   giaoDich?: GiaoDichWithRelations[]
   summary?: { tongThu: number; tongChi: number }
-}
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  }).format(value)
 }
 
 const chartConfig = {
@@ -199,396 +176,130 @@ export function BaoCaoCharts({
   return (
     <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
       {/* Time Series - Line Chart */}
-      {timeChartData.length > 0 && (
-        <Card className="overflow-hidden">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-sm text-primary">Xu hướng thời gian</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0 overflow-hidden">
-            <ChartContainer config={chartConfig} className="h-[200px] w-full max-w-full">
-              <LineChart data={timeChartData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis
-                  dataKey="period"
-                  className="text-xs"
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  className="text-xs"
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => formatCurrency(value)}
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Line
-                  type="monotone"
-                  dataKey="tongThu"
-                  stroke="hsl(142 76% 36%)"
-                  strokeWidth={2}
-                  dot={{ fill: 'hsl(142 76% 36%)', r: 4 }}
-                  activeDot={{ r: 6 }}
-                  className="dark:stroke-[hsl(142_70%_50%)] [&_circle]:dark:fill-[hsl(142_70%_50%)]"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="tongChi"
-                  stroke="hsl(0 84% 60%)"
-                  strokeWidth={2}
-                  dot={{ fill: 'hsl(0 84% 60%)', r: 4 }}
-                  activeDot={{ r: 6 }}
-                  className="dark:stroke-[hsl(0_72%_55%)] [&_circle]:dark:fill-[hsl(0_72%_55%)]"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="soDu"
-                  stroke="hsl(221 83% 53%)"
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={{ fill: 'hsl(221 83% 53%)', r: 4 }}
-                  activeDot={{ r: 6 }}
-                  className="dark:stroke-[hsl(217_91%_65%)] [&_circle]:dark:fill-[hsl(217_91%_65%)]"
-                />
-              </LineChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      )}
+      <GenericLineChart
+        title="Xu hướng thời gian"
+        icon={<TrendingUp className="h-4 w-4" />}
+        data={timeChartData}
+        xKey="period"
+        yKeys={[
+          { key: 'tongThu', label: 'Tổng thu', color: 'hsl(142 76% 36%)' },
+          { key: 'tongChi', label: 'Tổng chi', color: 'hsl(0 84% 60%)' },
+          { key: 'soDu', label: 'Số dư', color: 'hsl(221 83% 53%)', strokeDasharray: '5 5' },
+        ]}
+        config={chartConfig}
+        height="200px"
+      />
 
       {/* Time Series - Bar Chart */}
-      {timeChartData.length > 0 && (
-        <Card className="overflow-hidden">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-sm text-primary">So sánh thu chi</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0 overflow-hidden">
-            <ChartContainer config={chartConfig} className="h-[200px] w-full max-w-full">
-              <BarChart data={timeChartData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis
-                  dataKey="period"
-                  className="text-xs"
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  className="text-xs"
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => formatCurrency(value)}
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar 
-                  dataKey="tongThu" 
-                  fill="hsl(142 76% 36%)" 
-                  radius={[4, 4, 0, 0]}
-                  className="dark:fill-[hsl(142_70%_50%)]"
-                />
-                <Bar 
-                  dataKey="tongChi" 
-                  fill="hsl(0 84% 60%)" 
-                  radius={[4, 4, 0, 0]}
-                  className="dark:fill-[hsl(0_72%_55%)]"
-                />
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      )}
+      <GenericBarChart
+        title="So sánh thu chi"
+        icon={<BarChart3 className="h-4 w-4" />}
+        data={timeChartData}
+        xKey="period"
+        yKeys={[
+          { key: 'tongThu', label: 'Tổng thu', color: 'hsl(142 76% 36%)', radius: [4, 4, 0, 0] },
+          { key: 'tongChi', label: 'Tổng chi', color: 'hsl(0 84% 60%)', radius: [4, 4, 0, 0] },
+        ]}
+        config={chartConfig}
+        height="200px"
+      />
 
       {/* Top Categories - Pie Chart */}
-      {categoryPieData.length > 0 && (
-        <Card className="overflow-hidden">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <PieChartIcon className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-sm text-primary">Top 5 Danh mục</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0 overflow-hidden">
-            <ChartContainer config={chartConfig} className="h-[200px] w-full max-w-full">
-              <PieChart>
-                <Pie
-                  data={categoryPieData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={(props: any) => {
-                    const name = props.name || ''
-                    const percent = props.percent || 0
-                    return `${name}: ${(percent * 100).toFixed(0)}%`
-                  }}
-                  outerRadius={80}
-                  dataKey="value"
-                >
-                  {categoryPieData.map((_entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <ChartTooltip content={<ChartTooltipContent />} />
-              </PieChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      )}
+      <GenericPieChart
+        title="Top 5 Danh mục"
+        icon={<PieChartIcon className="h-4 w-4" />}
+        data={categoryPieData}
+        colors={COLORS}
+        config={chartConfig}
+        height="200px"
+      />
 
       {/* Top Partners - Pie Chart */}
-      {partnerPieData.length > 0 && (
-        <Card className="overflow-hidden">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <PieChartIcon className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-sm text-primary">Top 5 Đối tác</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0 overflow-hidden">
-            <ChartContainer config={chartConfig} className="h-[200px] w-full max-w-full">
-              <PieChart>
-                <Pie
-                  data={partnerPieData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={(props: any) => {
-                    const name = props.name || ''
-                    const percent = props.percent || 0
-                    return `${name}: ${(percent * 100).toFixed(0)}%`
-                  }}
-                  outerRadius={80}
-                  dataKey="value"
-                >
-                  {partnerPieData.map((_entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <ChartTooltip content={<ChartTooltipContent />} />
-              </PieChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      )}
+      <GenericPieChart
+        title="Top 5 Đối tác"
+        icon={<PieChartIcon className="h-4 w-4" />}
+        data={partnerPieData}
+        colors={COLORS}
+        config={chartConfig}
+        height="200px"
+      />
 
       {/* Categories - Bar Chart */}
-      {categoryBarData.length > 0 && (
-        <Card className="overflow-hidden">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-sm text-primary">Top Danh mục</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0 overflow-hidden">
-            <ChartContainer config={chartConfig} className="h-[200px] w-full max-w-full">
-              <BarChart data={categoryBarData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis
-                  type="number"
-                  className="text-xs"
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => formatCurrency(value)}
-                />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  className="text-xs"
-                  tickLine={false}
-                  axisLine={false}
-                  width={80}
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar 
-                  dataKey="tongThu" 
-                  fill="hsl(142 76% 36%)" 
-                  radius={[0, 4, 4, 0]}
-                  className="dark:fill-[hsl(142_70%_50%)]"
-                />
-                <Bar 
-                  dataKey="tongChi" 
-                  fill="hsl(0 84% 60%)" 
-                  radius={[0, 4, 4, 0]}
-                  className="dark:fill-[hsl(0_72%_55%)]"
-                />
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      )}
+      <GenericBarChart
+        title="Top Danh mục"
+        icon={<BarChart3 className="h-4 w-4" />}
+        data={categoryBarData}
+        xKey="name"
+        yKeys={[
+          { key: 'tongThu', label: 'Tổng thu', color: 'hsl(142 76% 36%)', radius: [0, 4, 4, 0] },
+          { key: 'tongChi', label: 'Tổng chi', color: 'hsl(0 84% 60%)', radius: [0, 4, 4, 0] },
+        ]}
+        config={chartConfig}
+        height="200px"
+        orientation="horizontal"
+      />
 
       {/* Partners - Bar Chart */}
-      {partnerBarData.length > 0 && (
-        <Card className="overflow-hidden">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-sm text-primary">Top Đối tác</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0 overflow-hidden">
-            <ChartContainer config={chartConfig} className="h-[200px] w-full max-w-full">
-              <BarChart data={partnerBarData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis
-                  type="number"
-                  className="text-xs"
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => formatCurrency(value)}
-                />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  className="text-xs"
-                  tickLine={false}
-                  axisLine={false}
-                  width={80}
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar 
-                  dataKey="tongThu" 
-                  fill="hsl(142 76% 36%)" 
-                  radius={[0, 4, 4, 0]}
-                  className="dark:fill-[hsl(142_70%_50%)]"
-                />
-                <Bar 
-                  dataKey="tongChi" 
-                  fill="hsl(0 84% 60%)" 
-                  radius={[0, 4, 4, 0]}
-                  className="dark:fill-[hsl(0_72%_55%)]"
-                />
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      )}
+      <GenericBarChart
+        title="Top Đối tác"
+        icon={<BarChart3 className="h-4 w-4" />}
+        data={partnerBarData}
+        xKey="name"
+        yKeys={[
+          { key: 'tongThu', label: 'Tổng thu', color: 'hsl(142 76% 36%)', radius: [0, 4, 4, 0] },
+          { key: 'tongChi', label: 'Tổng chi', color: 'hsl(0 84% 60%)', radius: [0, 4, 4, 0] },
+        ]}
+        config={chartConfig}
+        height="200px"
+        orientation="horizontal"
+      />
 
       {/* Chart 4: Phát sinh tiền theo ngày */}
-      {phatSinhTheoNgay.length > 0 && (
-        <Card className="overflow-hidden">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-sm text-primary">Phát sinh theo ngày</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0 overflow-hidden">
-            <ChartContainer config={chartConfig} className="h-[200px] w-full max-w-full">
-              <BarChart data={phatSinhTheoNgay}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis
-                  dataKey="ngay"
-                  className="text-xs"
-                  tickLine={false}
-                  axisLine={false}
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                />
-                <YAxis
-                  className="text-xs"
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => formatCurrency(value)}
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar 
-                  dataKey="tongTien" 
-                  fill="hsl(217 91% 65%)" 
-                  radius={[4, 4, 0, 0]}
-                  className="dark:fill-[hsl(217_91%_70%)]"
-                />
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      )}
+      <GenericBarChart
+        title="Phát sinh theo ngày"
+        icon={<Calendar className="h-4 w-4" />}
+        data={phatSinhTheoNgay}
+        xKey="ngay"
+        yKeys={[
+          { key: 'tongTien', label: 'Phát sinh', color: 'hsl(217 91% 65%)', radius: [4, 4, 0, 0] },
+        ]}
+        config={chartConfig}
+        height="200px"
+        xAxisAngle={-45}
+        xAxisHeight={60}
+      />
 
       {/* Chart 5: Tỷ lệ Thu/Chi */}
-      {tyLeThuChi.length > 0 && (
-        <Card className="overflow-hidden">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <Wallet className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-sm text-primary">Tỷ lệ Thu/Chi</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0 overflow-hidden">
-            <ChartContainer config={chartConfig} className="h-[200px] w-full max-w-full">
-              <PieChart>
-                <Pie
-                  data={tyLeThuChi}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={2}
-                  dataKey="value"
-                  label={(props: any) => {
-                    const name = props.name || ''
-                    const percent = props.percent || 0
-                    return `${name}: ${(percent * 100).toFixed(1)}%`
-                  }}
-                >
-                  {tyLeThuChi.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={entry.name === 'Thu' ? 'hsl(142 76% 36%)' : 'hsl(0 84% 60%)'} 
-                      className={entry.name === 'Thu' ? 'dark:fill-[hsl(142_70%_50%)]' : 'dark:fill-[hsl(0_72%_55%)]'}
-                    />
-                  ))}
-                </Pie>
-                <ChartTooltip content={<ChartTooltipContent />} />
-              </PieChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      )}
+      <GenericPieChart
+        title="Tỷ lệ Thu/Chi"
+        icon={<Wallet className="h-4 w-4" />}
+        data={tyLeThuChi}
+        colors={['hsl(142 76% 36%)', 'hsl(0 84% 60%)']}
+        config={chartConfig}
+        height="200px"
+        outerRadius={80}
+        innerRadius={60}
+        paddingAngle={2}
+        labelFormatter={(props: any) => {
+          const name = props.name || ''
+          const percent = props.percent || 0
+          return `${name}: ${(percent * 100).toFixed(1)}%`
+        }}
+      />
 
       {/* Chart 6: Số dư tích lũy */}
-      {soDuTichLuy.length > 0 && (
-        <Card className="overflow-hidden">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-sm text-primary">Số dư tích lũy</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0 overflow-hidden">
-            <ChartContainer config={chartConfig} className="h-[200px] w-full max-w-full">
-              <AreaChart data={soDuTichLuy}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis
-                  dataKey="period"
-                  className="text-xs"
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  className="text-xs"
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => formatCurrency(value)}
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Area
-                  type="monotone"
-                  dataKey="soDuTichLuy"
-                  stroke="hsl(142 76% 40%)"
-                  fill="hsl(142 76% 40%)"
-                  fillOpacity={0.6}
-                  className="dark:stroke-[hsl(142_70%_50%)] dark:fill-[hsl(142_70%_50%)]"
-                />
-              </AreaChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      )}
+      <GenericAreaChart
+        title="Số dư tích lũy"
+        icon={<TrendingUp className="h-4 w-4" />}
+        data={soDuTichLuy}
+        xKey="period"
+        yKey="soDuTichLuy"
+        label="Số dư tích lũy"
+        color="hsl(142 76% 40%)"
+        config={chartConfig}
+        height="200px"
+        fillOpacity={0.6}
+      />
     </div>
   )
 }

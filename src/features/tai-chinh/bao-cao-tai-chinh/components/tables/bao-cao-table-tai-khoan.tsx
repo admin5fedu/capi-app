@@ -1,16 +1,8 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import type { BaoCaoGroupedByTaiKhoan } from '@/types/bao-cao-tai-chinh'
+import { GenericFinancialTableWrapper, GenericFinancialTable } from '@/components/tables'
 import { CreditCard } from 'lucide-react'
+import { formatCurrency, formatPercent, formatNumber } from '@/shared/utils/format-utils'
 import { cn } from '@/lib/utils'
-import { formatCurrency, formatPercent } from '../bao-cao-table-utils'
-import { BaoCaoTableWrapper } from '../bao-cao-table-wrapper'
 import { BaoCaoTableTaiKhoanMobile } from './mobile/bao-cao-table-tai-khoan-mobile'
 
 interface BaoCaoTableTaiKhoanProps {
@@ -20,85 +12,124 @@ interface BaoCaoTableTaiKhoanProps {
 export function BaoCaoTableTaiKhoan({ data }: BaoCaoTableTaiKhoanProps) {
   const total = data.reduce((sum, item) => sum + item.tongThu + item.tongChi, 0)
 
-  const tableContent = (
-    <div className="rounded-md border overflow-hidden">
-      <div className="max-h-[400px] overflow-y-auto">
-        <Table>
-          <TableHeader className="sticky top-0 bg-background z-10">
-            <TableRow>
-              <TableHead className="h-9 text-xs">Tài khoản</TableHead>
-              <TableHead className="h-9 text-xs">Loại tiền</TableHead>
-              <TableHead className="h-9 text-xs text-right">Tổng thu</TableHead>
-              <TableHead className="h-9 text-xs text-right">Tổng chi</TableHead>
-              <TableHead className="h-9 text-xs text-right">Số dư</TableHead>
-              <TableHead className="h-9 text-xs text-right">SL GD</TableHead>
-              <TableHead className="h-9 text-xs text-right">%</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data
-              .sort((a, b) => (b.tongThu + b.tongChi) - (a.tongThu + a.tongChi))
-              .map((item) => {
-                const itemTotal = item.tongThu + item.tongChi
-                return (
-                  <TableRow key={item.taiKhoanId}>
-                    <TableCell className="font-medium">{item.taiKhoanTen}</TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center rounded-full bg-muted px-2 py-1 text-xs font-medium">
-                        {item.loaiTien}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right text-green-600 dark:text-green-400">
-                      {formatCurrency(item.tongThu)}
-                    </TableCell>
-                    <TableCell className="text-right text-red-600 dark:text-red-400">
-                      {formatCurrency(item.tongChi)}
-                    </TableCell>
-                    <TableCell className={cn(
-                      'text-right font-medium',
-                      item.soDu >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                    )}>
-                      {formatCurrency(item.soDu)}
-                    </TableCell>
-                    <TableCell className="text-right text-muted-foreground">
-                      {item.soLuongGiaoDich.toLocaleString('vi-VN')}
-                    </TableCell>
-                    <TableCell className="text-right text-muted-foreground">
-                      {formatPercent(itemTotal, total)}
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            <TableRow className="bg-muted/50 font-medium">
-              <TableCell colSpan={2}>Tổng cộng</TableCell>
-              <TableCell className="text-right text-green-600 dark:text-green-400">
-                {formatCurrency(data.reduce((sum, item) => sum + item.tongThu, 0))}
-              </TableCell>
-              <TableCell className="text-right text-red-600 dark:text-red-400">
-                {formatCurrency(data.reduce((sum, item) => sum + item.tongChi, 0))}
-              </TableCell>
-              <TableCell className="text-right font-medium">
-                {formatCurrency(data.reduce((sum, item) => sum + item.soDu, 0))}
-              </TableCell>
-              <TableCell className="text-right">
-                {data.reduce((sum, item) => sum + item.soLuongGiaoDich, 0).toLocaleString('vi-VN')}
-              </TableCell>
-              <TableCell className="text-right">100%</TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </div>
-    </div>
-  )
+  const columns = [
+    {
+      key: 'taiKhoanTen',
+      label: 'Tài khoản',
+      accessor: (row: BaoCaoGroupedByTaiKhoan) => row.taiKhoanTen,
+      className: 'font-medium',
+    },
+    {
+      key: 'loaiTien',
+      label: 'Loại tiền',
+      accessor: (row: BaoCaoGroupedByTaiKhoan) => row.loaiTien,
+      formatter: (_value: string, row: BaoCaoGroupedByTaiKhoan) => (
+        <span className="inline-flex items-center rounded-full bg-muted px-2 py-1 text-xs font-medium">
+          {row.loaiTien}
+        </span>
+      ),
+    },
+    {
+      key: 'tongThu',
+      label: 'Tổng thu',
+      accessor: (row: BaoCaoGroupedByTaiKhoan) => row.tongThu,
+      formatter: (value: number) => formatCurrency(value),
+      align: 'right' as const,
+      className: 'text-green-600 dark:text-green-400',
+    },
+    {
+      key: 'tongChi',
+      label: 'Tổng chi',
+      accessor: (row: BaoCaoGroupedByTaiKhoan) => row.tongChi,
+      formatter: (value: number) => formatCurrency(value),
+      align: 'right' as const,
+      className: 'text-red-600 dark:text-red-400',
+    },
+    {
+      key: 'soDu',
+      label: 'Số dư',
+      accessor: (row: BaoCaoGroupedByTaiKhoan) => row.soDu,
+      formatter: (value: number) => formatCurrency(value),
+      align: 'right' as const,
+      cellClassName: (row: BaoCaoGroupedByTaiKhoan) =>
+        cn(
+          'font-medium',
+          row.soDu >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+        ),
+    },
+    {
+      key: 'soLuongGiaoDich',
+      label: 'SL GD',
+      accessor: (row: BaoCaoGroupedByTaiKhoan) => row.soLuongGiaoDich,
+      formatter: (value: number) => formatNumber(value),
+      align: 'right' as const,
+      className: 'text-muted-foreground',
+    },
+    {
+      key: 'percent',
+      label: '%',
+      accessor: (row: BaoCaoGroupedByTaiKhoan) => {
+        const itemTotal = row.tongThu + row.tongChi
+        return formatPercent(itemTotal, total)
+      },
+      align: 'right' as const,
+      className: 'text-muted-foreground',
+    },
+  ]
+
+  const summaryRow = {
+    label: 'Tổng cộng',
+    labelColSpan: 2,
+    values: [
+      {
+        key: 'tongThu',
+        value: (data: BaoCaoGroupedByTaiKhoan[]) => data.reduce((sum, item) => sum + item.tongThu, 0),
+        formatter: (value: number) => formatCurrency(value),
+        align: 'right' as const,
+        className: 'text-green-600 dark:text-green-400',
+      },
+      {
+        key: 'tongChi',
+        value: (data: BaoCaoGroupedByTaiKhoan[]) => data.reduce((sum, item) => sum + item.tongChi, 0),
+        formatter: (value: number) => formatCurrency(value),
+        align: 'right' as const,
+        className: 'text-red-600 dark:text-red-400',
+      },
+      {
+        key: 'soDu',
+        value: (data: BaoCaoGroupedByTaiKhoan[]) => data.reduce((sum, item) => sum + item.soDu, 0),
+        formatter: (value: number) => formatCurrency(value),
+        align: 'right' as const,
+        className: 'font-medium',
+      },
+      {
+        key: 'soLuongGiaoDich',
+        value: (data: BaoCaoGroupedByTaiKhoan[]) => data.reduce((sum, item) => sum + item.soLuongGiaoDich, 0),
+        formatter: (value: number) => formatNumber(value),
+        align: 'right' as const,
+      },
+      {
+        key: 'percent',
+        value: () => '100%',
+        align: 'right' as const,
+      },
+    ],
+  }
 
   return (
-    <BaoCaoTableWrapper
+    <GenericFinancialTableWrapper
       title="Theo Tài khoản"
       icon={<CreditCard className="h-4 w-4 text-muted-foreground" />}
       mobileView={<BaoCaoTableTaiKhoanMobile data={data} />}
     >
-      {tableContent}
-    </BaoCaoTableWrapper>
+      <GenericFinancialTable
+        data={data}
+        columns={columns}
+        summaryRow={summaryRow}
+        maxHeight="400px"
+        sortBy={(a, b) => (b.tongThu + b.tongChi) - (a.tongThu + a.tongChi)}
+      />
+    </GenericFinancialTableWrapper>
   )
 }
 

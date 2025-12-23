@@ -1,16 +1,7 @@
 /**
  * Utility functions cho các bảng báo cáo
+ * Re-export from shared utils for backward compatibility
  */
 
-export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-  }).format(value)
-}
-
-export function formatPercent(value: number, total: number): string {
-  if (total === 0) return '0%'
-  return `${((value / total) * 100).toFixed(1)}%`
-}
+export { formatCurrency, formatPercent } from '@/shared/utils/format-utils'
 

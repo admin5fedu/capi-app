@@ -52,6 +52,13 @@ const taiChinhModules: ModuleCard[] = [
     icon: BarChart3,
     path: '/tai-chinh/bao-cao',
   },
+  {
+    id: 'bao-cao-tai-khoan',
+    title: 'Báo cáo tài khoản',
+    description: 'Tra cứu thu, chi, tồn cuối tài khoản theo kỳ',
+    icon: BarChart3,
+    path: '/tai-chinh/bao-cao-tai-khoan',
+  },
 ]
 
 export function TaiChinhSubmenuPage() {
