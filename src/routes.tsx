@@ -10,10 +10,11 @@ import { CaiDatModule } from '@/features/thiet-lap/cai-dat/index'
 import { TaiKhoanModule } from '@/features/tai-chinh/tai-khoan'
 import { DanhMucModule } from '@/features/tai-chinh/danh-muc'
 import { TyGiaModule } from '@/features/tai-chinh/ty-gia'
-import { NhomDoiTacModule } from '@/features/doi-tac/nhom-doi-tac'
+import { GiaoDichModule } from '@/features/tai-chinh/thu-chi'
+import { NhomDoiTacModule } from '@/features/doi-tac/nhom-doi-tac/index.tsx'
 import { DanhSachDoiTacModule } from '@/features/doi-tac/danh-sach-doi-tac'
 import { HoSoPage } from '@/pages/ho-so'
-import { ModulePlaceholder } from '@/components/placeholder/module-placeholder'
+// import { ModulePlaceholder } from '@/components/placeholder/module-placeholder' // Unused
 import {
   RedirectNhomDoiTac,
   RedirectNhomDoiTacNew,
@@ -76,12 +77,19 @@ export const router = createBrowserRouter([
       },
       {
         path: 'tai-chinh/thu-chi',
-        element: (
-          <ModulePlaceholder
-            title="Thu chi"
-            description="Module quản lý các khoản thu chi và dòng tiền đang được phát triển."
-          />
-        ),
+        element: <GiaoDichModule />,
+      },
+      {
+        path: 'tai-chinh/thu-chi/moi',
+        element: <GiaoDichModule />,
+      },
+      {
+        path: 'tai-chinh/thu-chi/:id',
+        element: <GiaoDichModule />,
+      },
+      {
+        path: 'tai-chinh/thu-chi/:id/sua',
+        element: <GiaoDichModule />,
       },
       {
         path: 'tai-chinh/ty-gia',

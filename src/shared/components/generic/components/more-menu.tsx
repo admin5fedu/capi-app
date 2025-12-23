@@ -172,7 +172,7 @@ export function MoreMenu<TData extends Record<string, any>>({
               >
                 <input
                   type="checkbox"
-                  checked={columnVisibility[cot.key] !== false}
+                  checked={columnVisibility?.[cot.key] !== false}
                   onChange={(e) => {
                     setColumnVisibility((prev) => ({
                       ...prev,

@@ -16,7 +16,7 @@ interface GenericModuleTabViewProps {
  */
 export function GenericModuleTabView({
   tabConfig,
-  onEdit,
+  // onEdit, // Unused
   onAddNew,
   onView,
   onRefresh,
@@ -32,8 +32,8 @@ export function GenericModuleTabView({
 
   // TODO: Tạo actions tự động từ config
   // Hiện tại cần truyền từ bên ngoài vì phụ thuộc vào module cụ thể
-  const hanhDongItems = [] // Sẽ được truyền từ parent
-  const bulkActions = []
+  const hanhDongItems: any[] = [] // Sẽ được truyền từ parent
+  const bulkActions: any[] = []
 
   return (
     <GenericListView

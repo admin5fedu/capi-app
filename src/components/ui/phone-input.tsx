@@ -3,7 +3,7 @@ import { Input, InputProps } from './input'
 import { cn } from '@/lib/utils'
 import { formatPhone, validateVietnamesePhone } from '@/lib/input-utils'
 
-export interface PhoneInputProps extends Omit<InputProps, 'type'> {
+export interface PhoneInputProps extends Omit<InputProps, 'type' | 'onChange'> {
   value?: string
   onChange?: (value: string) => void
   validateOnBlur?: boolean

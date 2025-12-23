@@ -19,7 +19,7 @@ export function GenericModuleRouter({
   customRenderer,
 }: GenericModuleRouterProps) {
   const config = getModule(moduleId)
-  const location = useLocation()
+  // const location = useLocation() // Unused - will be used in future implementation
 
   if (!config) {
     return (

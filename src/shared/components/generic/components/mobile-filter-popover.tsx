@@ -9,7 +9,7 @@ import {
   CommandInput,
 } from '@/components/ui/command'
 import { Checkbox } from '@/components/ui/checkbox'
-import React from 'react'
+// import React from 'react' // Unused
 import type { QuickFilter } from '../types'
 import { filterDataByQuickFilters } from '../utils/filter-helpers'
 

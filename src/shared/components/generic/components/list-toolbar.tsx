@@ -48,7 +48,7 @@ interface ListToolbarProps<TData extends Record<string, any>> {
 export function ListToolbar<TData extends Record<string, any>>({
   timKiem,
   setTimKiem,
-  timKiemPlaceholder = 'Tìm kiếm...',
+  // timKiemPlaceholder = 'Tìm kiếm...', // Unused
   onTimKiem,
   quickFilters = [],
   quickFilterValues,

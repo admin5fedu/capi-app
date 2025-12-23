@@ -13,7 +13,7 @@ export function Breadcrumbs() {
   const routeLabels: Record<string, string> = {
     '/tai-chinh/danh-muc': 'Danh mục Tài chính',
     '/tai-chinh/tai-khoan': 'Tài khoản',
-    '/tai-chinh/thu-chi': 'Thu chi',
+    '/tai-chinh/thu-chi': 'Giao dịch',
     '/doi-tac/nhom-doi-tac': 'Nhóm đối tác',
     '/doi-tac/danh-sach-doi-tac': 'Danh sách đối tác',
     '/thiet-lap/nguoi-dung': 'Người dùng',

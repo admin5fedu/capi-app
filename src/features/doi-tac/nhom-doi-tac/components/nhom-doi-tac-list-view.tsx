@@ -27,7 +27,7 @@ export function NhomDoiTacListView({
   onEdit,
   onAddNew,
   onView,
-  defaultTab = 'nha_cung_cap',
+  // defaultTab = 'nha_cung_cap', // Unused parameter
 }: NhomDoiTacListViewProps) {
   const navigate = useNavigate()
   const location = useLocation()

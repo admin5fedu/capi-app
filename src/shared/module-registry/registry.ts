@@ -1,4 +1,4 @@
-import type { ModuleConfig } from './types'
+import type { ModuleConfig, ModuleTabConfig } from './types'
 
 /**
  * Module Registry

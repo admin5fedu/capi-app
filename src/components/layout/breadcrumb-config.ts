@@ -7,7 +7,7 @@ export const breadcrumbConfig: Record<string, string> = {
   '/tai-chinh': 'Tài chính',
   '/tai-chinh/danh-muc': 'Danh mục',
   '/tai-chinh/tai-khoan': 'Tài khoản',
-  '/tai-chinh/thu-chi': 'Thu chi',
+  '/tai-chinh/thu-chi': 'Giao dịch',
   '/tai-chinh/ty-gia': 'Tỷ giá',
   '/doi-tac': 'Đối tác',
   '/doi-tac/nha-cung-cap': 'Nhà cung cấp',

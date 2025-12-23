@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Input, InputProps } from './input'
 import { cn } from '@/lib/utils'
 
-export interface EmailInputProps extends Omit<InputProps, 'type'> {
+export interface EmailInputProps extends Omit<InputProps, 'type' | 'onChange'> {
   value?: string
   onChange?: (value: string) => void
   validateOnBlur?: boolean

@@ -107,7 +107,7 @@ export function TyGiaFormView({
           type: 'number',
           placeholder: 'Nhập tỷ giá (ví dụ: 24000)',
           required: true,
-          step: 0.0001,
+          // step: 0.0001, // Not supported in FormField type
           min: 0.0001,
         },
         {

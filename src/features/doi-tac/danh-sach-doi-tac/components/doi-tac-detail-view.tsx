@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useDoiTacById, useDeleteDoiTac } from '../hooks/use-doi-tac'
 import { useNguoiDungById } from '@/features/thiet-lap/nguoi-dung'
-import { useNhomDoiTacById } from '@/features/doi-tac/nhom-doi-tac'
+import { useNhomDoiTacById } from '@/features/doi-tac/nhom-doi-tac/hooks'
 import { GenericDetailView, DetailFieldGroup } from '@/shared/components/generic/generic-detail-view'
 import { useBreadcrumb } from '@/components/layout/breadcrumb-context'
 import type { DoiTac } from '@/types/doi-tac'

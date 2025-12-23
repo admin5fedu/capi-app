@@ -29,7 +29,7 @@ export function KiemTraQuyen({
   requireAll = false,
   noPermissionMessage = 'Bạn không có quyền truy cập trang này',
 }: KiemTraQuyenProps) {
-  const { user, nguoiDung, vaiTro, isLoading, isFetchingSession } = useAuthStore()
+  const { user, nguoiDung, vaiTro, isLoading } = useAuthStore()
 
   // Chỉ hiển thị loading khi thực sự chưa có data (lần đầu load)
   // Không hiển thị loading khi đang fetch background (isFetchingSession)

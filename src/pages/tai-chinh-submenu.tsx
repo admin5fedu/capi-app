@@ -32,8 +32,8 @@ const taiChinhModules: ModuleCard[] = [
   },
   {
     id: 'thu-chi',
-    title: 'Thu chi',
-    description: 'Quản lý các khoản thu chi, dòng tiền',
+    title: 'Giao dịch',
+    description: 'Quản lý các giao dịch thu chi, dòng tiền',
     icon: DollarSign,
     path: '/tai-chinh/thu-chi',
   },

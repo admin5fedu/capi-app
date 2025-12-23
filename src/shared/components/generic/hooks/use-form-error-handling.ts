@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { FieldErrors, UseFormReturn } from 'react-hook-form'
+import { UseFormReturn } from 'react-hook-form'
 
 /**
  * Hook quản lý error handling và scroll to error cho form

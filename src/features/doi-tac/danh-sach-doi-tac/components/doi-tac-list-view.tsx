@@ -6,7 +6,7 @@ import { ConfirmDeleteDialog } from '@/shared/components/generic/confirm-delete-
 import type { QuickFilter } from '@/shared/components/generic/types'
 import { useDoiTacList, useDeleteDoiTac } from '../hooks/use-doi-tac'
 import { useNguoiDungList } from '@/features/thiet-lap/nguoi-dung'
-import { useNhomDoiTacList } from '@/features/doi-tac/nhom-doi-tac'
+import { useNhomDoiTacList } from '@/features/doi-tac/nhom-doi-tac/hooks'
 import { COT_HIEN_THI, TEN_LUU_TRU_COT, TabType } from '../config'
 import { getBulkActions, handleXuatExcel, handleNhapExcel } from '../actions'
 import type { DoiTac } from '@/types/doi-tac'
@@ -28,7 +28,7 @@ export function DoiTacListView({
   onEdit,
   onAddNew,
   onView,
-  defaultTab = 'nha_cung_cap',
+  // defaultTab = 'nha_cung_cap', // Unused parameter
 }: DoiTacListViewProps) {
   const navigate = useNavigate()
   const location = useLocation()
@@ -62,7 +62,7 @@ export function DoiTacListView({
   const nhomDoiTacMap = useMemo(() => {
     if (!danhSachNhomDoiTac) return new Map<string, string>()
     return new Map(
-      danhSachNhomDoiTac.map((nhom) => [
+      danhSachNhomDoiTac.map((nhom: any) => [
         nhom.id,
         nhom.ten,
       ])
@@ -88,7 +88,7 @@ export function DoiTacListView({
           cell: (value: string | null) => {
             if (!value) return '—'
             const tenNhom = nhomDoiTacMap.get(value)
-            return React.createElement('span', {}, tenNhom || value)
+            return React.createElement('span', {}, tenNhom || String(value))
           },
         }
       }
@@ -200,7 +200,7 @@ export function DoiTacListView({
         label: 'Nhóm đối tác',
         type: 'select',
         multiSelect: true,
-        options: danhSachNhomDoiTac.map((nhom) => ({
+        options: danhSachNhomDoiTac.map((nhom: any) => ({
           value: nhom.id,
           label: nhom.ten,
         })),

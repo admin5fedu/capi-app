@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useDoiTacById, useCreateDoiTac, useUpdateDoiTac } from '../hooks/use-doi-tac'
 import { useAuthStore } from '@/store/auth-store'
-import { useNhomDoiTacList } from '@/features/doi-tac/nhom-doi-tac'
+import { useNhomDoiTacList } from '@/features/doi-tac/nhom-doi-tac/hooks'
 import type { DoiTacInsert, DoiTacUpdate, LoaiDoiTac } from '@/types/doi-tac'
 import { GenericFormView } from '@/shared/components/generic/generic-form-view'
 import type { FormFieldGroup } from '@/shared/components/generic/generic-form-view'
@@ -202,7 +202,7 @@ export function DoiTacFormView({
           label: 'Nhóm đối tác',
           type: 'select',
           required: false,
-          options: danhSachNhomDoiTac?.map((nhom) => ({
+          options: danhSachNhomDoiTac?.map((nhom: any) => ({
             value: nhom.id,
             label: nhom.ten,
           })) || [],

@@ -47,7 +47,7 @@ export function PhanQuyenMatrixView({ className }: PhanQuyenMatrixViewProps) {
   const [pendingModuleLabel, setPendingModuleLabel] = useState<string>('')
 
   // Lấy danh sách vai trò
-  const { data: vaiTroList, isLoading: isLoadingVaiTro } = useVaiTroList()
+  const { isLoading: isLoadingVaiTro } = useVaiTroList()
 
   // Lấy ma trận phân quyền theo module
   const {

@@ -27,6 +27,9 @@ export interface HanhDongItem<TData = any> {
 
 export interface BulkActionItem<TData = any> {
   label: string
+  requiresConfirm?: boolean
+  confirmTitle?: string
+  confirmDescription?: string | ((rows: TData[]) => string)
   icon?: React.ComponentType<{ className?: string }>
   onClick: (selectedRows: TData[]) => void
   variant?: 'default' | 'destructive'

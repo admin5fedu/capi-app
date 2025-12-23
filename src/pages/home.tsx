@@ -24,7 +24,7 @@ const functionCards: FunctionCard[] = [
   {
     id: 'tai-chinh',
     title: 'Tài chính',
-    description: 'Quản lý danh mục, tài khoản và các khoản thu chi',
+    description: 'Quản lý danh mục, tài khoản và các giao dịch',
     icon: DollarSign,
     path: '/tai-chinh',
     gradientFrom: 'from-emerald-50',

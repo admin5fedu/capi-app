@@ -1,6 +1,6 @@
 import type { CotHienThi } from '@/shared/components/generic/types'
 import type { TyGia } from '@/types/ty-gia'
-import React from 'react'
+// import React from 'react' // Unused
 
 /**
  * Cấu hình module Tỷ giá

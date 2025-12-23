@@ -32,7 +32,7 @@ export const MODULE_GROUPS: ModuleGroup[] = [
     modules: [
       { key: 'tai_chinh_danh_muc', label: 'Danh mục' },
       { key: 'tai_chinh_tai_khoan', label: 'Tài khoản' },
-      { key: 'tai_chinh_thu_chi', label: 'Thu chi' },
+      { key: 'tai_chinh_thu_chi', label: 'Giao dịch' },
     ],
   },
   {

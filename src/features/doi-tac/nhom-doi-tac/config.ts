@@ -64,7 +64,7 @@ export const COT_HIEN_THI: CotHienThi<NhomDoiTac>[] = [
     width: 180,
     align: 'left',
     defaultVisible: true,
-    cell: (value, row) => {
+    cell: (value, _row) => {
       // Sẽ hiển thị tên người tạo sau khi join với bảng nguoi-dung
       // Tạm thời hiển thị ID
       return React.createElement('span', {}, value || '—')

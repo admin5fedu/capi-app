@@ -12,7 +12,7 @@ export function useListState<TData extends Record<string, any>>(
   const {
     data,
     cotHienThi,
-    quickFilters = [],
+    // quickFilters = [], // Unused
     pageSize = 50,
     onQuickFilterChange,
   } = props

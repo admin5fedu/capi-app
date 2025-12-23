@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 import { Eye, EyeOff } from 'lucide-react'
 import { Button } from './button'
 
-export interface PasswordInputProps extends Omit<InputProps, 'type'> {
+export interface PasswordInputProps extends Omit<InputProps, 'type' | 'onChange'> {
   value?: string
   onChange?: (value: string) => void
   showStrengthIndicator?: boolean

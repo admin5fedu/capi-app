@@ -82,10 +82,5 @@ export function NhomDoiTacModule() {
 
 export default NhomDoiTacModule
 
-// Re-export hooks, components, actions, config, and types for convenience
-export * from './hooks'
-export * from './config'
-export * from './components'
-export * from './actions'
-export * from './types'
+// Note: Non-component exports are re-exported from ./index.ts to avoid circular dependencies
 
