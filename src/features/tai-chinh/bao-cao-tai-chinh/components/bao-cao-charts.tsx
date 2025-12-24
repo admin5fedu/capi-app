@@ -3,6 +3,7 @@ import {
   GenericBarChart,
   GenericPieChart,
   GenericAreaChart,
+  GenericChartsGrid,
 } from '@/components/charts'
 import type { ChartConfig } from '@/components/ui/chart'
 import type {
@@ -165,7 +166,8 @@ export function BaoCaoCharts({
     
     let soDuTichLuy = 0
     return groupedByTime.map((item) => {
-      soDuTichLuy += item.soDu
+      const itemSoDu = item.soDu ?? (item.tongThu - item.tongChi)
+      soDuTichLuy += itemSoDu
       return {
         period: item.period,
         soDuTichLuy,
@@ -174,7 +176,7 @@ export function BaoCaoCharts({
   }, [groupedByTime])
 
   return (
-    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+    <GenericChartsGrid maxCols={4}>
       {/* Time Series - Line Chart */}
       <GenericLineChart
         title="Xu hướng thời gian"
@@ -300,6 +302,6 @@ export function BaoCaoCharts({
         height="200px"
         fillOpacity={0.6}
       />
-    </div>
+    </GenericChartsGrid>
   )
 }

@@ -21,6 +21,7 @@ import {
   BaoCaoTableTopGiaoDich,
   BaoCaoTableSoSanhKy,
 } from './tables'
+import { GenericTablesGrid } from '@/components/tables'
 
 interface BaoCaoSummaryTablesProps {
   groupedByDanhMuc?: BaoCaoGroupedByDanhMuc[]
@@ -48,7 +49,7 @@ export function BaoCaoSummaryTables({
   soSanhKy,
 }: BaoCaoSummaryTablesProps) {
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <GenericTablesGrid maxCols={2}>
       {groupedByDanhMuc && groupedByDanhMuc.length > 0 && (
         <BaoCaoTableDanhMuc data={groupedByDanhMuc} />
       )}
@@ -88,6 +89,6 @@ export function BaoCaoSummaryTables({
       {soSanhKy && (
         <BaoCaoTableSoSanhKy data={soSanhKy} />
       )}
-    </div>
+    </GenericTablesGrid>
   )
 }

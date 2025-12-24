@@ -36,11 +36,15 @@ export function GenericChartCard({
       </CardHeader>
       <CardContent className="pt-0 overflow-hidden">
         {config ? (
-          <ChartContainer config={config} className={cn('w-full', `h-[${height}]`)}>
+          <ChartContainer 
+            config={config} 
+            className="w-full"
+            style={{ height }}
+          >
             {content}
           </ChartContainer>
         ) : (
-          <div className={cn('w-full', `h-[${height}]`)}>{content}</div>
+          <div className="w-full" style={{ height }}>{content}</div>
         )}
       </CardContent>
     </Card>

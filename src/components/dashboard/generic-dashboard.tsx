@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import { GenericMetricCard } from './generic-metric-card'
+import { GenericChartsGrid } from '@/components/charts'
+import { GenericTablesGrid } from '@/components/tables'
 
 export interface DashboardMetric {
   id: string
@@ -139,7 +141,7 @@ export function GenericDashboard({
 
       {/* Charts Section */}
       {charts.length > 0 && (
-        <div className={cn('grid gap-4', GRID_COLS_CLASSES[chartsGridCols])}>
+        <GenericChartsGrid maxCols={chartsGridCols as 1 | 2 | 3 | 4}>
           {charts.map((chart) => (
             <Card key={chart.id} className={cn('overflow-hidden', chart.className)}>
               <CardHeader className="pb-2">
@@ -155,18 +157,18 @@ export function GenericDashboard({
               </CardContent>
             </Card>
           ))}
-        </div>
+        </GenericChartsGrid>
       )}
 
       {/* Tables Section */}
       {tables.length > 0 && (
-        <div className={cn('grid gap-4', GRID_COLS_CLASSES[tablesGridCols])}>
+        <GenericTablesGrid maxCols={tablesGridCols === 1 ? 1 : 2}>
           {tables.map((table) => (
             <div key={table.id} className={cn(table.className)}>
               {table.content}
             </div>
           ))}
-        </div>
+        </GenericTablesGrid>
       )}
     </div>
   )

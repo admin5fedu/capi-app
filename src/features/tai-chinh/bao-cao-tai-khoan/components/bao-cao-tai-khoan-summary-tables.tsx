@@ -10,6 +10,7 @@ import {
   BaoCaoTaiKhoanTableLoaiTaiKhoan,
   BaoCaoTaiKhoanTableLoaiTien,
 } from './tables'
+import { GenericTablesGrid } from '@/components/tables'
 
 interface BaoCaoTaiKhoanSummaryTablesProps {
   groupedByTaiKhoan?: BaoCaoTaiKhoanGroupedByTaiKhoan[]
@@ -25,7 +26,7 @@ export function BaoCaoTaiKhoanSummaryTables({
   groupedByLoaiTien,
 }: BaoCaoTaiKhoanSummaryTablesProps) {
   return (
-    <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+    <GenericTablesGrid maxCols={2}>
       {/* Theo tài khoản */}
       <BaoCaoTaiKhoanTableTaiKhoan data={groupedByTaiKhoan} />
 
@@ -37,7 +38,7 @@ export function BaoCaoTaiKhoanSummaryTables({
 
       {/* Theo loại tiền */}
       <BaoCaoTaiKhoanTableLoaiTien data={groupedByLoaiTien} />
-    </div>
+    </GenericTablesGrid>
   )
 }
 

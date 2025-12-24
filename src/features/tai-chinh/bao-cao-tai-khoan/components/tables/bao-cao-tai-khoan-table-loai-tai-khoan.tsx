@@ -12,8 +12,9 @@ export function BaoCaoTaiKhoanTableLoaiTaiKhoan({ data = [] }: BaoCaoTaiKhoanTab
   if (data.length === 0) return null
 
   const tableContent = (
-    <div className="max-h-[400px] overflow-y-auto">
-      <Table>
+    <div className="rounded-md border overflow-hidden">
+      <div className="max-h-[400px] overflow-y-auto">
+        <Table>
         <TableHeader className="sticky top-0 bg-background z-10">
           <TableRow>
             <TableHead className="w-[200px]">Loại tài khoản</TableHead>
@@ -49,6 +50,7 @@ export function BaoCaoTaiKhoanTableLoaiTaiKhoan({ data = [] }: BaoCaoTaiKhoanTab
           ))}
         </TableBody>
       </Table>
+      </div>
     </div>
   )
 

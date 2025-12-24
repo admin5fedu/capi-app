@@ -3,6 +3,7 @@ import {
   GenericBarChart,
   GenericPieChart,
   GenericAreaChart,
+  GenericChartsGrid,
 } from '@/components/charts'
 import type { ChartConfig } from '@/components/ui/chart'
 import type {
@@ -150,7 +151,7 @@ export function BaoCaoTaiKhoanCharts({
   }, [groupedByTime])
 
   return (
-    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+    <GenericChartsGrid maxCols={4}>
       {/* 1. Xu hướng Thu/Chi theo thời gian - Line Chart */}
       <GenericLineChart
         title="Xu hướng Thu/Chi theo thời gian"
@@ -162,9 +163,9 @@ export function BaoCaoTaiKhoanCharts({
           { key: 'tongChi', label: 'Tổng chi', color: 'hsl(0 84% 60%)' },
         ]}
         config={chartConfig}
-        gridCols={2}
         xAxisAngle={-45}
         xAxisHeight={60}
+        height="200px"
       />
 
       {/* 2. So sánh Thu/Chi - Bar Chart */}
@@ -178,9 +179,9 @@ export function BaoCaoTaiKhoanCharts({
           { key: 'tongChi', label: 'Tổng chi', color: 'hsl(0 84% 60%)' },
         ]}
         config={chartConfig}
-        gridCols={2}
         xAxisAngle={-45}
         xAxisHeight={60}
+        height="200px"
       />
 
       {/* 3. Phát sinh tiền theo ngày - Bar Chart */}
@@ -193,9 +194,9 @@ export function BaoCaoTaiKhoanCharts({
           { key: 'tongTien', label: 'Phát sinh', color: 'hsl(217 91% 65%)' },
         ]}
         config={chartConfig}
-        gridCols={2}
         xAxisAngle={-45}
         xAxisHeight={60}
+        height="200px"
       />
 
       {/* 4. Tỷ lệ Thu/Chi - Pie Chart */}
@@ -209,6 +210,7 @@ export function BaoCaoTaiKhoanCharts({
           if (percent === undefined) return ''
           return `${name}: ${(percent * 100).toFixed(1)}%`
         }}
+        height="200px"
       />
 
       {/* 5. Phân bổ theo tài khoản - Pie Chart (Top 5) */}
@@ -218,6 +220,7 @@ export function BaoCaoTaiKhoanCharts({
         data={taiKhoanPieData}
         colors={COLORS}
         config={chartConfig}
+        height="200px"
       />
 
       {/* 6. Top 10 tài khoản - Horizontal Bar Chart */}
@@ -230,8 +233,8 @@ export function BaoCaoTaiKhoanCharts({
           { key: 'tonCuoi', label: 'Tồn cuối', color: 'hsl(221 83% 53%)' },
         ]}
         config={chartConfig}
-        gridCols={2}
         orientation="horizontal"
+        height="200px"
       />
 
       {/* 7. Số dư tích lũy - Area Chart */}
@@ -244,11 +247,11 @@ export function BaoCaoTaiKhoanCharts({
         label="Số dư"
         color="hsl(142 76% 40%)"
         config={chartConfig}
-        gridCols={2}
         xAxisAngle={-45}
         xAxisHeight={60}
+        height="200px"
       />
-    </div>
+    </GenericChartsGrid>
   )
 }
 
