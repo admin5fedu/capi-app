@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import type { TyGia, TyGiaInsert, TyGiaUpdate } from '@/types/ty-gia'
 
-const TABLE_NAME = 'zz_cst_ty_gia'
+const TABLE_NAME = 'zz_capi_ty_gia'
 
 /**
  * Lấy danh sách tỷ giá
@@ -66,7 +66,7 @@ export async function updateTyGia(id: number, tyGia: TyGiaUpdate) {
     .from(TABLE_NAME)
     .update({
       ...tyGia,
-      updated_at: new Date().toISOString(),
+      tg_cap_nhat: new Date().toISOString(),
     })
     .eq('id', id)
     .select()

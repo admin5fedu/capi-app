@@ -49,14 +49,14 @@ export function VaiTroDetailView({ id, onEdit, onDelete, onBack }: VaiTroDetailV
 
   // Update breadcrumb với title của vai trò
   useEffect(() => {
-    if (vaiTro?.ten) {
-      setDetailLabel(vaiTro.ten)
+    if (vaiTro?.ten_vai_tro || vaiTro?.ten) {
+      setDetailLabel(vaiTro.ten_vai_tro || vaiTro.ten || '')
     }
     // Cleanup khi unmount
     return () => {
       setDetailLabel(null)
     }
-  }, [vaiTro?.ten, setDetailLabel])
+  }, [vaiTro?.ten_vai_tro, vaiTro?.ten, setDetailLabel])
 
   // Định nghĩa các nhóm fields
   const fieldGroups: DetailFieldGroup<VaiTro>[] = [
@@ -64,9 +64,9 @@ export function VaiTroDetailView({ id, onEdit, onDelete, onBack }: VaiTroDetailV
       title: 'Thông tin cơ bản',
       fields: [
         {
-          key: 'ten',
+          key: 'ten_vai_tro',
           label: 'Tên vai trò',
-          accessor: 'ten',
+          accessor: (data: VaiTro) => data.ten_vai_tro || data.ten || '—',
         },
         {
           key: 'mo_ta',
@@ -81,18 +81,18 @@ export function VaiTroDetailView({ id, onEdit, onDelete, onBack }: VaiTroDetailV
       title: 'Thông tin hệ thống',
       fields: [
         {
-          key: 'created_at',
+          key: 'tg_tao',
           label: 'Ngày tạo',
-          accessor: 'created_at',
+          accessor: (data: VaiTro) => data.tg_tao || data.created_at || null,
           render: (value) => {
             if (!value) return <span className="text-muted-foreground">—</span>
             return dayjs(value).locale('vi').format('DD/MM/YYYY HH:mm')
           },
         },
         {
-          key: 'updated_at',
+          key: 'tg_cap_nhat',
           label: 'Ngày cập nhật',
-          accessor: 'updated_at',
+          accessor: (data: VaiTro) => data.tg_cap_nhat || data.updated_at || null,
           render: (value) => {
             if (!value) return <span className="text-muted-foreground">—</span>
             return dayjs(value).locale('vi').format('DD/MM/YYYY HH:mm')
@@ -197,7 +197,7 @@ export function VaiTroDetailView({ id, onEdit, onDelete, onBack }: VaiTroDetailV
       data={vaiTro || null}
       isLoading={isLoading}
       error={error || null}
-      title={(data) => data.ten}
+      title={(data) => data.ten_vai_tro || data.ten || ''}
       onEdit={onEdit}
       onDelete={handleDelete}
       onBack={onBack}
@@ -207,7 +207,7 @@ export function VaiTroDetailView({ id, onEdit, onDelete, onBack }: VaiTroDetailV
       deleteConfirmTitle="Xác nhận xóa vai trò"
       deleteConfirmDescription={
         vaiTro
-          ? `Bạn có chắc chắn muốn xóa vai trò "${vaiTro.ten}"? Hành động này không thể hoàn tác.`
+          ? `Bạn có chắc chắn muốn xóa vai trò "${vaiTro.ten_vai_tro || vaiTro.ten}"? Hành động này không thể hoàn tác.`
           : 'Bạn có chắc chắn muốn xóa vai trò này? Hành động này không thể hoàn tác.'
       }
     />

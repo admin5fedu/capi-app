@@ -9,9 +9,11 @@ export {
   getNguoiDungByEmail,
   createNguoiDung,
   updateNguoiDung,
+  updateNguoiDungAvatar,
   deleteNguoiDung,
   searchNguoiDung,
   getActiveNguoiDungList,
   getNguoiDungByVaiTroId,
+  getNguoiDungByPhongBanId,
 } from '@/api/nguoi-dung'
 

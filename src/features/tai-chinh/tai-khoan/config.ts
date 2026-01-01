@@ -104,9 +104,9 @@ export const COT_HIEN_THI: CotHienThi<TaiKhoan>[] = [
     cell: (value) => (value ? String(value) : null),
   },
   {
-    key: 'created_at',
+    key: 'tg_tao',
     label: 'Ngày tạo',
-    accessorKey: 'created_at',
+    accessorKey: (row: any) => row.tg_tao || row.created_at || null,
     sortable: true,
     width: 150,
     align: 'left',
@@ -121,9 +121,9 @@ export const COT_HIEN_THI: CotHienThi<TaiKhoan>[] = [
     },
   },
   {
-    key: 'updated_at',
+    key: 'tg_cap_nhat',
     label: 'Ngày cập nhật',
-    accessorKey: 'updated_at',
+    accessorKey: (row: any) => row.tg_cap_nhat || row.updated_at || null,
     sortable: true,
     width: 150,
     align: 'left',

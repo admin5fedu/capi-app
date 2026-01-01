@@ -26,7 +26,9 @@ export function NhomDoiTacDetailView({
   onBack,
 }: NhomDoiTacDetailViewProps) {
   const { data: nhomDoiTac, isLoading, error } = useNhomDoiTacById(id)
-  const { data: nguoiTao } = useNguoiDungById(nhomDoiTac?.nguoi_tao_id || null)
+  const { data: nguoiTao } = useNguoiDungById(
+    nhomDoiTac?.nguoi_tao_id ? String(nhomDoiTac.nguoi_tao_id) : null
+  )
   const { setDetailLabel } = useBreadcrumb()
   const deleteNhomDoiTac = useDeleteNhomDoiTac()
 
@@ -45,13 +47,13 @@ export function NhomDoiTacDetailView({
 
   // Update breadcrumb với title của nhóm đối tác
   useEffect(() => {
-    if (nhomDoiTac?.ten) {
-      setDetailLabel(nhomDoiTac.ten)
+    if (nhomDoiTac?.ten_nhom) {
+      setDetailLabel(nhomDoiTac.ten_nhom)
     }
     return () => {
       setDetailLabel(null)
     }
-  }, [nhomDoiTac?.ten, setDetailLabel])
+  }, [nhomDoiTac?.ten_nhom, setDetailLabel])
 
   if (isLoading) {
     return (
@@ -76,29 +78,19 @@ export function NhomDoiTacDetailView({
       title: 'Thông tin cơ bản',
       fields: [
         {
-          key: 'ten',
+          key: 'ten_nhom',
           label: 'Tên nhóm',
-          accessor: 'ten',
+          accessor: 'ten_nhom',
         },
         {
-          key: 'loai',
+          key: 'hang_muc',
           label: 'Loại đối tác',
-          accessor: 'loai',
+          accessor: 'hang_muc',
           render: (value) => {
             const label = value === 'nha_cung_cap' ? 'Nhà cung cấp' : 'Khách hàng'
             const variant = value === 'nha_cung_cap' ? 'default' : 'secondary'
             return <Badge variant={variant}>{label}</Badge>
           },
-        },
-        {
-          key: 'trang_thai',
-          label: 'Trạng thái',
-          accessor: 'trang_thai',
-          render: (value) => (
-            <Badge variant={value ? 'default' : 'destructive'}>
-              {value ? 'Hoạt động' : 'Vô hiệu hóa'}
-            </Badge>
-          ),
         },
       ],
     },
@@ -119,24 +111,24 @@ export function NhomDoiTacDetailView({
           render: () => {
             if (!nhomDoiTac?.nguoi_tao_id) return <span className="text-muted-foreground">—</span>
             if (nguoiTao) {
-              return <span>{nguoiTao.ho_ten || nguoiTao.email}</span>
+              return <span>{nguoiTao.ho_va_ten || nguoiTao.ho_ten || nguoiTao.email}</span>
             }
             return <span className="text-muted-foreground">Đang tải...</span>
           },
         },
         {
-          key: 'created_at',
+          key: 'tg_tao',
           label: 'Ngày tạo',
-          accessor: 'created_at',
+          accessor: (data: any) => data.tg_tao || data.created_at || null,
           render: (value) => {
             if (!value) return '—'
             return dayjs(value).locale('vi').format('DD/MM/YYYY HH:mm')
           },
         },
         {
-          key: 'updated_at',
+          key: 'tg_cap_nhat',
           label: 'Ngày cập nhật',
-          accessor: 'updated_at',
+          accessor: (data: any) => data.tg_cap_nhat || data.updated_at || null,
           render: (value) => {
             if (!value) return '—'
             return dayjs(value).locale('vi').format('DD/MM/YYYY HH:mm')
@@ -155,7 +147,7 @@ export function NhomDoiTacDetailView({
       onBack={onBack}
       title="Chi tiết nhóm đối tác"
       deleteConfirmTitle="Xác nhận xóa nhóm đối tác"
-      deleteConfirmDescription={`Bạn có chắc chắn muốn xóa nhóm đối tác "${nhomDoiTac.ten}"? Hành động này không thể hoàn tác.`}
+      deleteConfirmDescription={`Bạn có chắc chắn muốn xóa nhóm đối tác "${nhomDoiTac.ten_nhom || ''}"? Hành động này không thể hoàn tác.`}
     />
   )
 }

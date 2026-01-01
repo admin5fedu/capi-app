@@ -9,20 +9,18 @@ export function handleXuatExcel(data: DoiTac[]) {
   try {
     // Chuẩn bị dữ liệu để export
     const exportData = data.map((item) => ({
-      'Mã đối tác': item.ma,
-      'Tên đối tác': item.ten,
-      'Loại': item.loai === 'nha_cung_cap' ? 'Nhà cung cấp' : 'Khách hàng',
+      'Tên đối tác': item.ten_doi_tac || '',
+      'Nhóm đối tác': item.ten_nhom_doi_tac || '',
+      'Công ty': item.cong_ty || '',
       'Email': item.email || '',
-      'Điện thoại': item.dien_thoai || '',
+      'Số điện thoại': item.so_dien_thoai || '',
       'Địa chỉ': item.dia_chi || '',
-      'Mã số thuế': item.ma_so_thue || '',
-      'Người liên hệ': item.nguoi_lien_he || '',
-      'Trạng thái': item.trang_thai ? 'Hoạt động' : 'Vô hiệu hóa',
-      'Ngày tạo': item.created_at
-        ? new Date(item.created_at).toLocaleDateString('vi-VN')
+      'Thông tin khác': item.thong_tin_khac || '',
+      'Ngày tạo': item.tg_tao || item.created_at
+        ? new Date(item.tg_tao || item.created_at || '').toLocaleDateString('vi-VN')
         : '',
-      'Ngày cập nhật': item.updated_at
-        ? new Date(item.updated_at).toLocaleDateString('vi-VN')
+      'Ngày cập nhật': item.tg_cap_nhat || item.updated_at
+        ? new Date(item.tg_cap_nhat || item.updated_at || '').toLocaleDateString('vi-VN')
         : '',
     }))
 
@@ -33,15 +31,13 @@ export function handleXuatExcel(data: DoiTac[]) {
 
     // Đặt độ rộng cột
     const colWidths = [
-      { wch: 15 }, // Mã đối tác
       { wch: 30 }, // Tên đối tác
-      { wch: 15 }, // Loại
+      { wch: 20 }, // Nhóm đối tác
+      { wch: 25 }, // Công ty
       { wch: 25 }, // Email
-      { wch: 15 }, // Điện thoại
+      { wch: 15 }, // Số điện thoại
       { wch: 40 }, // Địa chỉ
-      { wch: 15 }, // Mã số thuế
-      { wch: 20 }, // Người liên hệ
-      { wch: 15 }, // Trạng thái
+      { wch: 30 }, // Thông tin khác
       { wch: 15 }, // Ngày tạo
       { wch: 15 }, // Ngày cập nhật
     ]
@@ -90,7 +86,7 @@ export function handleNhapExcel(file: File) {
 
     reader.onerror = () => {
       toast.error('Có lỗi xảy ra khi đọc file')
-      reject(new Error('File read error'))
+      reject(new Error('Lỗi đọc file'))
     }
 
     reader.readAsArrayBuffer(file)

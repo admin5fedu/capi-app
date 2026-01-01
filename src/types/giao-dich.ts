@@ -1,5 +1,5 @@
 /**
- * Type definitions cho bảng zz_cst_giao_dich (Giao dịch)
+ * Type definitions cho bảng zz_capi_giao_dich (Giao dịch)
  */
 
 export type LoaiGiaoDich = 'thu' | 'chi' | 'luan_chuyen'
@@ -21,8 +21,11 @@ export interface GiaoDich {
   ghi_chu: string | null
   so_tien_vnd: number | null // Tự động tính khi có tỷ giá USD
   created_by: string | null
-  created_at: string | null
-  updated_at: string | null
+  tg_tao: string | null
+  tg_cap_nhat: string | null
+  // Computed fields for backward compatibility
+  created_at?: string | null
+  updated_at?: string | null
 }
 
 export interface GiaoDichInsert {
@@ -89,7 +92,8 @@ export interface GiaoDichWithRelations extends GiaoDich {
   } | null
   nguoi_tao?: {
     id: string
-    ho_ten: string
+    ho_va_ten?: string | null
+    ho_ten?: string | null
   } | null
 }
 

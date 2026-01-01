@@ -6,11 +6,6 @@ const supabaseKey =
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
   import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// Debug: Log environment variables (remove in production)
-if (import.meta.env.DEV) {
-  console.log('Supabase URL:', supabaseUrl ? 'Found' : 'Missing')
-  console.log('Supabase Key:', supabaseKey ? 'Found' : 'Missing')
-}
 
 if (!supabaseUrl || !supabaseKey) {
   throw new Error(

@@ -7,7 +7,7 @@ export type { NguoiDung, NguoiDungInsert, NguoiDungUpdate, NguoiDungWithVaiTro }
 /**
  * Loại sắp xếp
  */
-export type SapXep = 'created_at' | 'ho_ten' | 'email' | 'updated_at'
+export type SapXep = 'tg_tao' | 'ho_va_ten' | 'email' | 'tg_cap_nhat' | 'created_at' | 'ho_ten' | 'updated_at'
 export type HuongSapXep = 'asc' | 'desc'
 
 /**
@@ -16,7 +16,8 @@ export type HuongSapXep = 'asc' | 'desc'
 export interface BoLocNguoiDung {
   tim_kiem?: string
   vai_tro_id?: string
-  is_active?: boolean
+  is_active?: boolean // Backward compatibility - will be converted to trang_thai filter
+  trang_thai?: string
   sap_xep?: SapXep
   huong_sap_xep?: HuongSapXep
 }

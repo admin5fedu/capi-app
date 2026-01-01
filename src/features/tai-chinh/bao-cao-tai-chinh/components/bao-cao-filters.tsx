@@ -307,7 +307,7 @@ export function BaoCaoFilters({
             label="Chọn người tạo"
             options={nguoiDungList.map((nd) => ({
               value: nd.id,
-              label: nd.ho_ten || nd.email,
+              label: nd.ho_va_ten || nd.ho_ten || nd.email,
             }))}
             selectedValues={filters.nguoiTaoIds}
             onToggle={(value) => toggleArrayFilter('nguoiTaoIds', value, filters.nguoiTaoIds)}
@@ -318,7 +318,7 @@ export function BaoCaoFilters({
                 const nguoiDung = nguoiDungList.find((nd) => nd.id === id)
                 return (
                   <Badge key={id} variant="secondary" className="gap-1">
-                    {nguoiDung?.ho_ten || nguoiDung?.email || id}
+                    {nguoiDung?.ho_va_ten || nguoiDung?.ho_ten || nguoiDung?.email || id}
                     <X
                       className="h-3 w-3 cursor-pointer"
                       onClick={() => toggleArrayFilter('nguoiTaoIds', id, filters.nguoiTaoIds)}

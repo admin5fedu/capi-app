@@ -20,7 +20,7 @@ export async function getNhomDoiTacListService(
 }
 
 export async function getNhomDoiTacByIdService(id: string): Promise<NhomDoiTac> {
-  return getNhomDoiTacById(id)
+  return getNhomDoiTacById(Number(id))
 }
 
 export async function createNhomDoiTacService(data: NhomDoiTacInsert): Promise<NhomDoiTac> {
@@ -31,11 +31,11 @@ export async function updateNhomDoiTacService(
   id: string,
   data: NhomDoiTacUpdate
 ): Promise<NhomDoiTac> {
-  return updateNhomDoiTac(id, data)
+  return updateNhomDoiTac(Number(id), data)
 }
 
 export async function deleteNhomDoiTacService(id: string): Promise<{ success: boolean }> {
-  return deleteNhomDoiTac(id)
+  return deleteNhomDoiTac(Number(id))
 }
 
 export async function searchNhomDoiTacService(keyword: string): Promise<NhomDoiTac[]> {

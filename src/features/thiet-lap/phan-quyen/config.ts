@@ -22,6 +22,7 @@ export const MODULE_GROUPS: ModuleGroup[] = [
     modules: [
       { key: 'vai_tro', label: 'Vai trò' },
       { key: 'nguoi_dung', label: 'Người dùng' },
+      { key: 'phong_ban', label: 'Phòng ban' },
       { key: 'phan_quyen', label: 'Phân quyền' },
       { key: 'cai_dat', label: 'Cài đặt' },
     ],

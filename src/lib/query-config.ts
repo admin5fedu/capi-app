@@ -7,7 +7,8 @@ export const QUERY_STALE_TIME = {
   STATIC: 30 * 60 * 1000, // 30 phút
 
   // Data thay đổi vừa (danh sách, báo cáo, danh mục, đối tác)
-  NORMAL: 3 * 60 * 1000, // 3 phút
+  // Tăng lên 5 phút để giảm refetch khi quay lại tab
+  NORMAL: 5 * 60 * 1000, // 5 phút (tăng từ 3 phút)
 
   // Data thay đổi nhanh (transactions, orders)
   FAST: 1 * 60 * 1000, // 1 phút
@@ -18,7 +19,8 @@ export const QUERY_STALE_TIME = {
 
 export const QUERY_GC_TIME = {
   // Thời gian giữ cache sau khi không còn component nào dùng
-  DEFAULT: 10 * 60 * 1000, // 10 phút
-  LONG: 30 * 60 * 1000, // 30 phút (cho data ít thay đổi)
+  // Tăng lên để giữ cache lâu hơn khi dùng persist
+  DEFAULT: 30 * 60 * 1000, // 30 phút (tăng từ 10 phút)
+  LONG: 60 * 60 * 1000, // 60 phút (cho data ít thay đổi)
 } as const
 

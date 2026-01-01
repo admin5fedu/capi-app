@@ -10,9 +10,9 @@ import { getStatusBadgeVariant } from '@/shared/utils/color-utils'
 // Các cột hiển thị trong bảng
 export const COT_HIEN_THI: CotHienThi<NguoiDung>[] = [
   {
-    key: 'ho_ten',
+    key: 'ho_va_ten',
     label: 'Họ tên',
-    accessorKey: 'ho_ten',
+    accessorKey: 'ho_va_ten',
     sortable: true,
     width: 200,
     align: 'left',
@@ -30,7 +30,7 @@ export const COT_HIEN_THI: CotHienThi<NguoiDung>[] = [
   {
     key: 'vai_tro',
     label: 'Vai trò',
-    accessorKey: (row: any) => row.vai_tro?.ten || '', // Function để lấy tên vai trò
+    accessorKey: (row: any) => row.ten_vai_tro || row.vai_tro?.ten_vai_tro || row.vai_tro?.ten || '', // Function để lấy tên vai trò
     sortable: false,
     width: 150,
     align: 'left',
@@ -38,27 +38,31 @@ export const COT_HIEN_THI: CotHienThi<NguoiDung>[] = [
     cell: (value, row: any) => {
       // value đã là tên vai trò từ accessorKey function
       // Nếu có tên, hiển thị tên, nếu không hiển thị "Chưa có vai trò"
-      return value || row.vai_tro?.ten || 'Chưa có vai trò'
+      return value || row.ten_vai_tro || row.vai_tro?.ten_vai_tro || row.vai_tro?.ten || 'Chưa có vai trò'
     },
   },
   {
-    key: 'is_active',
+    key: 'trang_thai',
     label: 'Trạng thái',
-    accessorKey: 'is_active',
+    accessorKey: 'trang_thai',
     sortable: true,
     width: 120,
     align: 'center',
     defaultVisible: true,
-    cell: (value) => (
-      <Badge variant={getStatusBadgeVariant(value)}>
-        {value ? 'Hoạt động' : 'Vô hiệu hóa'}
-      </Badge>
-    ),
+    cell: (value) => {
+      const trangThaiLower = value?.toLowerCase()
+      const isActive = trangThaiLower === 'hoạt động' || trangThaiLower === 'active'
+      return (
+        <Badge variant={getStatusBadgeVariant(isActive)}>
+          {value || 'Chưa xác định'}
+        </Badge>
+      )
+    },
   },
   {
-    key: 'created_at',
+    key: 'tg_tao',
     label: 'Ngày tạo',
-    accessorKey: 'created_at',
+    accessorKey: 'tg_tao',
     sortable: true,
     width: 150,
     align: 'left',
@@ -75,9 +79,9 @@ export const COT_HIEN_THI: CotHienThi<NguoiDung>[] = [
     },
   },
   {
-    key: 'updated_at',
+    key: 'tg_cap_nhat',
     label: 'Ngày cập nhật',
-    accessorKey: 'updated_at',
+    accessorKey: 'tg_cap_nhat',
     sortable: true,
     width: 150,
     align: 'left',

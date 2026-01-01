@@ -27,8 +27,12 @@ export function DoiTacDetailView({
   onBack,
 }: DoiTacDetailViewProps) {
   const { data: doiTac, isLoading, error } = useDoiTacById(id)
-  const { data: nguoiTao } = useNguoiDungById(doiTac?.nguoi_tao_id || null)
-  const { data: nhomDoiTac } = useNhomDoiTacById(doiTac?.nhom_doi_tac_id || null)
+  const { data: nguoiTao } = useNguoiDungById(
+    doiTac?.nguoi_tao_id ? String(doiTac.nguoi_tao_id) : null
+  )
+  const { data: nhomDoiTac } = useNhomDoiTacById(
+    doiTac?.nhom_doi_tac_id ? String(doiTac.nhom_doi_tac_id) : null
+  )
   const { setDetailLabel } = useBreadcrumb()
   const deleteDoiTac = useDeleteDoiTac()
 
@@ -47,13 +51,13 @@ export function DoiTacDetailView({
 
   // Update breadcrumb với title của đối tác
   useEffect(() => {
-    if (doiTac?.ten) {
-      setDetailLabel(doiTac.ten)
+    if (doiTac?.ten_doi_tac) {
+      setDetailLabel(doiTac.ten_doi_tac)
     }
     return () => {
       setDetailLabel(null)
     }
-  }, [doiTac?.ten, setDetailLabel])
+  }, [doiTac?.ten_doi_tac, setDetailLabel])
 
   if (isLoading) {
     return (
@@ -78,46 +82,41 @@ export function DoiTacDetailView({
       title: 'Thông tin cơ bản',
       fields: [
         {
-          key: 'ma',
-          label: 'Mã đối tác',
-          accessor: 'ma',
-        },
-        {
-          key: 'ten',
+          key: 'ten_doi_tac',
           label: 'Tên đối tác',
-          accessor: 'ten',
+          accessor: 'ten_doi_tac',
         },
         {
-          key: 'loai',
+          key: 'cong_ty',
+          label: 'Công ty',
+          accessor: 'cong_ty',
+          render: (value) => value || <span className="text-muted-foreground">—</span>,
+        },
+        {
+          key: 'hang_muc',
           label: 'Loại đối tác',
-          accessor: 'loai',
+          accessor: 'hang_muc',
           render: (value) => {
+            if (!value) return <span className="text-muted-foreground">—</span>
             const label = value === 'nha_cung_cap' ? 'Nhà cung cấp' : 'Khách hàng'
             const variant = value === 'nha_cung_cap' ? 'default' : 'secondary'
             return <Badge variant={variant}>{label}</Badge>
           },
         },
         {
-          key: 'nhom_doi_tac_id',
+          key: 'ten_nhom_doi_tac',
           label: 'Nhóm đối tác',
-          accessor: 'nhom_doi_tac_id',
+          accessor: 'ten_nhom_doi_tac',
           render: () => {
             if (!doiTac?.nhom_doi_tac_id) return <span className="text-muted-foreground">—</span>
+            if (doiTac.ten_nhom_doi_tac) {
+              return <span>{doiTac.ten_nhom_doi_tac}</span>
+            }
             if (nhomDoiTac) {
-              return <span>{nhomDoiTac.ten}</span>
+              return <span>{nhomDoiTac.ten_nhom || String(nhomDoiTac.id)}</span>
             }
             return <span className="text-muted-foreground">Đang tải...</span>
           },
-        },
-        {
-          key: 'trang_thai',
-          label: 'Trạng thái',
-          accessor: 'trang_thai',
-          render: (value) => (
-            <Badge variant={value ? 'default' : 'destructive'}>
-              {value ? 'Hoạt động' : 'Vô hiệu hóa'}
-            </Badge>
-          ),
         },
       ],
     },
@@ -131,9 +130,9 @@ export function DoiTacDetailView({
           render: (value) => value || <span className="text-muted-foreground">—</span>,
         },
         {
-          key: 'dien_thoai',
-          label: 'Điện thoại',
-          accessor: 'dien_thoai',
+          key: 'so_dien_thoai',
+          label: 'Số điện thoại',
+          accessor: 'so_dien_thoai',
           render: (value) => value || <span className="text-muted-foreground">—</span>,
         },
         {
@@ -149,21 +148,9 @@ export function DoiTacDetailView({
       title: 'Thông tin khác',
       fields: [
         {
-          key: 'ma_so_thue',
-          label: 'Mã số thuế',
-          accessor: 'ma_so_thue',
-          render: (value) => value || <span className="text-muted-foreground">—</span>,
-        },
-        {
-          key: 'nguoi_lien_he',
-          label: 'Người liên hệ',
-          accessor: 'nguoi_lien_he',
-          render: (value) => value || <span className="text-muted-foreground">—</span>,
-        },
-        {
-          key: 'ghi_chu',
-          label: 'Ghi chú',
-          accessor: 'ghi_chu',
+          key: 'thong_tin_khac',
+          label: 'Thông tin khác',
+          accessor: 'thong_tin_khac',
           span: 3,
           render: (value) => value || <span className="text-muted-foreground">—</span>,
         },
@@ -174,24 +161,24 @@ export function DoiTacDetailView({
           render: () => {
             if (!doiTac?.nguoi_tao_id) return <span className="text-muted-foreground">—</span>
             if (nguoiTao) {
-              return <span>{nguoiTao.ho_ten || nguoiTao.email}</span>
+              return <span>{nguoiTao.ho_va_ten || nguoiTao.ho_ten || nguoiTao.email}</span>
             }
             return <span className="text-muted-foreground">Đang tải...</span>
           },
         },
         {
-          key: 'created_at',
+          key: 'tg_tao',
           label: 'Ngày tạo',
-          accessor: 'created_at',
+          accessor: (data: any) => data.tg_tao || data.created_at || null,
           render: (value) => {
             if (!value) return '—'
             return dayjs(value).locale('vi').format('DD/MM/YYYY HH:mm')
           },
         },
         {
-          key: 'updated_at',
+          key: 'tg_cap_nhat',
           label: 'Ngày cập nhật',
-          accessor: 'updated_at',
+          accessor: (data: any) => data.tg_cap_nhat || data.updated_at || null,
           render: (value) => {
             if (!value) return '—'
             return dayjs(value).locale('vi').format('DD/MM/YYYY HH:mm')
@@ -210,7 +197,7 @@ export function DoiTacDetailView({
       onBack={onBack}
       title="Chi tiết đối tác"
       deleteConfirmTitle="Xác nhận xóa đối tác"
-      deleteConfirmDescription={`Bạn có chắc chắn muốn xóa đối tác "${doiTac.ten}"? Hành động này không thể hoàn tác.`}
+      deleteConfirmDescription={`Bạn có chắc chắn muốn xóa đối tác "${doiTac.ten_doi_tac || ''}"? Hành động này không thể hoàn tác.`}
     />
   )
 }

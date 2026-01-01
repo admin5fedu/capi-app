@@ -141,7 +141,7 @@ export function Navbar({ onToggleSidebar, onToggleDesktopSidebar }: NavbarProps)
         </button>
 
         {/* User Menu */}
-        <div className="relative">
+        <div className="relative z-50">
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
             className="flex items-center gap-2 p-2 hover:bg-muted rounded-md transition-colors"
@@ -149,7 +149,7 @@ export function Navbar({ onToggleSidebar, onToggleDesktopSidebar }: NavbarProps)
             {nguoiDung?.avatar_url ? (
               <img
                 src={nguoiDung.avatar_url}
-                alt={nguoiDung.ho_ten}
+                alt={nguoiDung.ho_va_ten || nguoiDung.ho_ten || 'Người dùng'}
                 className="h-8 w-8 rounded-full object-cover"
               />
             ) : (
@@ -159,11 +159,11 @@ export function Navbar({ onToggleSidebar, onToggleDesktopSidebar }: NavbarProps)
             )}
             <div className="hidden md:block text-left">
               <div className="text-sm font-medium">
-                {nguoiDung?.ho_ten || 'Người dùng'}
+                {nguoiDung?.ho_va_ten || nguoiDung?.ho_ten || 'Người dùng'}
               </div>
-              {vaiTro?.ten && (
+              {(vaiTro?.ten_vai_tro || vaiTro?.ten) && (
                 <div className="text-xs text-muted-foreground">
-                  {vaiTro.ten}
+                  {vaiTro.ten_vai_tro || vaiTro.ten}
                 </div>
               )}
             </div>
@@ -172,15 +172,15 @@ export function Navbar({ onToggleSidebar, onToggleDesktopSidebar }: NavbarProps)
           {showUserMenu && (
             <>
               <div
-                className="fixed inset-0 z-10"
+                className="fixed inset-0 z-[9998]"
                 onClick={() => setShowUserMenu(false)}
               />
-              <div className="absolute right-0 mt-2 w-56 bg-card border rounded-md shadow-lg z-20">
+              <div className="absolute right-0 mt-2 w-56 bg-card border rounded-md shadow-lg z-[9999]">
                 <div className="p-3 border-b">
-                  <p className="text-sm font-medium">{nguoiDung?.ho_ten || 'Người dùng'}</p>
+                  <p className="text-sm font-medium">{nguoiDung?.ho_va_ten || nguoiDung?.ho_ten || 'Người dùng'}</p>
                   <p className="text-xs text-muted-foreground">{nguoiDung?.email}</p>
-                  {vaiTro?.ten && (
-                    <p className="text-xs text-primary mt-1 font-medium">{vaiTro.ten}</p>
+                  {(vaiTro?.ten_vai_tro || vaiTro?.ten) && (
+                    <p className="text-xs text-primary mt-1 font-medium">{vaiTro.ten_vai_tro || vaiTro.ten}</p>
                   )}
                 </div>
                 <div className="py-1">

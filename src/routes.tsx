@@ -5,6 +5,7 @@ import { HomePage, TaiChinhSubmenuPage, DoiTacSubmenuPage, ThietLapSubmenuPage }
 import { LoginPage } from '@/pages/login'
 import { NguoiDungModule } from '@/features/thiet-lap/nguoi-dung'
 import { VaiTroModule } from '@/features/thiet-lap/vai-tro'
+import { PhongBanModule } from '@/features/thiet-lap/phong-ban'
 import { PhanQuyenModule } from '@/features/thiet-lap/phan-quyen'
 import { CaiDatModule } from '@/features/thiet-lap/cai-dat/index'
 import { TaiKhoanModule } from '@/features/tai-chinh/tai-khoan'
@@ -15,6 +16,8 @@ import { BaoCaoTaiChinhModule } from '@/features/tai-chinh/bao-cao-tai-chinh'
 import { BaoCaoTaiKhoanModule } from '@/features/tai-chinh/bao-cao-tai-khoan'
 import { NhomDoiTacModule } from '@/features/doi-tac/nhom-doi-tac/index.tsx'
 import { DanhSachDoiTacModule } from '@/features/doi-tac/danh-sach-doi-tac'
+import { KhachHangModule } from '@/features/doi-tac/khach-hang'
+import { NhaCungCapModule } from '@/features/doi-tac/nha-cung-cap'
 import { HoSoPage } from '@/pages/ho-so'
 // import { ModulePlaceholder } from '@/components/placeholder/module-placeholder' // Unused
 import {
@@ -23,6 +26,16 @@ import {
   RedirectNhomDoiTacDetail,
   RedirectNhomDoiTacEdit,
 } from '@/components/redirect/redirect-nhom-doi-tac'
+import {
+  RedirectDanhSachNhaCungCap,
+  RedirectDanhSachNhaCungCapNew,
+  RedirectDanhSachNhaCungCapDetail,
+  RedirectDanhSachNhaCungCapEdit,
+  RedirectDanhSachKhachHang,
+  RedirectDanhSachKhachHangNew,
+  RedirectDanhSachKhachHangDetail,
+  RedirectDanhSachKhachHangEdit,
+} from '@/components/redirect/redirect-doi-tac'
 
 export const router = createBrowserRouter([
   {
@@ -121,8 +134,74 @@ export const router = createBrowserRouter([
         path: 'doi-tac',
         element: <DoiTacSubmenuPage />,
       },
+      // Module Khách hàng
       {
+        path: 'doi-tac/nhom-khach-hang',
+        element: <KhachHangModule />,
+      },
+      {
+        path: 'doi-tac/nhom-khach-hang/moi',
+        element: <KhachHangModule />,
+      },
+      {
+        path: 'doi-tac/nhom-khach-hang/:id',
+        element: <KhachHangModule />,
+      },
+      {
+        path: 'doi-tac/nhom-khach-hang/:id/sua',
+        element: <KhachHangModule />,
+      },
+      {
+        path: 'doi-tac/danh-sach-khach-hang',
+        element: <KhachHangModule />,
+      },
+      {
+        path: 'doi-tac/danh-sach-khach-hang/moi',
+        element: <KhachHangModule />,
+      },
+      {
+        path: 'doi-tac/danh-sach-khach-hang/:id',
+        element: <KhachHangModule />,
+      },
+      {
+        path: 'doi-tac/danh-sach-khach-hang/:id/sua',
+        element: <KhachHangModule />,
+      },
+      // Module Nhà cung cấp
+      {
+        path: 'doi-tac/nhom-nha-cung-cap',
+        element: <NhaCungCapModule />,
+      },
+      {
+        path: 'doi-tac/nhom-nha-cung-cap/moi',
+        element: <NhaCungCapModule />,
+      },
+      {
+        path: 'doi-tac/nhom-nha-cung-cap/:id',
+        element: <NhaCungCapModule />,
+      },
+      {
+        path: 'doi-tac/nhom-nha-cung-cap/:id/sua',
+        element: <NhaCungCapModule />,
+      },
+      {
+        path: 'doi-tac/danh-sach-nha-cung-cap',
+        element: <NhaCungCapModule />,
+      },
+      {
+        path: 'doi-tac/danh-sach-nha-cung-cap/moi',
+        element: <NhaCungCapModule />,
+      },
+      {
+        path: 'doi-tac/danh-sach-nha-cung-cap/:id',
+        element: <NhaCungCapModule />,
+      },
+      {
+        path: 'doi-tac/danh-sach-nha-cung-cap/:id/sua',
+        element: <NhaCungCapModule />,
+      },
         // Redirect từ URL cũ sang URL mới (backward compatibility)
+      {
         path: 'doi-tac/nhom-doi-tac',
         element: <RedirectNhomDoiTac />,
       },
@@ -139,72 +218,43 @@ export const router = createBrowserRouter([
         element: <RedirectNhomDoiTacDetail />,
       },
       {
-        path: 'doi-tac/nha-cung-cap',
-        element: <NhomDoiTacModule />,
-      },
-      {
-        path: 'doi-tac/nha-cung-cap/moi',
-        element: <NhomDoiTacModule />,
-      },
-      {
-        path: 'doi-tac/nha-cung-cap/:id',
-        element: <NhomDoiTacModule />,
-      },
-      {
-        path: 'doi-tac/nha-cung-cap/:id/sua',
-        element: <NhomDoiTacModule />,
-      },
-      {
-        path: 'doi-tac/khach-hang',
-        element: <NhomDoiTacModule />,
-      },
-      {
-        path: 'doi-tac/khach-hang/moi',
-        element: <NhomDoiTacModule />,
-      },
-      {
-        path: 'doi-tac/khach-hang/:id',
-        element: <NhomDoiTacModule />,
-      },
-      {
-        path: 'doi-tac/khach-hang/:id/sua',
-        element: <NhomDoiTacModule />,
-      },
-      {
+        // Redirect từ URL cũ sang URL mới
         path: 'doi-tac/danh-sach-doi-tac',
-        element: <Navigate to="/doi-tac/danh-sach-nha-cung-cap" replace />,
+        element: <RedirectDanhSachNhaCungCap />,
       },
       {
+        // Redirect từ URL cũ sang URL mới
         path: 'doi-tac/danh-sach-nha-cung-cap',
-        element: <DanhSachDoiTacModule />,
+        element: <RedirectDanhSachNhaCungCap />,
       },
       {
         path: 'doi-tac/danh-sach-nha-cung-cap/moi',
-        element: <DanhSachDoiTacModule />,
+        element: <RedirectDanhSachNhaCungCapNew />,
       },
       {
         path: 'doi-tac/danh-sach-nha-cung-cap/:id',
-        element: <DanhSachDoiTacModule />,
+        element: <RedirectDanhSachNhaCungCapDetail />,
       },
       {
         path: 'doi-tac/danh-sach-nha-cung-cap/:id/sua',
-        element: <DanhSachDoiTacModule />,
+        element: <RedirectDanhSachNhaCungCapEdit />,
       },
       {
+        // Redirect từ URL cũ sang URL mới
         path: 'doi-tac/danh-sach-khach-hang',
-        element: <DanhSachDoiTacModule />,
+        element: <RedirectDanhSachKhachHang />,
       },
       {
         path: 'doi-tac/danh-sach-khach-hang/moi',
-        element: <DanhSachDoiTacModule />,
+        element: <RedirectDanhSachKhachHangNew />,
       },
       {
         path: 'doi-tac/danh-sach-khach-hang/:id',
-        element: <DanhSachDoiTacModule />,
+        element: <RedirectDanhSachKhachHangDetail />,
       },
       {
         path: 'doi-tac/danh-sach-khach-hang/:id/sua',
-        element: <DanhSachDoiTacModule />,
+        element: <RedirectDanhSachKhachHangEdit />,
       },
       {
         path: 'thiet-lap',
@@ -241,6 +291,22 @@ export const router = createBrowserRouter([
       {
         path: 'thiet-lap/vai-tro/:id/sua',
         element: <VaiTroModule />,
+      },
+      {
+        path: 'thiet-lap/phong-ban',
+        element: <PhongBanModule />,
+      },
+      {
+        path: 'thiet-lap/phong-ban/moi',
+        element: <PhongBanModule />,
+      },
+      {
+        path: 'thiet-lap/phong-ban/:id',
+        element: <PhongBanModule />,
+      },
+      {
+        path: 'thiet-lap/phong-ban/:id/sua',
+        element: <PhongBanModule />,
       },
       {
         path: 'thiet-lap/phan-quyen',

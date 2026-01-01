@@ -14,11 +14,11 @@ export function handleXuatExcel(data: TyGia[]) {
         ? new Date(item.ngay_ap_dung).toLocaleDateString('vi-VN')
         : '',
       'Ghi chú': item.ghi_chu || '',
-      'Ngày tạo': item.created_at
-        ? new Date(item.created_at).toLocaleDateString('vi-VN')
+      'Ngày tạo': item.tg_tao || item.created_at
+        ? new Date(item.tg_tao || item.created_at || '').toLocaleDateString('vi-VN')
         : '',
-      'Ngày cập nhật': item.updated_at
-        ? new Date(item.updated_at).toLocaleDateString('vi-VN')
+      'Ngày cập nhật': item.tg_cap_nhat || item.updated_at
+        ? new Date(item.tg_cap_nhat || item.updated_at || '').toLocaleDateString('vi-VN')
         : '',
     }))
 

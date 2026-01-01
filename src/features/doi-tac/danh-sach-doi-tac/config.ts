@@ -9,36 +9,33 @@ import React from 'react'
 // Các cột hiển thị trong bảng
 export const COT_HIEN_THI: CotHienThi<DoiTac>[] = [
   {
-    key: 'ma',
-    label: 'Mã đối tác',
-    accessorKey: 'ma',
-    sortable: true,
-    width: 120,
-    align: 'left',
-    defaultVisible: true,
-  },
-  {
-    key: 'ten',
+    key: 'ten_doi_tac',
     label: 'Tên đối tác',
-    accessorKey: 'ten',
+    accessorKey: 'ten_doi_tac',
     sortable: true,
     width: 250,
     align: 'left',
     defaultVisible: true,
   },
   {
-    key: 'nhom_doi_tac_id',
+    key: 'ten_nhom_doi_tac',
     label: 'Nhóm đối tác',
-    accessorKey: 'nhom_doi_tac_id',
+    accessorKey: 'ten_nhom_doi_tac',
     sortable: true,
     width: 200,
     align: 'left',
     defaultVisible: true,
-    cell: (value) => {
-      // Sẽ hiển thị tên nhóm đối tác sau khi join với bảng nhom-doi-tac
-      // Tạm thời hiển thị ID
-      return React.createElement('span', {}, value || '—')
-    },
+    cell: (value) => (value ? String(value) : '—'),
+  },
+  {
+    key: 'cong_ty',
+    label: 'Công ty',
+    accessorKey: 'cong_ty',
+    sortable: true,
+    width: 200,
+    align: 'left',
+    defaultVisible: true,
+    cell: (value) => (value ? String(value) : '—'),
   },
   {
     key: 'email',
@@ -51,9 +48,9 @@ export const COT_HIEN_THI: CotHienThi<DoiTac>[] = [
     cell: (value) => (value ? String(value) : '—'),
   },
   {
-    key: 'dien_thoai',
-    label: 'Điện thoại',
-    accessorKey: 'dien_thoai',
+    key: 'so_dien_thoai',
+    label: 'Số điện thoại',
+    accessorKey: 'so_dien_thoai',
     sortable: true,
     width: 150,
     align: 'left',
@@ -71,39 +68,14 @@ export const COT_HIEN_THI: CotHienThi<DoiTac>[] = [
     cell: (value) => (value ? String(value) : '—'),
   },
   {
-    key: 'ma_so_thue',
-    label: 'Mã số thuế',
-    accessorKey: 'ma_so_thue',
-    sortable: true,
-    width: 150,
+    key: 'thong_tin_khac',
+    label: 'Thông tin khác',
+    accessorKey: 'thong_tin_khac',
+    sortable: false,
+    width: 300,
     align: 'left',
-    defaultVisible: true,
+    defaultVisible: false,
     cell: (value) => (value ? String(value) : '—'),
-  },
-  {
-    key: 'nguoi_lien_he',
-    label: 'Người liên hệ',
-    accessorKey: 'nguoi_lien_he',
-    sortable: true,
-    width: 180,
-    align: 'left',
-    defaultVisible: true,
-    cell: (value) => (value ? String(value) : '—'),
-  },
-  {
-    key: 'trang_thai',
-    label: 'Trạng thái',
-    accessorKey: 'trang_thai',
-    sortable: true,
-    width: 120,
-    align: 'center',
-    defaultVisible: true,
-    cell: (value) => {
-      if (value) {
-        return React.createElement('span', { className: 'text-green-600' }, 'Hoạt động')
-      }
-      return React.createElement('span', { className: 'text-red-600' }, 'Vô hiệu hóa')
-    },
   },
   {
     key: 'nguoi_tao_id',
@@ -120,9 +92,9 @@ export const COT_HIEN_THI: CotHienThi<DoiTac>[] = [
     },
   },
   {
-    key: 'created_at',
+    key: 'tg_tao',
     label: 'Ngày tạo',
-    accessorKey: 'created_at',
+    accessorKey: (row: any) => row.tg_tao || row.created_at || null,
     sortable: true,
     width: 150,
     align: 'left',
@@ -137,9 +109,9 @@ export const COT_HIEN_THI: CotHienThi<DoiTac>[] = [
     },
   },
   {
-    key: 'updated_at',
+    key: 'tg_cap_nhat',
     label: 'Ngày cập nhật',
-    accessorKey: 'updated_at',
+    accessorKey: (row: any) => row.tg_cap_nhat || row.updated_at || null,
     sortable: true,
     width: 150,
     align: 'left',

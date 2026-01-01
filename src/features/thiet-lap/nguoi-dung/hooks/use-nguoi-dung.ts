@@ -4,9 +4,11 @@ import {
   getNguoiDungById,
   createNguoiDung,
   updateNguoiDung,
+  updateNguoiDungAvatar,
   deleteNguoiDung,
   searchNguoiDung,
   getNguoiDungByVaiTroId,
+  getNguoiDungByPhongBanId,
 } from '../services/nguoi-dung-service'
 import { getVaiTroList } from '@/api/vai-tro'
 import type { NguoiDungInsert, NguoiDungUpdate, BoLocNguoiDung } from '../types'
@@ -21,6 +23,7 @@ export const nguoiDungKeys = {
   detail: (id: string) => [...nguoiDungKeys.details(), id] as const,
   search: (keyword: string) => [...nguoiDungKeys.all, 'search', keyword] as const,
   byVaiTro: (vaiTroId: string) => [...nguoiDungKeys.all, 'by-vai-tro', vaiTroId] as const,
+  byPhongBan: (phongBanId: string) => [...nguoiDungKeys.all, 'by-phong-ban', phongBanId] as const,
 }
 
 /**
@@ -37,7 +40,7 @@ export function useNguoiDungList(filters?: BoLocNguoiDung) {
       ])
 
       // Tạo map vai trò để tra cứu nhanh
-      const vaiTroMap = new Map(vaiTroData.map((vt) => [vt.id, vt.ten]))
+      const vaiTroMap = new Map(vaiTroData.map((vt) => [vt.id, vt.ten_vai_tro || vt.ten]))
 
       // Map tên vai trò vào từng người dùng
       let data = nguoiDungData.map((item: any) => ({
@@ -55,8 +58,11 @@ export function useNguoiDungList(filters?: BoLocNguoiDung) {
           const keyword = filters.tim_kiem.toLowerCase()
           data = data.filter(
             (item: any) =>
+              item.ho_va_ten?.toLowerCase().includes(keyword) ||
               item.ho_ten?.toLowerCase().includes(keyword) ||
               item.email?.toLowerCase().includes(keyword) ||
+              item.ten_vai_tro?.toLowerCase().includes(keyword) ||
+              item.vai_tro?.ten_vai_tro?.toLowerCase().includes(keyword) ||
               item.vai_tro?.ten?.toLowerCase().includes(keyword)
           )
         }
@@ -68,14 +74,30 @@ export function useNguoiDungList(filters?: BoLocNguoiDung) {
 
         // Lọc theo trạng thái
         if (filters.is_active !== undefined) {
-          data = data.filter((item: any) => item.is_active === filters.is_active)
+          // Convert boolean filter to text comparison
+          const trangThaiFilter = filters.is_active ? 'hoạt động' : 'vô hiệu hóa'
+          data = data.filter((item: any) => {
+            const trangThai = item.trang_thai?.toLowerCase()
+            if (filters.is_active) {
+              return trangThai === 'hoạt động' || trangThai === 'active' || item.is_active === true
+            } else {
+              return trangThai === 'vô hiệu hóa' || trangThai === 'inactive' || item.is_active === false
+            }
+          })
         }
 
         // Sắp xếp
         if (filters.sap_xep) {
           data.sort((a: any, b: any) => {
-            const aVal = a[filters.sap_xep!]
-            const bVal = b[filters.sap_xep!]
+            // Map old field names to new ones
+            const fieldMap: Record<string, string> = {
+              'ho_ten': 'ho_va_ten',
+              'created_at': 'tg_tao',
+              'updated_at': 'tg_cap_nhat',
+            }
+            const fieldName = fieldMap[filters.sap_xep!] || filters.sap_xep!
+            const aVal = a[fieldName] || a[filters.sap_xep!]
+            const bVal = b[fieldName] || b[filters.sap_xep!]
             const direction = filters.huong_sap_xep === 'asc' ? 1 : -1
 
             if (aVal < bVal) return -1 * direction
@@ -191,5 +213,36 @@ export function useNguoiDungByVaiTroId(vaiTroId: string | null) {
     queryKey: nguoiDungKeys.byVaiTro(vaiTroId!),
     queryFn: () => getNguoiDungByVaiTroId(vaiTroId!),
     enabled: !!vaiTroId,
+  })
+}
+
+/**
+ * Hook: Lấy danh sách người dùng theo phòng ban ID
+ */
+export function useNguoiDungByPhongBanId(phongBanId: string | null) {
+  return useQuery({
+    queryKey: nguoiDungKeys.byPhongBan(phongBanId!),
+    queryFn: () => getNguoiDungByPhongBanId(phongBanId!),
+    enabled: !!phongBanId,
+  })
+}
+
+/**
+ * Hook: Cập nhật avatar cho người dùng
+ */
+export function useUpdateNguoiDungAvatar() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, avatarUrl }: { id: string; avatarUrl: string }) =>
+      updateNguoiDungAvatar(id, avatarUrl),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: nguoiDungKeys.all })
+      queryClient.invalidateQueries({ queryKey: nguoiDungKeys.detail(variables.id) })
+      toast.success('Cập nhật avatar thành công')
+    },
+    onError: (error: Error) => {
+      toast.error(`Lỗi: ${error.message}`)
+    },
   })
 }

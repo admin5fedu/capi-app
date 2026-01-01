@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store/auth-store'
+import { useCurrentUser } from '@/hooks/use-current-user'
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
 
 interface AuthProviderProps {
@@ -12,9 +13,13 @@ interface AuthProviderProps {
  * Lắng nghe sự thay đổi của Supabase auth state và tự động cập nhật Zustand Store
  */
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { layPhienLamViecHienTai, reset } = useAuthStore()
+  const { layPhienLamViecHienTai, reset, session } = useAuthStore()
   const isInitialized = useRef(false)
   const initPromiseRef = useRef<Promise<void> | null>(null)
+  
+  // Sử dụng TanStack Query để fetch user profile khi đã có session
+  // Hook này sẽ tự động sync data vào auth store
+  const { user, nguoiDung, isLoading: isLoadingUser } = useCurrentUser()
 
   useEffect(() => {
     // Lấy session ban đầu khi component mount
@@ -29,7 +34,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // Check trong store trước khi gọi
         const currentState = useAuthStore.getState()
         if (currentState.session && currentState.user && currentState.nguoiDung) {
-          console.log('[Auth Provider] ✅ Already have session and user, skipping init')
           return
         }
         initPromiseRef.current = layPhienLamViecHienTai()
@@ -43,8 +47,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
-      console.log('Auth state changed:', event, session)
-
       // Bỏ qua INITIAL_SESSION vì đã xử lý trong initAuth
       if (event === 'INITIAL_SESSION') {
         return
@@ -52,9 +54,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       switch (event) {
         case 'SIGNED_IN':
-        case 'TOKEN_REFRESHED':
-          // Gọi lại layPhienLamViecHienTai để đồng bộ toàn bộ state
+          // Chỉ refresh khi đăng nhập mới
           await layPhienLamViecHienTai()
+          break
+
+        case 'TOKEN_REFRESHED':
+          // Token refresh không cần refresh lại user data
+          // Chỉ cần cập nhật session trong store nếu cần
+          // Tránh gọi layPhienLamViecHienTai để không trigger re-render
           break
 
         case 'SIGNED_OUT':

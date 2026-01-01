@@ -74,7 +74,7 @@ export function NguoiDungListView({ onEdit, onAddNew, onView }: NguoiDungListVie
       requiresConfirm: true,
       confirmTitle: 'Xác nhận xóa người dùng',
       confirmDescription: (row: NguoiDung) =>
-        `Bạn có chắc chắn muốn xóa người dùng "${row.ho_ten}"? Hành động này không thể hoàn tác.`,
+        `Bạn có chắc chắn muốn xóa người dùng "${row.ho_va_ten || row.ho_ten}"? Hành động này không thể hoàn tác.`,
     },
   ]
 
@@ -85,10 +85,14 @@ export function NguoiDungListView({ onEdit, onAddNew, onView }: NguoiDungListVie
   const quickFilters: QuickFilter[] = useMemo(() => {
     const filters: QuickFilter[] = [
       {
-        key: 'is_active',
+        key: 'trang_thai',
         label: 'Trạng thái',
-        type: 'boolean',
+        type: 'select',
         multiSelect: true, // Cho phép chọn nhiều trạng thái
+        options: [
+          { value: 'Hoạt động', label: 'Hoạt động' },
+          { value: 'Vô hiệu hóa', label: 'Vô hiệu hóa' },
+        ],
       },
     ]
 
@@ -101,7 +105,7 @@ export function NguoiDungListView({ onEdit, onAddNew, onView }: NguoiDungListVie
         multiSelect: true, // Cho phép chọn nhiều vai trò
         options: danhSachVaiTro.map((vt) => ({
           value: vt.id,
-          label: vt.ten,
+          label: vt.ten_vai_tro || vt.ten || '',
         })),
       })
     }

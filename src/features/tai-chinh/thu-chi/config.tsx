@@ -206,20 +206,20 @@ export const COT_HIEN_THI: CotHienThi<GiaoDichWithRelations>[] = [
   {
     key: 'nguoi_tao',
     label: 'Người tạo',
-    accessorKey: (row: GiaoDichWithRelations) => row.nguoi_tao?.ho_ten || null,
+    accessorKey: (row: GiaoDichWithRelations) => row.nguoi_tao?.ho_va_ten || row.nguoi_tao?.ho_ten || null,
     sortable: false,
     width: 120,
     align: 'left',
     defaultVisible: false,
     cell: (_value, row) => {
       const nguoiTao = (row as GiaoDichWithRelations).nguoi_tao
-      return nguoiTao?.ho_ten || <span className="text-muted-foreground">—</span>
+      return nguoiTao?.ho_va_ten || nguoiTao?.ho_ten || <span className="text-muted-foreground">—</span>
     },
   },
   {
-    key: 'created_at',
+    key: 'tg_tao',
     label: 'Ngày tạo',
-    accessorKey: 'created_at',
+    accessorKey: (row: any) => row.tg_tao || row.created_at || null,
     sortable: true,
     width: 150,
     align: 'left',

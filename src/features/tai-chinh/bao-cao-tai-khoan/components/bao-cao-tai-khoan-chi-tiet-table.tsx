@@ -194,7 +194,7 @@ export function BaoCaoTaiKhoanChiTietTable({
     {
       id: 'nguoi_tao',
       header: 'Người tạo',
-      cell: ({ row }) => row.original.nguoi_tao?.ho_ten || '—',
+      cell: ({ row }) => row.original.nguoi_tao?.ho_va_ten || row.original.nguoi_tao?.ho_ten || '—',
     },
   ], [])
 

@@ -4,4 +4,5 @@ export * from './vai-tro'
 export * from './phan-quyen'
 export * from './tai-khoan'
 export * from './danh-muc'
+export * from './thong-tin-cong-ty'
 

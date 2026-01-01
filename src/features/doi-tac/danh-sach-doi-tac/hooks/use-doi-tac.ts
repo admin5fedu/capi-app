@@ -61,10 +61,9 @@ export function useCreateDoiTac() {
 
   return useMutation({
     mutationFn: (data: DoiTacInsert) => createDoiTacService(data),
-    onSuccess: (_, variables) => {
-      // Invalidate cả hai tab
-      queryClient.invalidateQueries({ queryKey: doiTacKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: doiTacKeys.list(variables.loai) })
+    onSuccess: () => {
+      // Invalidate tất cả queries
+      queryClient.invalidateQueries({ queryKey: doiTacKeys.all })
       toast.success('Tạo đối tác thành công')
     },
     onError: (error: Error) => {

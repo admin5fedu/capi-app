@@ -63,7 +63,7 @@ export function exportBaoCaoTaiKhoanToPDF(data: BaoCaoTaiKhoanData, filters?: Ba
     gd.tai_khoan?.ten || '',
     gd.tai_khoan_den?.ten || '',
     gd.doi_tac?.ten || '',
-    gd.nguoi_tao?.ho_ten || '',
+    gd.nguoi_tao?.ho_va_ten || gd.nguoi_tao?.ho_ten || '',
   ])
 
   // Table headers

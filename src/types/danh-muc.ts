@@ -1,9 +1,9 @@
 /**
- * Type definitions cho bảng zz_cst_danh_muc (Danh mục)
+ * Type definitions cho bảng zz_capi_danh_muc (Danh mục)
  */
 
 export interface DanhMuc {
-  id: string
+  id: number // bigint (int8) từ DB
   ten: string
   loai: string
   parent_id: string | null
@@ -11,8 +11,11 @@ export interface DanhMuc {
   thu_tu: number | null
   is_active: boolean | null
   created_by: string | null
-  created_at: string | null
-  updated_at: string | null
+  tg_tao: string | null
+  tg_cap_nhat: string | null
+  // Computed fields for backward compatibility
+  created_at?: string | null
+  updated_at?: string | null
 }
 
 export interface DanhMucInsert {

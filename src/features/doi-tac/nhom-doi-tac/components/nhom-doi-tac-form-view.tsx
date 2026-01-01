@@ -7,21 +7,22 @@ import { useAuthStore } from '@/store/auth-store'
 import type { NhomDoiTacInsert, NhomDoiTacUpdate, LoaiDoiTac } from '@/types/nhom-doi-tac'
 import { GenericFormView } from '@/shared/components/generic/generic-form-view'
 import type { FormFieldGroup } from '@/shared/components/generic/generic-form-view'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
 import { LOAI_DOI_TAC } from '../config'
 
 // Schema validation
 const nhomDoiTacSchema = z.object({
-  ten: z.string().min(1, 'Tên nhóm là bắt buộc').max(255, 'Tên nhóm quá dài'),
-  loai: z.enum(['nha_cung_cap', 'khach_hang'], {
+  ten_nhom: z.string().min(1, 'Tên nhóm là bắt buộc').max(255, 'Tên nhóm quá dài'),
+  hang_muc: z.enum(['nha_cung_cap', 'khach_hang'], {
     required_error: 'Loại đối tác là bắt buộc',
   }),
-  mo_ta: z.string().max(1000, 'Mô tả quá dài').optional().nullable(),
-  trang_thai: z.boolean({
-    required_error: 'Trạng thái là bắt buộc',
-  }),
-  nguoi_tao_id: z.string().optional().nullable(),
+  mo_ta: z.preprocess(
+    (val) => val === '' ? null : val,
+    z.string().max(1000, 'Mô tả quá dài').nullable().optional()
+  ),
+  nguoi_tao_id: z.preprocess(
+    (val) => val === '' ? null : val,
+    z.number().nullable().optional()
+  ),
 })
 
 type NhomDoiTacFormData = z.infer<typeof nhomDoiTacSchema>
@@ -51,12 +52,12 @@ export function NhomDoiTacFormView({
   const form = useForm<NhomDoiTacFormData>({
     resolver: zodResolver(nhomDoiTacSchema),
     defaultValues: {
-      ten: '',
-      loai: defaultLoai || 'nha_cung_cap',
+      ten_nhom: '',
+      hang_muc: defaultLoai || 'nha_cung_cap',
       mo_ta: null,
-      trang_thai: true,
-      nguoi_tao_id: nguoiDung?.id || null,
+      nguoi_tao_id: nguoiDung?.id ? Number(nguoiDung.id) : null,
     },
+    mode: 'onChange', // Validate khi thay đổi để hiển thị lỗi sớm
   })
 
   const {
@@ -68,40 +69,39 @@ export function NhomDoiTacFormView({
   useEffect(() => {
     if (chiTiet) {
       reset({
-        ten: chiTiet.ten,
-        loai: chiTiet.loai,
+        ten_nhom: chiTiet.ten_nhom || '',
+        hang_muc: (chiTiet.hang_muc as LoaiDoiTac) || 'nha_cung_cap',
         mo_ta: chiTiet.mo_ta || null,
-        trang_thai: chiTiet.trang_thai,
-        nguoi_tao_id: chiTiet.nguoi_tao_id || null,
-      })
-    } else if (defaultLoai && !editId) {
-      // Khi thêm mới, set loại từ defaultLoai và người tạo từ user hiện tại
-      reset({
-        ten: '',
-        loai: defaultLoai,
-        mo_ta: null,
-        trang_thai: true,
-        nguoi_tao_id: nguoiDung?.id || null,
-      })
+        nguoi_tao_id: chiTiet.nguoi_tao_id ? Number(chiTiet.nguoi_tao_id) : null,
+      }, { keepDefaultValues: false })
     }
-  }, [chiTiet, defaultLoai, editId, reset, nguoiDung])
+  }, [chiTiet, reset])
+
+  // Cập nhật hang_muc và nguoi_tao_id khi defaultLoai hoặc nguoiDung thay đổi (chỉ khi thêm mới)
+  useEffect(() => {
+    if (!editId && !chiTiet) {
+      form.setValue('hang_muc', defaultLoai || 'nha_cung_cap')
+      if (nguoiDung?.id) {
+        form.setValue('nguoi_tao_id', Number(nguoiDung.id))
+      }
+    }
+  }, [defaultLoai, nguoiDung, editId, chiTiet, form])
 
   // Đồng bộ nguoi_tao_id khi user thay đổi (chỉ khi thêm mới)
   useEffect(() => {
     if (!editId && nguoiDung?.id) {
-      form.setValue('nguoi_tao_id', nguoiDung.id)
+      form.setValue('nguoi_tao_id', Number(nguoiDung.id))
     }
   }, [nguoiDung, editId, form])
 
   const onSubmit = async (data: NhomDoiTacFormData) => {
     try {
       const formData: NhomDoiTacInsert | NhomDoiTacUpdate = {
-        ten: data.ten,
-        loai: data.loai,
+        ten_nhom: data.ten_nhom,
+        hang_muc: data.hang_muc,
         mo_ta: data.mo_ta || null,
-        trang_thai: data.trang_thai,
         // Tự động set người tạo từ user hiện tại (chỉ khi thêm mới)
-        nguoi_tao_id: editId ? data.nguoi_tao_id : (nguoiDung?.id || null),
+        nguoi_tao_id: editId ? data.nguoi_tao_id : (nguoiDung?.id ? Number(nguoiDung.id) : null),
       }
 
       if (editId) {
@@ -133,7 +133,7 @@ export function NhomDoiTacFormView({
       title: 'Thông tin cơ bản',
       fields: [
         {
-          key: 'ten',
+          key: 'ten_nhom',
           label: 'Tên nhóm',
           type: 'text',
           placeholder: 'Nhập tên nhóm đối tác',
@@ -144,7 +144,7 @@ export function NhomDoiTacFormView({
         ...(editId || !defaultLoai
           ? [
               {
-                key: 'loai' as const,
+                key: 'hang_muc' as const,
                 label: 'Loại đối tác',
                 type: 'select' as const,
                 required: true,
@@ -152,27 +152,6 @@ export function NhomDoiTacFormView({
               },
             ]
           : []),
-        {
-          key: 'trang_thai',
-          label: 'Trạng thái',
-          type: 'custom',
-          required: true,
-          render: (form) => {
-            const { watch, setValue } = form
-            const checked = watch('trang_thai')
-            return (
-              <div className="flex items-center space-x-2">
-                <Switch
-                  checked={checked}
-                  onCheckedChange={(value) => setValue('trang_thai', value)}
-                />
-                <Label htmlFor="trang_thai" className="font-normal cursor-pointer">
-                  {checked ? 'Hoạt động' : 'Vô hiệu hóa'}
-                </Label>
-              </div>
-            )
-          },
-        },
       ],
     },
     {

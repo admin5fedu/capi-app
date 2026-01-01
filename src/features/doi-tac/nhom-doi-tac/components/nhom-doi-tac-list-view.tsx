@@ -18,6 +18,7 @@ interface NhomDoiTacListViewProps {
   onAddNew: () => void
   onView?: (id: string) => void
   defaultTab?: TabType
+  hideTabs?: boolean // Ẩn tab group khi được gọi từ module wrapper
 }
 
 /**
@@ -27,17 +28,25 @@ export function NhomDoiTacListView({
   onEdit,
   onAddNew,
   onView,
-  // defaultTab = 'nha_cung_cap', // Unused parameter
+  defaultTab,
+  hideTabs = false,
 }: NhomDoiTacListViewProps) {
   const navigate = useNavigate()
   const location = useLocation()
   
   // Detect tab từ URL
   const pathParts = location.pathname.split('/').filter(Boolean)
-  const tabTypeFromPath = pathParts[1] // doi-tac -> [0], nha-cung-cap/khach-hang -> [1]
-  const currentTabFromUrl: TabType = tabTypeFromPath === 'khach-hang' ? 'khach_hang' : 'nha_cung_cap'
+  const modulePath = pathParts[1] || '' // 'nhom-khach-hang', 'nhom-nha-cung-cap', etc.
   
-  const [activeTab, setActiveTab] = useState<TabType>(currentTabFromUrl)
+  // Xác định tab từ URL
+  let currentTabFromUrl: TabType = 'nha_cung_cap'
+  if (modulePath.includes('khach-hang')) {
+    currentTabFromUrl = 'khach_hang'
+  } else if (modulePath.includes('nha-cung-cap')) {
+    currentTabFromUrl = 'nha_cung_cap'
+  }
+  
+  const [activeTab, setActiveTab] = useState<TabType>(defaultTab || currentTabFromUrl)
   const { data: danhSach, isLoading, error, refetch } = useNhomDoiTacList(activeTab)
   const { data: danhSachNguoiDung } = useNguoiDungList()
   const deleteNhomDoiTac = useDeleteNhomDoiTac()
@@ -45,11 +54,11 @@ export function NhomDoiTacListView({
 
   // Tạo map để tra cứu tên người dùng nhanh
   const nguoiDungMap = useMemo(() => {
-    if (!danhSachNguoiDung) return new Map<string, string>()
+    if (!danhSachNguoiDung) return new Map<string | number, string>()
     return new Map(
       danhSachNguoiDung.map((nd) => [
         nd.id,
-        nd.ho_ten || nd.email || 'N/A',
+        nd.ho_va_ten || nd.ho_ten || nd.email || 'N/A',
       ])
     )
   }, [danhSachNguoiDung])
@@ -60,10 +69,10 @@ export function NhomDoiTacListView({
       if (cot.key === 'nguoi_tao_id') {
         return {
           ...cot,
-          cell: (value: string | null) => {
+          cell: (value: number | string | null) => {
             if (!value) return '—'
-            const tenNguoiTao = nguoiDungMap.get(value)
-            return React.createElement('span', {}, tenNguoiTao || value)
+            const tenNguoiTao = nguoiDungMap.get(typeof value === 'string' ? value : Number(value))
+            return React.createElement('span', {}, tenNguoiTao || String(value))
           },
         }
       }
@@ -78,7 +87,8 @@ export function NhomDoiTacListView({
   
   // Handler khi chuyển tab - navigate đến URL mới
   const handleTabChange = (newTab: TabType) => {
-    const tabPath = newTab === 'khach_hang' ? 'khach-hang' : 'nha-cung-cap'
+    if (hideTabs) return // Không navigate nếu đang ẩn tabs
+    const tabPath = newTab === 'khach_hang' ? 'nhom-khach-hang' : 'nhom-nha-cung-cap'
     navigate(`/doi-tac/${tabPath}`)
   }
 
@@ -132,7 +142,7 @@ export function NhomDoiTacListView({
       requiresConfirm: true,
       confirmTitle: 'Xác nhận xóa nhóm đối tác',
       confirmDescription: (row: NhomDoiTac) =>
-        `Bạn có chắc chắn muốn xóa nhóm đối tác "${row.ten}"? Hành động này không thể hoàn tác.`,
+        `Bạn có chắc chắn muốn xóa nhóm đối tác "${row.ten_nhom || ''}"? Hành động này không thể hoàn tác.`,
     },
   ]
 
@@ -140,22 +150,11 @@ export function NhomDoiTacListView({
   const bulkActions = getBulkActions({ onBulkDelete: handleXoaNhieu })
 
   // Filter columns - Ẩn cột "Loại" vì đã có tab phân biệt
-  const filteredCotHienThi = cotHienThiWithNguoiTao.filter((cot) => cot.key !== 'loai')
+  const filteredCotHienThi = cotHienThiWithNguoiTao.filter((cot) => cot.key !== 'hang_muc')
 
-  // Tạo quickFilters với Trạng thái và Người tạo (hỗ trợ multi-select)
+  // Tạo quickFilters với Người tạo (hỗ trợ multi-select)
   const quickFilters: QuickFilter[] = useMemo(() => {
-    const filters: QuickFilter[] = [
-      {
-        key: 'trang_thai',
-        label: 'Trạng thái',
-        type: 'boolean',
-        multiSelect: true, // Cho phép chọn nhiều trạng thái
-        options: [
-          { value: true, label: 'Hoạt động' },
-          { value: false, label: 'Vô hiệu hóa' },
-        ],
-      },
-    ]
+    const filters: QuickFilter[] = []
 
     // Thêm filter Người tạo nếu có danh sách người dùng
     if (danhSachNguoiDung && danhSachNguoiDung.length > 0) {
@@ -173,6 +172,33 @@ export function NhomDoiTacListView({
 
     return filters
   }, [danhSachNguoiDung])
+
+  // Nếu hideTabs = true, chỉ render GenericListView không có tabs
+  if (hideTabs) {
+    return (
+      <>
+        <GenericListView<NhomDoiTac>
+          data={danhSach || []}
+          cotHienThi={filteredCotHienThi}
+          hanhDongItems={hanhDongItems}
+          bulkActions={bulkActions}
+          quickFilters={quickFilters}
+          isLoading={isLoading}
+          error={error}
+          onRefresh={() => refetch()}
+          onAddNew={() => onAddNew()}
+          onRowClick={(row) => onView?.(row.id)}
+          tenLuuTru={`${TEN_LUU_TRU_COT}-${activeTab}`}
+          onXuatExcel={handleXuatExcel}
+          onNhapExcel={handleNhapExcel}
+          timKiemPlaceholder="Tìm kiếm theo tên, mô tả..."
+          onTimKiem={() => {}} // GenericListView sẽ tự filter dữ liệu
+          enableRowSelection={true}
+          pageSize={50}
+        />
+      </>
+    )
+  }
 
   return (
     <>

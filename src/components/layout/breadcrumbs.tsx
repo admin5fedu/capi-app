@@ -18,6 +18,7 @@ export function Breadcrumbs() {
     '/doi-tac/danh-sach-doi-tac': 'Danh sách đối tác',
     '/thiet-lap/nguoi-dung': 'Người dùng',
     '/thiet-lap/vai-tro': 'Vai trò',
+    '/thiet-lap/phong-ban': 'Phòng ban',
     '/thiet-lap/phan-quyen': 'Phân quyền',
     '/thiet-lap/cai-dat': 'Cài đặt',
   }

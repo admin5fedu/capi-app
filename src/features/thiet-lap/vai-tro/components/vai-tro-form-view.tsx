@@ -8,8 +8,11 @@ import { GenericFormView, FormFieldGroup } from '@/shared/components/generic/gen
 
 // Schema validation
 const vaiTroSchema = z.object({
-  ten: z.string().min(1, 'Tên vai trò là bắt buộc').max(255, 'Tên vai trò quá dài'),
-  mo_ta: z.string().max(1000, 'Mô tả quá dài').optional().nullable(),
+  ten_vai_tro: z.string().min(1, 'Tên vai trò là bắt buộc').max(255, 'Tên vai trò quá dài'),
+  mo_ta: z.preprocess(
+    (val) => val === '' ? null : val,
+    z.string().max(1000, 'Mô tả quá dài').nullable().optional()
+  ),
 })
 
 type VaiTroFormData = z.infer<typeof vaiTroSchema>
@@ -36,7 +39,7 @@ export function VaiTroFormView({
   const form = useForm<VaiTroFormData>({
     resolver: zodResolver(vaiTroSchema),
     defaultValues: {
-      ten: '',
+      ten_vai_tro: '',
       mo_ta: null,
     },
   })
@@ -48,18 +51,18 @@ export function VaiTroFormView({
 
   // Load dữ liệu khi chỉnh sửa
   useEffect(() => {
-    if (chiTiet) {
+    if (chiTiet && editId && chiTiet.id?.toString() === editId.toString()) {
       reset({
-        ten: chiTiet.ten,
+        ten_vai_tro: chiTiet.ten_vai_tro || chiTiet.ten || '',
         mo_ta: chiTiet.mo_ta || null,
-      })
+      }, { keepDefaultValues: false })
     }
-  }, [chiTiet, reset])
+  }, [chiTiet, editId, reset])
 
   const onSubmit = async (data: VaiTroFormData) => {
     try {
       const formData: VaiTroInsert | VaiTroUpdate = {
-        ten: data.ten,
+        ten_vai_tro: data.ten_vai_tro,
         mo_ta: data.mo_ta || null,
       }
 
@@ -92,7 +95,7 @@ export function VaiTroFormView({
       title: 'Thông tin cơ bản',
       fields: [
         {
-          key: 'ten',
+          key: 'ten_vai_tro',
           label: 'Tên vai trò',
           type: 'text',
           placeholder: 'Nhập tên vai trò',

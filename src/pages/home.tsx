@@ -46,13 +46,13 @@ const functionCards: FunctionCard[] = [
   {
     id: 'thiet-lap',
     title: 'Thiết lập',
-    description: 'Quản lý người dùng, vai trò, phân quyền và cài đặt hệ thống',
+    description: 'Quản lý người dùng, vai trò, phòng ban, phân quyền và cài đặt hệ thống',
     icon: Settings,
     path: '/thiet-lap',
     gradientFrom: 'from-purple-50',
     gradientTo: 'to-pink-50',
     iconBg: 'bg-gradient-to-br from-purple-500 to-pink-600',
-    moduleCount: 4,
+    moduleCount: 5,
   },
 ]
 
@@ -64,7 +64,7 @@ export function HomePage() {
       {/* Header */}
       <div className="space-y-2">
         <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-          Chào mừng trở lại, {nguoiDung?.ho_ten || 'Người dùng'}!
+          Chào mừng trở lại, {nguoiDung?.ho_va_ten || nguoiDung?.ho_ten || 'Người dùng'}!
         </h1>
         <p className="text-muted-foreground text-lg">
           Chọn chức năng để bắt đầu làm việc

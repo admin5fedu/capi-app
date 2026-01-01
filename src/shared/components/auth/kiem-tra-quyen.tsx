@@ -22,6 +22,8 @@ interface KiemTraQuyenProps {
 /**
  * Component kiểm tra quyền truy cập
  * Bọc các module/pages cần bảo vệ bằng quyền
+ * 
+ * TẠM THỜI: Đã tắt tất cả kiểm tra phân quyền, chỉ giữ lại kiểm tra đăng nhập
  */
 export function KiemTraQuyen({
   children,
@@ -29,7 +31,7 @@ export function KiemTraQuyen({
   requireAll = false,
   noPermissionMessage = 'Bạn không có quyền truy cập trang này',
 }: KiemTraQuyenProps) {
-  const { user, nguoiDung, vaiTro, isLoading } = useAuthStore()
+  const { user, nguoiDung, isLoading } = useAuthStore()
 
   // Chỉ hiển thị loading khi thực sự chưa có data (lần đầu load)
   // Không hiển thị loading khi đang fetch background (isFetchingSession)
@@ -41,7 +43,7 @@ export function KiemTraQuyen({
     )
   }
 
-  // Chưa đăng nhập
+  // Chưa đăng nhập - vẫn kiểm tra đăng nhập
   if (!user || !nguoiDung) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -56,21 +58,31 @@ export function KiemTraQuyen({
     )
   }
 
-  // Kiểm tra người dùng có active không
-  if (!nguoiDung.is_active) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center space-y-4 p-8">
-          <AlertCircle className="h-16 w-16 mx-auto text-destructive" />
-          <h2 className="text-2xl font-bold">Tài khoản đã bị vô hiệu hóa</h2>
-          <p className="text-muted-foreground">
-            Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.
-          </p>
-        </div>
-      </div>
-    )
-  }
+  // TẠM THỜI: Bỏ qua tất cả kiểm tra phân quyền
+  // Chỉ cần đăng nhập là đủ để truy cập
+  // TODO: Bật lại kiểm tra phân quyền khi cần
+  
+  // Kiểm tra người dùng có active không - TẠM THỜI BỎ QUA
+  // if (!nguoiDung.is_active) {
+  //   return (
+  //     <div className="flex items-center justify-center min-h-screen">
+  //       <div className="text-center space-y-4 p-8">
+  //         <AlertCircle className="h-16 w-16 mx-auto text-destructive" />
+  //         <h2 className="text-2xl font-bold">Tài khoản đã bị vô hiệu hóa</h2>
+  //         <p className="text-muted-foreground">
+  //           Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.
+  //         </p>
+  //       </div>
+  //     </div>
+  //   )
+  // }
 
+  // TẠM THỜI: Luôn cho phép truy cập nếu đã đăng nhập
+  // Bỏ qua tất cả kiểm tra vai trò và quyền
+  return <>{children}</>
+
+  // CODE CŨ - Đã comment out để tạm thời bỏ phân quyền
+  /*
   // Nếu không có yêu cầu vai trò cụ thể, cho phép truy cập
   if (!allowedVaiTroIds || allowedVaiTroIds.length === 0) {
     return <>{children}</>
@@ -103,7 +115,7 @@ export function KiemTraQuyen({
           <p className="text-muted-foreground">{noPermissionMessage}</p>
           {process.env.NODE_ENV === 'development' && (
             <div className="mt-4 text-sm text-muted-foreground">
-              <p>Vai trò hiện tại: {vaiTro.ten} ({vaiTro.id})</p>
+              <p>Vai trò hiện tại: {vaiTro.ten_vai_tro || vaiTro.ten} ({vaiTro.id})</p>
               <p>Vai trò được phép: {allowedVaiTroIds.join(', ')}</p>
             </div>
           )}
@@ -114,5 +126,6 @@ export function KiemTraQuyen({
 
   // Có quyền, render children
   return <>{children}</>
+  */
 }
 

@@ -20,7 +20,7 @@ export async function getDoiTacListService(
 }
 
 export async function getDoiTacByIdService(id: string): Promise<DoiTac> {
-  return getDoiTacById(id)
+  return getDoiTacById(Number(id))
 }
 
 export async function createDoiTacService(data: DoiTacInsert): Promise<DoiTac> {
@@ -31,11 +31,11 @@ export async function updateDoiTacService(
   id: string,
   data: DoiTacUpdate
 ): Promise<DoiTac> {
-  return updateDoiTac(id, data)
+  return updateDoiTac(Number(id), data)
 }
 
 export async function deleteDoiTacService(id: string): Promise<{ success: boolean }> {
-  return deleteDoiTac(id)
+  return deleteDoiTac(Number(id))
 }
 
 export async function searchDoiTacService(keyword: string): Promise<DoiTac[]> {

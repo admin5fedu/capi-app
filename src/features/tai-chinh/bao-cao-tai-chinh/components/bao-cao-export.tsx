@@ -30,8 +30,8 @@ export function BaoCaoExport({ data, filters }: BaoCaoExportProps) {
         'Tài khoản đến': gd.tai_khoan_den?.ten || '',
         'Đối tác': gd.doi_tac?.ten || '',
         'Số chứng từ': gd.so_chung_tu || '',
-        'Người tạo': gd.nguoi_tao?.ho_ten || '',
-        'Ngày tạo': gd.created_at ? new Date(gd.created_at).toLocaleDateString('vi-VN') : '',
+        'Người tạo': gd.nguoi_tao?.ho_va_ten || gd.nguoi_tao?.ho_ten || '',
+        'Ngày tạo': gd.tg_tao || gd.created_at ? new Date(gd.tg_tao || gd.created_at || '').toLocaleDateString('vi-VN') : '',
       }))
 
       // Create workbook

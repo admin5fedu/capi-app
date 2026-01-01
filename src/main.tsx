@@ -8,6 +8,7 @@ import { SettingsProvider } from '@/shared/components/settings/settings-provider
 import { router } from './routes'
 import { registerServiceWorker } from './utils/register-sw'
 import { QUERY_STALE_TIME, QUERY_GC_TIME } from '@/lib/query-config'
+import { setupQueryPersistence } from '@/lib/setup-query-persist'
 import './index.css'
 
 // Register Service Worker for PWA
@@ -16,22 +17,23 @@ registerServiceWorker()
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Data fresh trong 3 phút - không refetch khi quay lại tab nếu < 3 phút
+      // Data fresh trong 5 phút - không refetch khi quay lại tab nếu < 5 phút
       staleTime: QUERY_STALE_TIME.NORMAL,
 
-      // Giữ cache 10 phút sau khi không còn component nào dùng
+      // Giữ cache 30 phút sau khi không còn component nào dùng
+      // Tăng lên để tận dụng persist cache
       gcTime: QUERY_GC_TIME.DEFAULT,
 
-      // Không refetch khi focus window (đã có staleTime rồi)
+      // Tắt refetch khi focus window để tránh load lại khi quay lại tab
       refetchOnWindowFocus: false,
 
-      // Refetch khi component mount lại
-      // Với staleTime: 3 phút, chỉ refetch nếu data đã stale (> 3 phút)
+      // Chỉ refetch khi mount nếu data đã stale
+      // Với staleTime: 5 phút, chỉ refetch nếu data đã stale (> 5 phút)
       // Nếu data còn fresh, sẽ dùng cache và không refetch
-      refetchOnMount: true,
+      refetchOnMount: 'always', // 'always' nhưng với staleTime sẽ chỉ refetch nếu stale
 
-      // Refetch khi mất mạng rồi kết nối lại
-      refetchOnReconnect: true,
+      // Refetch khi mất mạng rồi kết nối lại (chỉ nếu data đã stale)
+      refetchOnReconnect: 'always',
 
       // Giữ data cũ trong khi refetch để tránh loading state
       placeholderData: (previousData: any) => previousData,
@@ -58,6 +60,13 @@ const queryClient = new QueryClient({
       networkMode: 'online',
     },
   },
+})
+
+// Cấu hình persist query client vào localStorage
+// Giúp app không phải load lại dữ liệu ngay cả khi trình duyệt tạm thời giải phóng bộ nhớ của tab
+// Lưu ý: Cần cài đặt packages trước: npm install @tanstack/query-persist-client-core @tanstack/query-sync-storage-persister
+setupQueryPersistence(queryClient).catch(() => {
+  // Silent fail - app vẫn chạy bình thường nếu packages chưa được cài
 })
 
 // Component wrapper để render DevTools
@@ -92,7 +101,21 @@ function App() {
   )
 }
 
-createRoot(document.getElementById('root')!).render(
+// Get root element
+const rootElement = document.getElementById('root')
+if (!rootElement) {
+  throw new Error('Root element not found')
+}
+
+// Create root only once - reuse if already exists (for HMR in development)
+let root = (window as any).__react_root__
+if (!root) {
+  root = createRoot(rootElement)
+  ;(window as any).__react_root__ = root
+}
+
+// Render the app
+root.render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <App />

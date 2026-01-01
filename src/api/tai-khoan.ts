@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import type { TaiKhoan, TaiKhoanInsert, TaiKhoanUpdate } from '@/types/tai-khoan'
 
-const TABLE_NAME = 'zz_cst_tai_khoan'
+const TABLE_NAME = 'zz_capi_tai_khoan'
 
 /**
  * Lấy danh sách tài khoản
@@ -10,7 +10,7 @@ export async function getTaiKhoanList() {
   const { data, error } = await supabase
     .from(TABLE_NAME)
     .select('*')
-    .order('created_at', { ascending: false })
+    .order('tg_tao', { ascending: false })
 
   if (error) throw error
   return data as TaiKhoan[]
@@ -19,7 +19,7 @@ export async function getTaiKhoanList() {
 /**
  * Lấy thông tin một tài khoản theo ID
  */
-export async function getTaiKhoanById(id: string) {
+export async function getTaiKhoanById(id: number) {
   const { data, error } = await supabase
     .from(TABLE_NAME)
     .select('*')
@@ -47,12 +47,12 @@ export async function createTaiKhoan(taiKhoan: TaiKhoanInsert) {
 /**
  * Cập nhật thông tin tài khoản
  */
-export async function updateTaiKhoan(id: string, taiKhoan: TaiKhoanUpdate) {
+export async function updateTaiKhoan(id: number, taiKhoan: TaiKhoanUpdate) {
   const { data, error } = await supabase
     .from(TABLE_NAME)
     .update({
       ...taiKhoan,
-      updated_at: new Date().toISOString(),
+      tg_cap_nhat: new Date().toISOString(),
     })
     .eq('id', id)
     .select()
@@ -65,7 +65,7 @@ export async function updateTaiKhoan(id: string, taiKhoan: TaiKhoanUpdate) {
 /**
  * Xóa tài khoản
  */
-export async function deleteTaiKhoan(id: string) {
+export async function deleteTaiKhoan(id: number) {
   const { error } = await supabase
     .from(TABLE_NAME)
     .delete()
@@ -83,7 +83,7 @@ export async function searchTaiKhoan(keyword: string) {
     .from(TABLE_NAME)
     .select('*')
     .or(`ten.ilike.%${keyword}%,so_tai_khoan.ilike.%${keyword}%,ngan_hang.ilike.%${keyword}%,chu_tai_khoan.ilike.%${keyword}%`)
-    .order('created_at', { ascending: false })
+    .order('tg_tao', { ascending: false })
 
   if (error) throw error
   return data as TaiKhoan[]

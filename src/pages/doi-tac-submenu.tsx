@@ -14,18 +14,18 @@ interface ModuleCard {
 
 const doiTacModules: ModuleCard[] = [
   {
-    id: 'nhom-doi-tac',
-    title: 'Nhóm đối tác',
-    description: 'Quản lý nhóm đối tác, phân loại khách hàng',
+    id: 'khach-hang',
+    title: 'Khách hàng',
+    description: 'Quản lý nhóm khách hàng và danh sách khách hàng',
     icon: Users,
-    path: '/doi-tac/nha-cung-cap',
+    path: '/doi-tac/nhom-khach-hang',
   },
   {
-    id: 'danh-sach-doi-tac',
-    title: 'Danh sách đối tác',
-    description: 'Quản lý thông tin chi tiết đối tác',
+    id: 'nha-cung-cap',
+    title: 'Nhà cung cấp',
+    description: 'Quản lý nhóm nhà cung cấp và danh sách nhà cung cấp',
     icon: Users,
-    path: '/doi-tac/danh-sach-doi-tac',
+    path: '/doi-tac/nhom-nha-cung-cap',
   },
 ]
 

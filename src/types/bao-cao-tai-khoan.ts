@@ -95,7 +95,7 @@ export interface BaoCaoTaiKhoanGiaoDich {
   mo_ta?: string
   danh_muc?: { id: string; ten: string }
   doi_tac?: { id: string; ten: string }
-  nguoi_tao?: { id: string; ho_ten: string }
+  nguoi_tao?: { id: string; ho_va_ten?: string | null; ho_ten?: string | null }
   tai_khoan?: { id: string; ten: string }
   tai_khoan_den?: { id: string; ten: string }
 }

@@ -8,9 +8,9 @@ import type { VaiTro } from '@/types/vai-tro'
 // Các cột hiển thị trong bảng
 export const COT_HIEN_THI: CotHienThi<VaiTro>[] = [
   {
-    key: 'ten',
+    key: 'ten_vai_tro',
     label: 'Tên vai trò',
-    accessorKey: 'ten',
+    accessorKey: (row: VaiTro) => row.ten_vai_tro || row.ten || '',
     sortable: true,
     width: 200,
     align: 'left',
@@ -27,9 +27,9 @@ export const COT_HIEN_THI: CotHienThi<VaiTro>[] = [
     cell: (value) => (value ? String(value) : null),
   },
   {
-    key: 'created_at',
+    key: 'tg_tao',
     label: 'Ngày tạo',
-    accessorKey: 'created_at',
+    accessorKey: (row: VaiTro) => row.tg_tao || row.created_at || null,
     sortable: true,
     width: 150,
     align: 'left',
@@ -44,9 +44,9 @@ export const COT_HIEN_THI: CotHienThi<VaiTro>[] = [
     },
   },
   {
-    key: 'updated_at',
+    key: 'tg_cap_nhat',
     label: 'Ngày cập nhật',
-    accessorKey: 'updated_at',
+    accessorKey: (row: VaiTro) => row.tg_cap_nhat || row.updated_at || null,
     sortable: true,
     width: 150,
     align: 'left',

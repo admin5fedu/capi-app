@@ -19,6 +19,7 @@ interface DoiTacListViewProps {
   onAddNew: () => void
   onView?: (id: string) => void
   defaultTab?: TabType
+  hideTabs?: boolean // Ẩn tab group khi được gọi từ module wrapper
 }
 
 /**
@@ -29,6 +30,7 @@ export function DoiTacListView({
   onAddNew,
   onView,
   // defaultTab = 'nha_cung_cap', // Unused parameter
+  hideTabs = false,
 }: DoiTacListViewProps) {
   const navigate = useNavigate()
   const location = useLocation()
@@ -49,52 +51,31 @@ export function DoiTacListView({
 
   // Tạo map để tra cứu tên người dùng nhanh
   const nguoiDungMap = useMemo(() => {
-    if (!danhSachNguoiDung) return new Map<string, string>()
+    if (!danhSachNguoiDung) return new Map<string | number, string>()
     return new Map(
       danhSachNguoiDung.map((nd) => [
         nd.id,
-        nd.ho_ten || nd.email || 'N/A',
+        nd.ho_va_ten || nd.ho_ten || nd.email || 'N/A',
       ])
     )
   }, [danhSachNguoiDung])
 
-  // Tạo map để tra cứu tên nhóm đối tác nhanh
-  const nhomDoiTacMap = useMemo(() => {
-    if (!danhSachNhomDoiTac) return new Map<string, string>()
-    return new Map(
-      danhSachNhomDoiTac.map((nhom: any) => [
-        nhom.id,
-        nhom.ten,
-      ])
-    )
-  }, [danhSachNhomDoiTac])
-
-  // Cập nhật cột hiển thị để map tên người tạo và nhóm đối tác
+  // Cập nhật cột hiển thị để map tên người tạo
   const cotHienThiWithMaps = useMemo(() => {
     return COT_HIEN_THI.map((cot) => {
       if (cot.key === 'nguoi_tao_id') {
         return {
           ...cot,
-          cell: (value: string | null) => {
+          cell: (value: number | string | null) => {
             if (!value) return '—'
-            const tenNguoiTao = nguoiDungMap.get(value)
-            return React.createElement('span', {}, tenNguoiTao || value)
-          },
-        }
-      }
-      if (cot.key === 'nhom_doi_tac_id') {
-        return {
-          ...cot,
-          cell: (value: string | null) => {
-            if (!value) return '—'
-            const tenNhom = nhomDoiTacMap.get(value)
-            return React.createElement('span', {}, tenNhom || String(value))
+            const tenNguoiTao = nguoiDungMap.get(typeof value === 'string' ? value : Number(value))
+            return React.createElement('span', {}, tenNguoiTao || String(value))
           },
         }
       }
       return cot
     })
-  }, [nguoiDungMap, nhomDoiTacMap])
+  }, [nguoiDungMap])
 
   // Sync activeTab với URL
   useEffect(() => {
@@ -103,6 +84,7 @@ export function DoiTacListView({
   
   // Handler khi chuyển tab - navigate đến URL mới
   const handleTabChange = (newTab: TabType) => {
+    if (hideTabs) return // Không navigate nếu đang ẩn tabs
     const tabPath = newTab === 'khach_hang' ? 'khach-hang' : 'nha-cung-cap'
     navigate(`/doi-tac/danh-sach-${tabPath}`)
   }
@@ -157,7 +139,7 @@ export function DoiTacListView({
       requiresConfirm: true,
       confirmTitle: 'Xác nhận xóa đối tác',
       confirmDescription: (row: DoiTac) =>
-        `Bạn có chắc chắn muốn xóa đối tác "${row.ten}"? Hành động này không thể hoàn tác.`,
+        `Bạn có chắc chắn muốn xóa đối tác "${row.ten_doi_tac || ''}"? Hành động này không thể hoàn tác.`,
     },
   ]
 

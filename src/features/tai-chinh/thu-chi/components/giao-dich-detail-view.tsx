@@ -221,13 +221,13 @@ export function GiaoDichDetailView({
         {
           key: 'nguoi_tao',
           label: 'Người tạo',
-          accessor: (data) => data.nguoi_tao?.ho_ten || null,
+          accessor: (data) => data.nguoi_tao?.ho_va_ten || data.nguoi_tao?.ho_ten || null,
           render: (value) => value || '—',
         },
         {
-          key: 'created_at',
+          key: 'tg_tao',
           label: 'Ngày tạo',
-          accessor: 'created_at',
+          accessor: (data: any) => data.tg_tao || data.created_at || null,
           render: (value) => {
             if (!value) return '—'
             return new Date(value).toLocaleDateString('vi-VN', {
@@ -240,9 +240,9 @@ export function GiaoDichDetailView({
           },
         },
         {
-          key: 'updated_at',
+          key: 'tg_cap_nhat',
           label: 'Ngày cập nhật',
-          accessor: 'updated_at',
+          accessor: (data: any) => data.tg_cap_nhat || data.updated_at || null,
           render: (value) => {
             if (!value) return '—'
             return new Date(value).toLocaleDateString('vi-VN', {

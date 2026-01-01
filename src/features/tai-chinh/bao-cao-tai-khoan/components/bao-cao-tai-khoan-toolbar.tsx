@@ -265,7 +265,7 @@ export function BaoCaoTaiKhoanToolbar({
         if (nt) {
           activeFilters.push({
             id: `nguoi-tao-${id}`,
-            label: nt.ho_ten,
+            label: nt.ho_va_ten || nt.ho_ten || '',
             type: 'Người tạo',
             onRemove: () => {
               const newIds = filters.nguoiTaoIds?.filter((i: string) => i !== id)

@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { NumberInput } from '@/components/ui/number-input'
 import { AutocompleteInput, type AutocompleteOption } from '@/components/ui/autocomplete-input'
+import { translateZodError } from '@/lib/zod-error-translator'
 
 // Schema validation - sẽ được tạo động với editId để validate mã phiếu
 const createGiaoDichSchema = (editId?: number | null) =>
@@ -32,17 +33,47 @@ const createGiaoDichSchema = (editId?: number | null) =>
       ma_phieu: z
         .string()
         .min(1, 'Mã phiếu là bắt buộc'),
-      danh_muc_id: z.string().optional().nullable(),
-      mo_ta: z.string().max(2000, 'Mô tả quá dài').optional().nullable(),
+      danh_muc_id: z.preprocess(
+        (val) => val === '' ? null : val,
+        z.string().nullable().optional()
+      ),
+      mo_ta: z.preprocess(
+        (val) => val === '' ? null : val,
+        z.string().max(2000, 'Mô tả quá dài').nullable().optional()
+      ),
       so_tien: z.number().min(0, 'Số tiền phải lớn hơn hoặc bằng 0'),
-      ty_gia_id: z.number().optional().nullable(),
-      ty_gia_value: z.number().optional().nullable(), // Giá trị tỷ giá có thể điều chỉnh
-      tai_khoan_id: z.string().optional().nullable(),
-      tai_khoan_den_id: z.string().optional().nullable(),
-      doi_tac_id: z.string().optional().nullable(),
-      so_chung_tu: z.string().max(100, 'Số chứng từ quá dài').optional().nullable(),
-      hinh_anh: z.array(z.string()).optional().nullable(),
-      ghi_chu: z.string().max(2000, 'Ghi chú quá dài').optional().nullable(),
+      ty_gia_id: z.preprocess(
+        (val) => val === '' || val === null || val === undefined ? null : Number(val),
+        z.number().nullable().optional()
+      ),
+      ty_gia_value: z.preprocess(
+        (val) => val === '' || val === null || val === undefined ? null : Number(val),
+        z.number().nullable().optional()
+      ),
+      tai_khoan_id: z.preprocess(
+        (val) => val === '' ? null : val,
+        z.string().nullable().optional()
+      ),
+      tai_khoan_den_id: z.preprocess(
+        (val) => val === '' ? null : val,
+        z.string().nullable().optional()
+      ),
+      doi_tac_id: z.preprocess(
+        (val) => val === '' ? null : val,
+        z.string().nullable().optional()
+      ),
+      so_chung_tu: z.preprocess(
+        (val) => val === '' ? null : val,
+        z.string().max(100, 'Số chứng từ quá dài').nullable().optional()
+      ),
+      hinh_anh: z.preprocess(
+        (val) => val === null || val === undefined ? null : val,
+        z.array(z.string()).nullable().optional()
+      ),
+      ghi_chu: z.preprocess(
+        (val) => val === '' ? null : val,
+        z.string().max(2000, 'Ghi chú quá dài').nullable().optional()
+      ),
     })
     .refine(
       (data) => {
@@ -146,7 +177,7 @@ function MultipleImageUpload({
           body: formData,
         })
 
-        if (!response.ok) throw new Error('Upload failed')
+        if (!response.ok) throw new Error('Tải lên thất bại')
         const data = await response.json()
         return data.secure_url
       })
@@ -682,7 +713,7 @@ export function GiaoDichFormView({
                   placeholder="Nhập số tiền"
                 />
                 {error && (
-                  <p className="text-xs text-destructive">{error.message as string}</p>
+                  <p className="text-xs text-destructive">{translateZodError(error.message as string)}</p>
                 )}
               </div>
             )
@@ -729,7 +760,7 @@ export function GiaoDichFormView({
                   placeholder="Nhập tỷ giá"
                 />
                 {error && (
-                  <p className="text-xs text-destructive">{error.message as string}</p>
+                  <p className="text-xs text-destructive">{translateZodError(error.message as string)}</p>
                 )}
               </div>
             )
@@ -792,7 +823,7 @@ export function GiaoDichFormView({
                   )}
                 />
                 {error && (
-                  <p className="text-xs text-destructive">{error.message as string}</p>
+                  <p className="text-xs text-destructive">{translateZodError(error.message as string)}</p>
                 )}
               </div>
             )

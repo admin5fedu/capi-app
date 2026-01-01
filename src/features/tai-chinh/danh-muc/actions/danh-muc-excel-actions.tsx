@@ -15,8 +15,8 @@ export function handleXuatExcel(data: DanhMucWithParent[]) {
       'Thứ tự': item.thu_tu ?? 0,
       'Trạng thái': item.is_active ? 'Hoạt động' : 'Vô hiệu hóa',
       'Mô tả': item.mo_ta || '',
-      'Ngày tạo': item.created_at
-        ? new Date(item.created_at).toLocaleDateString('vi-VN')
+      'Ngày tạo': item.tg_tao || item.created_at
+        ? new Date(item.tg_tao || item.created_at || '').toLocaleDateString('vi-VN')
         : '',
     }))
 

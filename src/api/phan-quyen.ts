@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
-import type { PhanQuyen, PhanQuyenInsert, PhanQuyenUpdate } from '@/types/phan-quyen'
+import type { PhanQuyen, PhanQuyenInsert, PhanQuyenUpdate, PhanQuyenJsonb } from '@/types/phan-quyen'
 
-const TABLE_NAME = 'zz_cst_phan_quyen'
+const TABLE_NAME = 'zz_capi_phan_quyen'
 
 /**
  * Lấy danh sách phân quyền theo vai trò
@@ -12,7 +12,6 @@ export async function getPhanQuyenByVaiTro(vaiTroId: string) {
     .select('*')
     .eq('vai_tro_id', vaiTroId)
     .order('module', { ascending: true })
-    .order('action', { ascending: true })
 
   if (error) throw error
   return data as PhanQuyen[]
@@ -27,7 +26,6 @@ export async function getAllPhanQuyen() {
     .select('*')
     .order('vai_tro_id', { ascending: true })
     .order('module', { ascending: true })
-    .order('action', { ascending: true })
 
   if (error) throw error
   return data as PhanQuyen[]
@@ -50,12 +48,12 @@ export async function createPhanQuyen(phanQuyen: PhanQuyenInsert) {
 /**
  * Cập nhật phân quyền
  */
-export async function updatePhanQuyen(id: string, phanQuyen: PhanQuyenUpdate) {
+export async function updatePhanQuyen(id: number, phanQuyen: PhanQuyenUpdate) {
   const { data, error } = await supabase
     .from(TABLE_NAME)
     .update({
       ...phanQuyen,
-      updated_at: new Date().toISOString(),
+      tg_cap_nhat: new Date().toISOString(),
     })
     .eq('id', id)
     .select()
@@ -68,7 +66,7 @@ export async function updatePhanQuyen(id: string, phanQuyen: PhanQuyenUpdate) {
 /**
  * Xóa phân quyền
  */
-export async function deletePhanQuyen(id: string) {
+export async function deletePhanQuyen(id: number) {
   const { error } = await supabase
     .from(TABLE_NAME)
     .delete()
@@ -80,20 +78,20 @@ export async function deletePhanQuyen(id: string) {
 
 /**
  * Upsert phân quyền (tạo mới hoặc cập nhật nếu đã tồn tại)
+ * Với cấu trúc JSONB array, replace toàn bộ array
  */
 export async function upsertPhanQuyen(phanQuyen: PhanQuyenInsert) {
-  // Kiểm tra xem đã tồn tại chưa
+  // Kiểm tra xem đã tồn tại chưa (theo vai_tro_id + module)
   const { data: existing } = await supabase
     .from(TABLE_NAME)
-    .select('id')
+    .select('*')
     .eq('vai_tro_id', phanQuyen.vai_tro_id)
     .eq('module', phanQuyen.module)
-    .eq('action', phanQuyen.action)
-    .single()
+    .maybeSingle()
 
   if (existing) {
-    // Cập nhật nếu đã tồn tại
-    return updatePhanQuyen(existing.id, { allowed: phanQuyen.allowed })
+    // Replace toàn bộ array với array mới
+    return updatePhanQuyen(existing.id, { phan_quyen: phanQuyen.phan_quyen })
   } else {
     // Tạo mới nếu chưa tồn tại
     return createPhanQuyen(phanQuyen)
@@ -109,44 +107,52 @@ export async function getPhanQuyenByModule(module: string) {
     .select('*')
     .eq('module', module)
     .order('vai_tro_id', { ascending: true })
-    .order('action', { ascending: true })
 
   if (error) throw error
   return data as PhanQuyen[]
 }
 
 /**
- * Cập nhật nhiều phân quyền cùng lúc
+ * Cập nhật nhiều phân quyền cùng lúc cho một vai trò
+ * Groups by module và tạo array chỉ với các quyền được phép (allowed: true)
  */
 export async function bulkUpdatePhanQuyen(
   vaiTroId: string,
   updates: Array<{ module: string; action: string; allowed: boolean }>
 ) {
-  // Lấy tất cả phân quyền hiện tại của vai trò
-  const currentPermissions = await getPhanQuyenByVaiTro(vaiTroId)
-
-  // Tạo map để tra cứu nhanh
-  const permissionMap = new Map<string, PhanQuyen>()
-  currentPermissions.forEach((p) => {
-    const key = `${p.module}:${p.action}`
-    permissionMap.set(key, p)
+  // Group updates by module, chỉ giữ lại các action có allowed: true
+  const moduleMap = new Map<string, Set<string>>()
+  updates.forEach((update) => {
+    if (update.allowed) {
+      if (!moduleMap.has(update.module)) {
+        moduleMap.set(update.module, new Set())
+      }
+      moduleMap.get(update.module)!.add(update.action)
+    }
   })
 
-  // Xử lý từng update
-  const promises = updates.map(async (update) => {
-    const key = `${update.module}:${update.action}`
-    const existing = permissionMap.get(key)
+  // Lấy tất cả phân quyền hiện tại của vai trò
+  const currentPermissions = await getPhanQuyenByVaiTro(vaiTroId)
+  const permissionMap = new Map<string, PhanQuyen>()
+  currentPermissions.forEach((p) => {
+    if (p.module) {
+      permissionMap.set(p.module, p)
+    }
+  })
+
+  // Xử lý từng module
+  const promises = Array.from(moduleMap.entries()).map(async ([module, allowedActions]) => {
+    const existing = permissionMap.get(module)
+    // Chuyển Set thành array và sort để consistent
+    const phanQuyen: PhanQuyenJsonb = Array.from(allowedActions).sort()
 
     if (existing) {
-      // Cập nhật nếu đã tồn tại
-      return updatePhanQuyen(existing.id, { allowed: update.allowed })
+      return updatePhanQuyen(existing.id, { phan_quyen: phanQuyen })
     } else {
-      // Tạo mới nếu chưa tồn tại
       return createPhanQuyen({
         vai_tro_id: vaiTroId,
-        module: update.module,
-        action: update.action,
-        allowed: update.allowed,
+        module,
+        phan_quyen: phanQuyen,
       })
     }
   })
@@ -157,36 +163,45 @@ export async function bulkUpdatePhanQuyen(
 
 /**
  * Cập nhật phân quyền cho nhiều vai trò cùng lúc (theo module)
+ * Groups by vai_tro_id và tạo array chỉ với các quyền được phép (allowed: true)
  */
 export async function bulkUpdatePhanQuyenByModule(
   module: string,
   updates: Array<{ vai_tro_id: string; action: string; allowed: boolean }>
 ) {
-  // Lấy tất cả phân quyền hiện tại của module
-  const currentPermissions = await getPhanQuyenByModule(module)
-
-  // Tạo map để tra cứu nhanh
-  const permissionMap = new Map<string, PhanQuyen>()
-  currentPermissions.forEach((p) => {
-    const key = `${p.vai_tro_id}:${p.action}`
-    permissionMap.set(key, p)
+  // Group updates by vai_tro_id, chỉ giữ lại các action có allowed: true
+  const vaiTroMap = new Map<string, Set<string>>()
+  updates.forEach((update) => {
+    if (update.allowed) {
+      if (!vaiTroMap.has(update.vai_tro_id)) {
+        vaiTroMap.set(update.vai_tro_id, new Set())
+      }
+      vaiTroMap.get(update.vai_tro_id)!.add(update.action)
+    }
   })
 
-  // Xử lý từng update
-  const promises = updates.map(async (update) => {
-    const key = `${update.vai_tro_id}:${update.action}`
-    const existing = permissionMap.get(key)
+  // Lấy tất cả phân quyền hiện tại của module
+  const currentPermissions = await getPhanQuyenByModule(module)
+  const permissionMap = new Map<string, PhanQuyen>()
+  currentPermissions.forEach((p) => {
+    if (p.vai_tro_id) {
+      permissionMap.set(p.vai_tro_id, p)
+    }
+  })
+
+  // Xử lý từng vai trò
+  const promises = Array.from(vaiTroMap.entries()).map(async ([vaiTroId, allowedActions]) => {
+    const existing = permissionMap.get(vaiTroId)
+    // Chuyển Set thành array và sort để consistent
+    const phanQuyen: PhanQuyenJsonb = Array.from(allowedActions).sort()
 
     if (existing) {
-      // Cập nhật nếu đã tồn tại
-      return updatePhanQuyen(existing.id, { allowed: update.allowed })
+      return updatePhanQuyen(existing.id, { phan_quyen: phanQuyen })
     } else {
-      // Tạo mới nếu chưa tồn tại
       return createPhanQuyen({
-        vai_tro_id: update.vai_tro_id,
+        vai_tro_id: vaiTroId,
         module,
-        action: update.action,
-        allowed: update.allowed,
+        phan_quyen: phanQuyen,
       })
     }
   })
@@ -194,4 +209,3 @@ export async function bulkUpdatePhanQuyenByModule(
   const results = await Promise.all(promises)
   return results
 }
-

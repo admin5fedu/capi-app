@@ -16,7 +16,7 @@ export const nhomDoiTacModuleConfig: ModuleConfig = {
 
   // Shared config (dùng chung cho tất cả tabs)
   shared: {
-    defaultColumns: COT_HIEN_THI.filter((cot) => cot.key !== 'loai'), // Ẩn cột loại vì đã có tab
+    defaultColumns: COT_HIEN_THI.filter((cot) => cot.key !== 'hang_muc'), // Ẩn cột loại vì đã có tab
   },
 
   tabs: [
@@ -25,16 +25,16 @@ export const nhomDoiTacModuleConfig: ModuleConfig = {
       label: 'Nhà cung cấp',
       path: '/nha-cung-cap',
 
-      // Cùng table, filter theo loai
+      // Cùng table, filter theo hang_muc
       dataSource: {
         type: 'single_table',
-        tableName: 'zz_cst_nhom_doi_tac',
-        filter: { loai: 'nha_cung_cap' },
+        tableName: 'zz_capi_nhom_doi_tac',
+        filter: { hang_muc: 'nha_cung_cap' },
       },
 
       // Dùng chung columns từ shared
       config: {
-        columns: COT_HIEN_THI.filter((cot) => cot.key !== 'loai'),
+        columns: COT_HIEN_THI.filter((cot) => cot.key !== 'hang_muc'),
       },
     },
     {
@@ -42,16 +42,16 @@ export const nhomDoiTacModuleConfig: ModuleConfig = {
       label: 'Khách hàng',
       path: '/khach-hang',
 
-      // Cùng table, filter theo loai
+      // Cùng table, filter theo hang_muc
       dataSource: {
         type: 'single_table',
-        tableName: 'zz_cst_nhom_doi_tac',
-        filter: { loai: 'khach_hang' },
+        tableName: 'zz_capi_nhom_doi_tac',
+        filter: { hang_muc: 'khach_hang' },
       },
 
       // Dùng chung columns từ shared
       config: {
-        columns: COT_HIEN_THI.filter((cot) => cot.key !== 'loai'),
+        columns: COT_HIEN_THI.filter((cot) => cot.key !== 'hang_muc'),
       },
     },
   ],

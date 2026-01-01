@@ -1,26 +1,28 @@
 /**
- * Type definitions cho bảng zz_cst_phan_quyen (Phân quyền)
+ * Type definitions cho bảng zz_capi_phan_quyen (Phân quyền)
  */
 
+// Cấu trúc JSONB cho phan_quyen: array các action được phép (chỉ lưu các quyền được cấp)
+// Ví dụ: ["xem", "them", "sua"] - chỉ lưu các quyền được cấp, không lưu false
+export type PhanQuyenJsonb = string[]
+
 export interface PhanQuyen {
-  id: string
-  vai_tro_id: string
-  module: string
-  action: string
-  allowed: boolean
-  created_at: string | null
-  updated_at: string | null
+  id: number // bigint (int8) từ DB
+  vai_tro_id: string | null
+  module: string | null
+  phan_quyen: PhanQuyenJsonb | null // JSONB field chứa tất cả actions và allowed status
+  tg_tao: string | null // timestamp with time zone
+  tg_cap_nhat: string | null // timestamp without time zone
 }
 
 export interface PhanQuyenInsert {
   vai_tro_id: string
   module: string
-  action: string
-  allowed: boolean
+  phan_quyen: PhanQuyenJsonb
 }
 
 export interface PhanQuyenUpdate {
-  allowed?: boolean
+  phan_quyen?: PhanQuyenJsonb
 }
 
 export interface PhanQuyenMatrix {
@@ -28,7 +30,7 @@ export interface PhanQuyenMatrix {
   actions: {
     action: string
     allowed: boolean
-    id?: string // ID của record trong DB (nếu có)
+    id?: number // ID của record trong DB (bigint/int8)
   }[]
 }
 
@@ -39,7 +41,7 @@ export interface PhanQuyenVaiTroMatrix {
   permissions: {
     action: string
     allowed: boolean
-    id?: string
+    id?: number // ID của record trong DB (bigint/int8)
   }[]
 }
 

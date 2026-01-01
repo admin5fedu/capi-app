@@ -21,7 +21,7 @@ import type {
 } from '@/types/bao-cao-tai-chinh'
 import dayjs from 'dayjs'
 
-const TABLE_NAME = 'zz_cst_giao_dich'
+const TABLE_NAME = 'zz_capi_giao_dich'
 
 /**
  * Lấy dữ liệu báo cáo với filters
@@ -36,12 +36,12 @@ export async function getBaoCaoData(
     .from(TABLE_NAME)
     .select(`
       *,
-      danh_muc:zz_cst_danh_muc!danh_muc_id(id, ten, loai),
-      ty_gia:zz_cst_ty_gia!ty_gia_id(id, ty_gia, ngay_ap_dung),
-      tai_khoan:zz_cst_tai_khoan!tai_khoan_id(id, ten, loai_tien),
-      tai_khoan_den:zz_cst_tai_khoan!tai_khoan_den_id(id, ten, loai_tien),
-      doi_tac:zz_cst_danh_sach_doi_tac!doi_tac_id(id, ten, loai),
-      nguoi_tao:zz_cst_nguoi_dung!created_by(id, ho_ten)
+      danh_muc:zz_capi_danh_muc!danh_muc_id(id, ten, loai),
+      ty_gia:zz_capi_ty_gia!ty_gia_id(id, ty_gia, ngay_ap_dung),
+      tai_khoan:zz_capi_tai_khoan!tai_khoan_id(id, ten, loai_tien),
+      tai_khoan_den:zz_capi_tai_khoan!tai_khoan_den_id(id, ten, loai_tien),
+      doi_tac:zz_capi_danh_sach_doi_tac!doi_tac_id(id, ten, loai),
+      nguoi_tao:zz_capi_nguoi_dung!created_by(id, ho_va_ten)
     `)
 
   // Apply filters
@@ -75,7 +75,7 @@ export async function getBaoCaoData(
   }
 
   // Order by date
-  query = query.order('ngay', { ascending: false }).order('created_at', { ascending: false })
+  query = query.order('ngay', { ascending: false }).order('tg_tao', { ascending: false })
 
   const { data, error } = await query
 
@@ -405,7 +405,7 @@ function groupByNguoiTao(
     if (!grouped.has(nguoiTaoId)) {
       grouped.set(nguoiTaoId, {
         nguoiTaoId,
-        nguoiTaoTen: gd.nguoi_tao.ho_ten,
+        nguoiTaoTen: gd.nguoi_tao.ho_va_ten || gd.nguoi_tao.ho_ten,
         tongThu: 0,
         tongChi: 0,
         soDu: 0,

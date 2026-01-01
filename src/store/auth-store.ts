@@ -100,12 +100,11 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
       /**
        * Lấy phiên làm việc hiện tại
-       * So sánh user auth với cột email trong bảng zz_cst_nguoi_dung để nhận diện người dùng
+       * So sánh user auth với cột email trong bảng zz_capi_nguoi_dung để nhận diện người dùng
        */
       layPhienLamViecHienTai: async () => {
         // Tránh gọi nhiều lần đồng thời
         if (get().isFetchingSession) {
-          console.log('[Auth Store] ⏸️ Already fetching session, skipping...')
           return
         }
 
@@ -114,7 +113,6 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         const hasExistingData = currentState.session && currentState.user && currentState.nguoiDung
 
         try {
-          console.log('[Auth Store] ⏳ Starting layPhienLamViecHienTai...')
           // Chỉ set loading nếu chưa có data (lần đầu load)
           if (!hasExistingData) {
             set({ isLoading: true, isFetchingSession: true })
@@ -122,103 +120,87 @@ export const useAuthStore = create<AuthState & AuthActions>()(
             set({ isFetchingSession: true }) // Chỉ set flag, không set loading
           }
 
-          // Lấy session hiện tại từ Supabase Auth
-          console.log('[Auth Store] 📡 Fetching session from Supabase Auth...')
+          // Lấy user hiện tại từ Supabase Auth (getUser() đảm bảo lấy user mới nhất)
+          const {
+            data: { user: authUser },
+            error: userError,
+          } = await supabase.auth.getUser()
+          
+          // Lấy session để có access token
           const {
             data: { session },
             error: sessionError,
           } = await supabase.auth.getSession()
-          console.log('[Auth Store] ✅ getSession completed')
+
+          if (userError) {
+            throw userError
+          }
 
           if (sessionError) {
-            console.error('[Auth Store] ❌ Session error:', sessionError)
             throw sessionError
           }
 
-          console.log('[Auth Store] ✅ Session retrieved:', {
-            hasSession: !!session,
-            hasUser: !!session?.user,
-            userEmail: session?.user?.email,
-          })
+          // Set cả user và session
+          set({ session, user: authUser ?? null })
 
-          set({ session, user: session?.user ?? null })
-
-          // Nếu có user, lấy thông tin từ bảng zz_cst_nguoi_dung bằng cách so sánh email
-          // Logic: So sánh user auth email với cột email trong bảng zz_cst_nguoi_dung
+          // Nếu có user, lấy thông tin từ bảng zz_capi_nguoi_dung bằng cách so sánh email
+          // Logic: So sánh user auth email với cột email trong bảng zz_capi_nguoi_dung
           if (session?.user?.email) {
             // Normalize email: lowercase và trim để đảm bảo so sánh chính xác
             const userEmail = session.user.email.toLowerCase().trim()
-            console.log('[Auth Store] 🔍 Looking up user in zz_cst_nguoi_dung table by email:', userEmail)
 
             try {
+              // Query riêng để tránh lỗi 400 với join
+              // Nếu foreign key relationship chưa được setup đúng trong Supabase
               const { data: nguoiDungData, error: nguoiDungError } = await supabase
-                .from('zz_cst_nguoi_dung')
-                .select(`
-                  *,
-                  vai_tro:zz_cst_vai_tro (*)
-                `)
+                .from('zz_capi_nguoi_dung')
+                .select('*')
                 .eq('email', userEmail)
                 .single()
-
-              console.log('[Auth Store] 📊 Query result:', {
-                hasData: !!nguoiDungData,
-                hasError: !!nguoiDungError,
-                errorCode: nguoiDungError?.code,
-                errorMessage: nguoiDungError?.message,
-                data: nguoiDungData ? {
-                  id: nguoiDungData.id,
-                  email: nguoiDungData.email,
-                  ho_ten: nguoiDungData.ho_ten,
-                  hasVaiTro: !!(nguoiDungData as any).vai_tro,
-                } : null,
-              })
 
               if (nguoiDungError) {
                 // Nếu không tìm thấy user trong bảng (PGRST116 = no rows returned)
                 if (nguoiDungError.code === 'PGRST116') {
-                  console.warn(
-                    '[Auth Store] ⚠️ User not found in zz_cst_nguoi_dung table for email:',
-                    userEmail
-                  )
                   set({ nguoiDung: null, vaiTro: null })
                 } else {
-                  console.error('[Auth Store] ❌ Error fetching user data:', {
-                    code: nguoiDungError.code,
-                    message: nguoiDungError.message,
-                    details: nguoiDungError,
-                  })
                   set({ nguoiDung: null, vaiTro: null })
                 }
               } else if (nguoiDungData) {
-                console.log('[Auth Store] ✅ User data found and set:', {
-                  id: nguoiDungData.id,
-                  email: nguoiDungData.email,
-                  ho_ten: nguoiDungData.ho_ten,
-                })
+                // Nếu có vai_tro_id, query thêm thông tin vai trò
+                let vaiTroData: VaiTro | null = null
+                if (nguoiDungData.vai_tro_id) {
+                  try {
+                    const { data: vaiTro, error: vaiTroError } = await supabase
+                      .from('zz_capi_vai_tro')
+                      .select('*')
+                      .eq('id', nguoiDungData.vai_tro_id)
+                      .single()
+
+                    if (!vaiTroError && vaiTro) {
+                      vaiTroData = vaiTro as VaiTro
+                    }
+                  } catch (vaiTroErr) {
+                    // Ignore error khi query vai tro
+                  }
+                }
+
                 set({
                   nguoiDung: nguoiDungData as NguoiDung,
-                  vaiTro: (nguoiDungData as any).vai_tro as VaiTro | null,
+                  vaiTro: vaiTroData,
                 })
               } else {
-                console.warn('[Auth Store] ⚠️ No user data returned (data is null/undefined)')
                 set({ nguoiDung: null, vaiTro: null })
               }
             } catch (err) {
-              console.error('[Auth Store] ❌ Exception in nguoiDung query:', err)
               set({ nguoiDung: null, vaiTro: null })
             }
           } else {
-            console.log('[Auth Store] ℹ️ No user email in session, clearing nguoiDung')
             set({ nguoiDung: null, vaiTro: null })
           }
 
-          console.log('[Auth Store] ✅ Setting isLoading to false')
           set({ isLoading: false, isFetchingSession: false })
-          console.log('[Auth Store] 🎉 layPhienLamViecHienTai completed successfully')
         } catch (error) {
-          console.error('[Auth Store] ❌ Error in layPhienLamViecHienTai:', error)
           set({ isLoading: false, isFetchingSession: false })
-          console.log('[Auth Store] 🔧 Error handled, isLoading set to false')
         }
       },
 

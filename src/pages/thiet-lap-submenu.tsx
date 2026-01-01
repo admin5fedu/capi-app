@@ -4,6 +4,7 @@ import {
   Users,
   UserCog,
   Shield,
+  Building2,
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card'
 
@@ -29,6 +30,13 @@ const thietLapModules: ModuleCard[] = [
     description: 'Quản lý vai trò và chức năng người dùng',
     icon: UserCog,
     path: '/thiet-lap/vai-tro',
+  },
+  {
+    id: 'phong-ban',
+    title: 'Phòng ban',
+    description: 'Quản lý phòng ban và tổ chức',
+    icon: Building2,
+    path: '/thiet-lap/phong-ban',
   },
   {
     id: 'phan-quyen',

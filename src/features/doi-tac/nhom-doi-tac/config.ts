@@ -9,18 +9,18 @@ import React from 'react'
 // Các cột hiển thị trong bảng
 export const COT_HIEN_THI: CotHienThi<NhomDoiTac>[] = [
   {
-    key: 'ten',
+    key: 'ten_nhom',
     label: 'Tên nhóm',
-    accessorKey: 'ten',
+    accessorKey: 'ten_nhom',
     sortable: true,
     width: 250,
     align: 'left',
     defaultVisible: true,
   },
   {
-    key: 'loai',
+    key: 'hang_muc',
     label: 'Loại',
-    accessorKey: 'loai',
+    accessorKey: 'hang_muc',
     sortable: true,
     width: 150,
     align: 'left',
@@ -42,21 +42,6 @@ export const COT_HIEN_THI: CotHienThi<NhomDoiTac>[] = [
     cell: (value) => (value ? String(value) : '—'),
   },
   {
-    key: 'trang_thai',
-    label: 'Trạng thái',
-    accessorKey: 'trang_thai',
-    sortable: true,
-    width: 120,
-    align: 'center',
-    defaultVisible: true,
-    cell: (value) => {
-      if (value) {
-        return React.createElement('span', { className: 'text-green-600' }, 'Hoạt động')
-      }
-      return React.createElement('span', { className: 'text-red-600' }, 'Vô hiệu hóa')
-    },
-  },
-  {
     key: 'nguoi_tao_id',
     label: 'Người tạo',
     accessorKey: 'nguoi_tao_id',
@@ -71,9 +56,9 @@ export const COT_HIEN_THI: CotHienThi<NhomDoiTac>[] = [
     },
   },
   {
-    key: 'created_at',
+    key: 'tg_tao',
     label: 'Ngày tạo',
-    accessorKey: 'created_at',
+    accessorKey: (row: any) => row.tg_tao || row.created_at || null,
     sortable: true,
     width: 150,
     align: 'left',
@@ -88,9 +73,9 @@ export const COT_HIEN_THI: CotHienThi<NhomDoiTac>[] = [
     },
   },
   {
-    key: 'updated_at',
+    key: 'tg_cap_nhat',
     label: 'Ngày cập nhật',
-    accessorKey: 'updated_at',
+    accessorKey: (row: any) => row.tg_cap_nhat || row.updated_at || null,
     sortable: true,
     width: 150,
     align: 'left',

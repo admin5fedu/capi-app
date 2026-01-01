@@ -64,7 +64,7 @@ export function useCreateNhomDoiTac() {
     onSuccess: (_, variables) => {
       // Invalidate cả hai tab
       queryClient.invalidateQueries({ queryKey: nhomDoiTacKeys.lists() })
-      queryClient.invalidateQueries({ queryKey: nhomDoiTacKeys.list(variables.loai) })
+      queryClient.invalidateQueries({ queryKey: nhomDoiTacKeys.list(variables.hang_muc) })
       toast.success('Tạo nhóm đối tác thành công')
     },
     onError: (error: Error) => {

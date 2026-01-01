@@ -18,8 +18,14 @@ import { cn } from '@/lib/utils'
 const danhMucSchema = z.object({
   ten: z.string().min(1, 'Tên danh mục là bắt buộc').max(255, 'Tên danh mục quá dài'),
   loai: z.string().min(1, 'Loại danh mục là bắt buộc'),
-  parent_id: z.string().optional().nullable(),
-  mo_ta: z.string().max(1000, 'Mô tả quá dài').optional().nullable(),
+  parent_id: z.preprocess(
+    (val) => val === '' ? null : val,
+    z.string().nullable().optional()
+  ),
+  mo_ta: z.preprocess(
+    (val) => val === '' ? null : val,
+    z.string().max(1000, 'Mô tả quá dài').nullable().optional()
+  ),
   thu_tu: z.number().int().min(0, 'Thứ tự phải >= 0'),
   is_active: z.string().min(1, 'Trạng thái là bắt buộc'),
 })

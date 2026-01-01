@@ -192,7 +192,7 @@ export function BaoCaoToolbar({
       const nguoiDung = nguoiDungList.find((nd) => nd.id === id)
       result.push({
         id: `nguoiTao-${id}`,
-        label: nguoiDung?.ho_ten || nguoiDung?.email || id,
+        label: nguoiDung?.ho_va_ten || nguoiDung?.ho_ten || nguoiDung?.email || id,
         type: 'Người tạo',
         onRemove: () => toggleArrayFilter('nguoiTaoIds', id, filters.nguoiTaoIds),
       })
@@ -291,7 +291,7 @@ export function BaoCaoToolbar({
           label="Người tạo"
           options={nguoiDungList.map((nd) => ({
             value: nd.id,
-            label: nd.ho_ten || nd.email,
+            label: nd.ho_va_ten || nd.ho_ten || nd.email,
           }))}
           selectedValues={filters.nguoiTaoIds}
           onToggle={(value) => toggleArrayFilter('nguoiTaoIds', value, filters.nguoiTaoIds)}

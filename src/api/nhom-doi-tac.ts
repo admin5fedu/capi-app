@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import type { NhomDoiTac, NhomDoiTacInsert, NhomDoiTacUpdate } from '@/types/nhom-doi-tac'
 
-const TABLE_NAME = 'zz_cst_nhom_doi_tac'
+const TABLE_NAME = 'zz_capi_nhom_doi_tac'
 
 /**
  * Lấy danh sách nhóm đối tác
@@ -10,11 +10,11 @@ export async function getNhomDoiTacList(loai?: 'nha_cung_cap' | 'khach_hang') {
   let query = supabase
     .from(TABLE_NAME)
     .select('*')
-    .order('created_at', { ascending: false })
+    .order('tg_tao', { ascending: false })
 
-  // Filter theo loại nếu có
+  // Filter theo loại nếu có (dùng hang_muc thay vì loai)
   if (loai) {
-    query = query.eq('loai', loai)
+    query = query.eq('hang_muc', loai)
   }
 
   const { data, error } = await query
@@ -26,7 +26,7 @@ export async function getNhomDoiTacList(loai?: 'nha_cung_cap' | 'khach_hang') {
 /**
  * Lấy thông tin một nhóm đối tác theo ID
  */
-export async function getNhomDoiTacById(id: string): Promise<NhomDoiTac> {
+export async function getNhomDoiTacById(id: number): Promise<NhomDoiTac> {
   const { data, error } = await supabase
     .from(TABLE_NAME)
     .select('*')
@@ -45,7 +45,6 @@ export async function createNhomDoiTac(data: NhomDoiTacInsert): Promise<NhomDoiT
     .from(TABLE_NAME)
     .insert({
       ...data,
-      trang_thai: data.trang_thai ?? true,
     })
     .select()
     .single()
@@ -58,14 +57,14 @@ export async function createNhomDoiTac(data: NhomDoiTacInsert): Promise<NhomDoiT
  * Cập nhật thông tin nhóm đối tác
  */
 export async function updateNhomDoiTac(
-  id: string,
+  id: number,
   data: NhomDoiTacUpdate
 ): Promise<NhomDoiTac> {
   const { data: result, error } = await supabase
     .from(TABLE_NAME)
     .update({
       ...data,
-      updated_at: new Date().toISOString(),
+      tg_cap_nhat: new Date().toISOString(),
     })
     .eq('id', id)
     .select()
@@ -78,7 +77,7 @@ export async function updateNhomDoiTac(
 /**
  * Xóa nhóm đối tác
  */
-export async function deleteNhomDoiTac(id: string): Promise<{ success: boolean }> {
+export async function deleteNhomDoiTac(id: number): Promise<{ success: boolean }> {
   const { error } = await supabase
     .from(TABLE_NAME)
     .delete()
@@ -95,8 +94,8 @@ export async function searchNhomDoiTac(keyword: string) {
   const { data, error } = await supabase
     .from(TABLE_NAME)
     .select('*')
-    .or(`ten.ilike.%${keyword}%,mo_ta.ilike.%${keyword}%`)
-    .order('created_at', { ascending: false })
+    .or(`ten_nhom.ilike.%${keyword}%,mo_ta.ilike.%${keyword}%`)
+    .order('tg_tao', { ascending: false })
 
   if (error) throw error
   return data as NhomDoiTac[]

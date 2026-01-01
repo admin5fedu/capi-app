@@ -18,8 +18,8 @@ dayjs.extend(customParseFormat)
 dayjs.extend(weekOfYear)
 dayjs.extend(quarterOfYear)
 
-const TABLE_NAME = 'zz_cst_giao_dich'
-const TAI_KHOAN_TABLE = 'zz_cst_tai_khoan'
+const TABLE_NAME = 'zz_capi_giao_dich'
+const TAI_KHOAN_TABLE = 'zz_capi_tai_khoan'
 
 /**
  * Tính số dư đầu kỳ của một tài khoản
@@ -106,11 +106,11 @@ export async function getBaoCaoTaiKhoanData(
     .from(TABLE_NAME)
     .select(`
       *,
-      danh_muc:zz_cst_danh_muc!danh_muc_id(id, ten),
-      tai_khoan:zz_cst_tai_khoan!tai_khoan_id(id, ten, loai, loai_tien),
-      tai_khoan_den:zz_cst_tai_khoan!tai_khoan_den_id(id, ten, loai, loai_tien),
-      doi_tac:zz_cst_danh_sach_doi_tac!doi_tac_id(id, ten),
-      nguoi_tao:zz_cst_nguoi_dung!created_by(id, ho_ten)
+      danh_muc:zz_capi_danh_muc!danh_muc_id(id, ten),
+      tai_khoan:zz_capi_tai_khoan!tai_khoan_id(id, ten, loai, loai_tien),
+      tai_khoan_den:zz_capi_tai_khoan!tai_khoan_den_id(id, ten, loai, loai_tien),
+      doi_tac:zz_capi_danh_sach_doi_tac!doi_tac_id(id, ten),
+      nguoi_tao:zz_capi_nguoi_dung!created_by(id, ho_va_ten)
     `)
 
   // Apply filters
@@ -390,7 +390,7 @@ export async function getBaoCaoTaiKhoanData(
     mo_ta: gd.mo_ta,
     danh_muc: gd.danh_muc ? { id: gd.danh_muc.id, ten: gd.danh_muc.ten } : undefined,
     doi_tac: gd.doi_tac ? { id: gd.doi_tac.id, ten: gd.doi_tac.ten } : undefined,
-    nguoi_tao: gd.nguoi_tao ? { id: gd.nguoi_tao.id, ho_ten: gd.nguoi_tao.ho_ten } : undefined,
+    nguoi_tao: gd.nguoi_tao ? { id: gd.nguoi_tao.id, ho_ten: gd.nguoi_tao.ho_va_ten || gd.nguoi_tao.ho_ten } : undefined,
     tai_khoan: gd.tai_khoan ? { id: gd.tai_khoan.id, ten: gd.tai_khoan.ten } : undefined,
     tai_khoan_den: gd.tai_khoan_den ? { id: gd.tai_khoan_den.id, ten: gd.tai_khoan_den.ten } : undefined,
   }))

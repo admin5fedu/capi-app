@@ -9,10 +9,10 @@ export function handleXuatExcel(data: VaiTro[]) {
   try {
     const worksheet = XLSX.utils.json_to_sheet(
       data.map((item) => ({
-        'Tên vai trò': item.ten,
+        'Tên vai trò': item.ten_vai_tro || item.ten || '',
         'Mô tả': item.mo_ta || '',
-        'Ngày tạo': item.created_at ? new Date(item.created_at).toLocaleDateString('vi-VN') : '',
-        'Ngày cập nhật': item.updated_at ? new Date(item.updated_at).toLocaleDateString('vi-VN') : '',
+        'Ngày tạo': item.tg_tao || item.created_at ? new Date(item.tg_tao || item.created_at || '').toLocaleDateString('vi-VN') : '',
+        'Ngày cập nhật': item.tg_cap_nhat || item.updated_at ? new Date(item.tg_cap_nhat || item.updated_at || '').toLocaleDateString('vi-VN') : '',
       }))
     )
     const workbook = XLSX.utils.book_new()

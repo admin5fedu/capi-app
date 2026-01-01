@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import type { GiaoDich, GiaoDichInsert, GiaoDichUpdate, GiaoDichWithRelations } from '@/types/giao-dich'
 
-const TABLE_NAME = 'zz_cst_giao_dich'
+const TABLE_NAME = 'zz_capi_giao_dich'
 
 
 /**
@@ -12,7 +12,7 @@ export async function getGiaoDichList(): Promise<GiaoDich[]> {
     .from(TABLE_NAME)
     .select('*')
     .order('ngay', { ascending: false })
-    .order('created_at', { ascending: false })
+    .order('tg_tao', { ascending: false })
   
   if (error) throw error
   return (data || []) as GiaoDich[]
@@ -26,12 +26,12 @@ export async function getGiaoDichById(id: number): Promise<GiaoDichWithRelations
     .from(TABLE_NAME)
     .select(`
       *,
-      danh_muc:zz_cst_danh_muc!danh_muc_id(id, ten, loai),
-      ty_gia:zz_cst_ty_gia!ty_gia_id(id, ty_gia, ngay_ap_dung),
-      tai_khoan:zz_cst_tai_khoan!tai_khoan_id(id, ten, loai_tien),
-      tai_khoan_den:zz_cst_tai_khoan!tai_khoan_den_id(id, ten, loai_tien),
-      doi_tac:zz_cst_danh_sach_doi_tac!doi_tac_id(id, ten, loai),
-      nguoi_tao:zz_cst_nguoi_dung!created_by(id, ho_ten)
+      danh_muc:zz_capi_danh_muc!danh_muc_id(id, ten, loai),
+      ty_gia:zz_capi_ty_gia!ty_gia_id(id, ty_gia, ngay_ap_dung),
+      tai_khoan:zz_capi_tai_khoan!tai_khoan_id(id, ten, loai_tien),
+      tai_khoan_den:zz_capi_tai_khoan!tai_khoan_den_id(id, ten, loai_tien),
+      doi_tac:zz_capi_danh_sach_doi_tac!doi_tac_id(id, ten, loai),
+      nguoi_tao:zz_capi_nguoi_dung!created_by(id, ho_va_ten)
     `)
     .eq('id', id)
     .single()
@@ -105,7 +105,7 @@ export async function searchGiaoDich(keyword: string): Promise<GiaoDich[]> {
     .select('*')
     .or(`ma_phieu.ilike.%${keyword}%,mo_ta.ilike.%${keyword}%,so_chung_tu.ilike.%${keyword}%,ghi_chu.ilike.%${keyword}%`)
     .order('ngay', { ascending: false })
-    .order('created_at', { ascending: false })
+    .order('tg_tao', { ascending: false })
   
   if (error) throw error
   return (data || []) as GiaoDich[]

@@ -14,13 +14,34 @@ const taiKhoanSchema = z.object({
   ten: z.string().min(1, 'Tên tài khoản là bắt buộc').max(255, 'Tên tài khoản quá dài'),
   loai: z.string().min(1, 'Loại tài khoản là bắt buộc'),
   loai_tien: z.string().min(1, 'Loại tiền là bắt buộc'),
-  so_du_ban_dau: z.number().nullable().optional(),
-  mo_ta: z.string().max(1000, 'Mô tả quá dài').optional().nullable(),
-  is_active: z.string().optional().nullable(),
-  so_tai_khoan: z.string().max(255, 'Số tài khoản quá dài').optional().nullable(),
-  ngan_hang: z.string().max(255, 'Ngân hàng quá dài').optional().nullable(),
-  chu_tai_khoan: z.string().max(255, 'Chủ tài khoản quá dài').optional().nullable(),
-  ma_qr: z.string().optional().nullable(),
+  so_du_ban_dau: z.preprocess(
+    (val) => val === '' || val === null || val === undefined ? null : Number(val),
+    z.number().nullable().optional()
+  ),
+  mo_ta: z.preprocess(
+    (val) => val === '' ? null : val,
+    z.string().max(1000, 'Mô tả quá dài').nullable().optional()
+  ),
+  is_active: z.preprocess(
+    (val) => val === '' ? null : val,
+    z.string().nullable().optional()
+  ),
+  so_tai_khoan: z.preprocess(
+    (val) => val === '' ? null : val,
+    z.string().max(255, 'Số tài khoản quá dài').nullable().optional()
+  ),
+  ngan_hang: z.preprocess(
+    (val) => val === '' ? null : val,
+    z.string().max(255, 'Ngân hàng quá dài').nullable().optional()
+  ),
+  chu_tai_khoan: z.preprocess(
+    (val) => val === '' ? null : val,
+    z.string().max(255, 'Chủ tài khoản quá dài').nullable().optional()
+  ),
+  ma_qr: z.preprocess(
+    (val) => val === '' ? null : val,
+    z.string().nullable().optional()
+  ),
 })
 
 type TaiKhoanFormData = z.infer<typeof taiKhoanSchema>

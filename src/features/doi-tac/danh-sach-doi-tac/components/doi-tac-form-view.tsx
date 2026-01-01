@@ -8,28 +8,42 @@ import { useNhomDoiTacList } from '@/features/doi-tac/nhom-doi-tac/hooks'
 import type { DoiTacInsert, DoiTacUpdate, LoaiDoiTac } from '@/types/doi-tac'
 import { GenericFormView } from '@/shared/components/generic/generic-form-view'
 import type { FormFieldGroup } from '@/shared/components/generic/generic-form-view'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
 import { LOAI_DOI_TAC } from '../config'
 
 // Schema validation
 const doiTacSchema = z.object({
-  ma: z.string().min(1, 'Mã đối tác là bắt buộc').max(50, 'Mã đối tác quá dài'),
-  ten: z.string().min(1, 'Tên đối tác là bắt buộc').max(255, 'Tên đối tác quá dài'),
-  loai: z.enum(['nha_cung_cap', 'khach_hang'], {
+  ten_doi_tac: z.string().min(1, 'Tên đối tác là bắt buộc').max(255, 'Tên đối tác quá dài'),
+  hang_muc: z.enum(['nha_cung_cap', 'khach_hang'], {
     required_error: 'Loại đối tác là bắt buộc',
   }),
-  nhom_doi_tac_id: z.string().optional().nullable(),
-  email: z.string().email('Email không hợp lệ').optional().nullable().or(z.literal('')),
-  dien_thoai: z.string().max(20, 'Số điện thoại quá dài').optional().nullable().or(z.literal('')),
-  dia_chi: z.string().max(500, 'Địa chỉ quá dài').optional().nullable().or(z.literal('')),
-  ma_so_thue: z.string().max(20, 'Mã số thuế quá dài').optional().nullable().or(z.literal('')),
-  nguoi_lien_he: z.string().max(255, 'Tên người liên hệ quá dài').optional().nullable().or(z.literal('')),
-  ghi_chu: z.string().max(1000, 'Ghi chú quá dài').optional().nullable().or(z.literal('')),
-  trang_thai: z.boolean({
-    required_error: 'Trạng thái là bắt buộc',
-  }),
-  nguoi_tao_id: z.string().optional().nullable(),
+  nhom_doi_tac_id: z.preprocess(
+    (val) => val === '' ? null : (typeof val === 'string' ? Number(val) : val),
+    z.number().nullable().optional()
+  ),
+  cong_ty: z.preprocess(
+    (val) => val === '' ? null : val,
+    z.string().max(255, 'Tên công ty quá dài').nullable().optional()
+  ),
+  email: z.preprocess(
+    (val) => val === '' ? null : val,
+    z.string().email('Email không hợp lệ').nullable().optional()
+  ),
+  so_dien_thoai: z.preprocess(
+    (val) => val === '' ? null : val,
+    z.string().max(20, 'Số điện thoại quá dài').nullable().optional()
+  ),
+  dia_chi: z.preprocess(
+    (val) => val === '' ? null : val,
+    z.string().max(500, 'Địa chỉ quá dài').nullable().optional()
+  ),
+  thong_tin_khac: z.preprocess(
+    (val) => val === '' ? null : val,
+    z.string().max(1000, 'Thông tin khác quá dài').nullable().optional()
+  ),
+  nguoi_tao_id: z.preprocess(
+    (val) => val === '' ? null : (typeof val === 'string' ? Number(val) : val),
+    z.number().nullable().optional()
+  ),
 })
 
 type DoiTacFormData = z.infer<typeof doiTacSchema>
@@ -55,24 +69,23 @@ export function DoiTacFormView({
   const { nguoiDung } = useAuthStore()
   const taoMoi = useCreateDoiTac()
   const capNhat = useUpdateDoiTac()
-  const { data: danhSachNhomDoiTac } = useNhomDoiTacList(defaultLoai || chiTiet?.loai)
+  // Lấy danh sách nhóm đối tác theo loại (nếu có defaultLoai) hoặc tất cả (nếu không có)
+  const { data: danhSachNhomDoiTac } = useNhomDoiTacList(defaultLoai || undefined)
 
   const form = useForm<DoiTacFormData>({
     resolver: zodResolver(doiTacSchema),
     defaultValues: {
-      ma: '',
-      ten: '',
-      loai: defaultLoai || 'nha_cung_cap',
+      ten_doi_tac: '',
+      hang_muc: defaultLoai || 'nha_cung_cap',
       nhom_doi_tac_id: null,
+      cong_ty: null,
       email: null,
-      dien_thoai: null,
+      so_dien_thoai: null,
       dia_chi: null,
-      ma_so_thue: null,
-      nguoi_lien_he: null,
-      ghi_chu: null,
-      trang_thai: true,
-      nguoi_tao_id: nguoiDung?.id || null,
+      thong_tin_khac: null,
+      nguoi_tao_id: nguoiDung?.id ? Number(nguoiDung.id) : null,
     },
+    mode: 'onChange',
   })
 
   const {
@@ -84,61 +97,45 @@ export function DoiTacFormView({
   useEffect(() => {
     if (chiTiet) {
       reset({
-        ma: chiTiet.ma,
-        ten: chiTiet.ten,
-        loai: chiTiet.loai,
-        nhom_doi_tac_id: chiTiet.nhom_doi_tac_id || null,
+        ten_doi_tac: chiTiet.ten_doi_tac || '',
+        hang_muc: (chiTiet.hang_muc as LoaiDoiTac) || 'nha_cung_cap',
+        nhom_doi_tac_id: chiTiet.nhom_doi_tac_id ? Number(chiTiet.nhom_doi_tac_id) : null,
+        cong_ty: chiTiet.cong_ty || null,
         email: chiTiet.email || null,
-        dien_thoai: chiTiet.dien_thoai || null,
+        so_dien_thoai: chiTiet.so_dien_thoai || null,
         dia_chi: chiTiet.dia_chi || null,
-        ma_so_thue: chiTiet.ma_so_thue || null,
-        nguoi_lien_he: chiTiet.nguoi_lien_he || null,
-        ghi_chu: chiTiet.ghi_chu || null,
-        trang_thai: chiTiet.trang_thai,
-        nguoi_tao_id: chiTiet.nguoi_tao_id || null,
-      })
-    } else if (defaultLoai && !editId) {
-      // Khi thêm mới, set loại từ defaultLoai và người tạo từ user hiện tại
-      reset({
-        ma: '',
-        ten: '',
-        loai: defaultLoai,
-        nhom_doi_tac_id: null,
-        email: null,
-        dien_thoai: null,
-        dia_chi: null,
-        ma_so_thue: null,
-        nguoi_lien_he: null,
-        ghi_chu: null,
-        trang_thai: true,
-        nguoi_tao_id: nguoiDung?.id || null,
-      })
+        thong_tin_khac: chiTiet.thong_tin_khac || null,
+        nguoi_tao_id: chiTiet.nguoi_tao_id ? Number(chiTiet.nguoi_tao_id) : null,
+      }, { keepDefaultValues: false })
     }
-  }, [chiTiet, defaultLoai, editId, reset, nguoiDung])
+  }, [chiTiet, reset])
 
-  // Đồng bộ nguoi_tao_id khi user thay đổi (chỉ khi thêm mới)
+  // Cập nhật hang_muc và nguoi_tao_id khi defaultLoai hoặc nguoiDung thay đổi (chỉ khi thêm mới)
   useEffect(() => {
-    if (!editId && nguoiDung?.id) {
-      form.setValue('nguoi_tao_id', nguoiDung.id)
+    if (!editId && !chiTiet) {
+      if (defaultLoai) {
+        form.setValue('hang_muc', defaultLoai)
+      }
+      if (nguoiDung?.id) {
+        form.setValue('nguoi_tao_id', Number(nguoiDung.id))
+      }
     }
-  }, [nguoiDung, editId, form])
+  }, [defaultLoai, nguoiDung, editId, chiTiet, form])
+
 
   const onSubmit = async (data: DoiTacFormData) => {
     try {
       const formData: DoiTacInsert | DoiTacUpdate = {
-        ma: data.ma,
-        ten: data.ten,
-        loai: data.loai,
+        ten_doi_tac: data.ten_doi_tac,
+        hang_muc: data.hang_muc,
         nhom_doi_tac_id: data.nhom_doi_tac_id || null,
+        cong_ty: data.cong_ty || null,
         email: data.email || null,
-        dien_thoai: data.dien_thoai || null,
+        so_dien_thoai: data.so_dien_thoai || null,
         dia_chi: data.dia_chi || null,
-        ma_so_thue: data.ma_so_thue || null,
-        nguoi_lien_he: data.nguoi_lien_he || null,
-        ghi_chu: data.ghi_chu || null,
-        trang_thai: data.trang_thai,
+        thong_tin_khac: data.thong_tin_khac || null,
         // Tự động set người tạo từ user hiện tại (chỉ khi thêm mới)
-        nguoi_tao_id: editId ? data.nguoi_tao_id : (nguoiDung?.id || null),
+        nguoi_tao_id: editId ? data.nguoi_tao_id : (nguoiDung?.id ? Number(nguoiDung.id) : null),
       }
 
       if (editId) {
@@ -170,30 +167,30 @@ export function DoiTacFormView({
       title: 'Thông tin cơ bản',
       fields: [
         {
-          key: 'ma',
-          label: 'Mã đối tác',
-          type: 'text',
-          placeholder: 'Nhập mã đối tác',
-          required: true,
-          span: 1,
-        },
-        {
-          key: 'ten',
+          key: 'ten_doi_tac',
           label: 'Tên đối tác',
           type: 'text',
           placeholder: 'Nhập tên đối tác',
           required: true,
           span: 2,
         },
+        {
+          key: 'cong_ty',
+          label: 'Công ty',
+          type: 'text',
+          placeholder: 'Nhập tên công ty',
+          span: 1,
+        },
         // Chỉ hiện field loại khi chỉnh sửa (để có thể đổi loại) hoặc khi không có defaultLoai
         ...(editId || !defaultLoai
           ? [
               {
-                key: 'loai' as const,
+                key: 'hang_muc' as const,
                 label: 'Loại đối tác',
                 type: 'select' as const,
                 required: true,
                 options: LOAI_DOI_TAC.map((loai) => ({ value: loai.value, label: loai.label })),
+                span: 1,
               },
             ]
           : []),
@@ -204,30 +201,10 @@ export function DoiTacFormView({
           required: false,
           options: danhSachNhomDoiTac?.map((nhom: any) => ({
             value: nhom.id,
-            label: nhom.ten,
+            label: nhom.ten_nhom || nhom.ten || String(nhom.id),
           })) || [],
           placeholder: 'Chọn nhóm đối tác (tùy chọn)',
-        },
-        {
-          key: 'trang_thai',
-          label: 'Trạng thái',
-          type: 'custom',
-          required: true,
-          render: (form) => {
-            const { watch, setValue } = form
-            const checked = watch('trang_thai')
-            return (
-              <div className="flex items-center space-x-2">
-                <Switch
-                  checked={checked}
-                  onCheckedChange={(value) => setValue('trang_thai', value)}
-                />
-                <Label htmlFor="trang_thai" className="font-normal cursor-pointer">
-                  {checked ? 'Hoạt động' : 'Vô hiệu hóa'}
-                </Label>
-              </div>
-            )
-          },
+          span: 1,
         },
       ],
     },
@@ -242,8 +219,8 @@ export function DoiTacFormView({
           span: 2,
         },
         {
-          key: 'dien_thoai',
-          label: 'Điện thoại',
+          key: 'so_dien_thoai',
+          label: 'Số điện thoại',
           type: 'text',
           placeholder: '0912345678',
           span: 1,
@@ -261,24 +238,10 @@ export function DoiTacFormView({
       title: 'Thông tin khác',
       fields: [
         {
-          key: 'ma_so_thue',
-          label: 'Mã số thuế',
-          type: 'text',
-          placeholder: 'Nhập mã số thuế',
-          span: 1,
-        },
-        {
-          key: 'nguoi_lien_he',
-          label: 'Người liên hệ',
-          type: 'text',
-          placeholder: 'Nhập tên người liên hệ',
-          span: 2,
-        },
-        {
-          key: 'ghi_chu',
-          label: 'Ghi chú',
+          key: 'thong_tin_khac',
+          label: 'Thông tin khác',
           type: 'textarea',
-          placeholder: 'Nhập ghi chú (tùy chọn)',
+          placeholder: 'Nhập thông tin khác (tùy chọn)',
           span: 3,
         },
       ],

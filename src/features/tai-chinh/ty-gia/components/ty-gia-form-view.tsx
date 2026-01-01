@@ -12,7 +12,10 @@ import { useAuthStore } from '@/store/auth-store'
 const tyGiaSchema = z.object({
   ty_gia: z.number().min(0.0001, 'Tỷ giá phải lớn hơn 0').max(1000000, 'Tỷ giá quá lớn'),
   ngay_ap_dung: z.string().min(1, 'Ngày áp dụng là bắt buộc'),
-  ghi_chu: z.string().max(1000, 'Ghi chú quá dài').optional().nullable(),
+  ghi_chu: z.preprocess(
+    (val) => val === '' ? null : val,
+    z.string().max(1000, 'Ghi chú quá dài').nullable().optional()
+  ),
 })
 
 type TyGiaFormData = z.infer<typeof tyGiaSchema>

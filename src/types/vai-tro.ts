@@ -1,22 +1,26 @@
 /**
- * Type definitions cho bảng zz_cst_vai_tro (Vai trò)
+ * Type definitions cho bảng zz_capi_vai_tro (Vai trò)
  */
 
 export interface VaiTro {
-  id: string
-  ten: string
+  id: number // bigint (int8) từ DB
+  ten_vai_tro: string | null
   mo_ta: string | null
-  created_at: string
-  updated_at: string
+  tg_tao: string | null
+  tg_cap_nhat: string | null
+  // Computed fields for backward compatibility
+  ten?: string | null
+  created_at?: string | null
+  updated_at?: string | null
 }
 
 export interface VaiTroInsert {
-  ten: string
+  ten_vai_tro: string
   mo_ta?: string | null
 }
 
 export interface VaiTroUpdate {
-  ten?: string
+  ten_vai_tro?: string
   mo_ta?: string | null
 }
 

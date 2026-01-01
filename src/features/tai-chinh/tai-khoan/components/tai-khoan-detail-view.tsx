@@ -152,18 +152,18 @@ export function TaiKhoanDetailView({ id, onEdit, onDelete, onBack }: TaiKhoanDet
           render: (value) => value || <span className="text-muted-foreground">—</span>,
         },
         {
-          key: 'created_at',
+          key: 'tg_tao',
           label: 'Ngày tạo',
-          accessor: 'created_at',
+          accessor: (data: any) => data.tg_tao || data.created_at || null,
           render: (value) => {
             if (!value) return '—'
             return dayjs(value).locale('vi').format('DD/MM/YYYY HH:mm')
           },
         },
         {
-          key: 'updated_at',
+          key: 'tg_cap_nhat',
           label: 'Ngày cập nhật',
-          accessor: 'updated_at',
+          accessor: (data: any) => data.tg_cap_nhat || data.updated_at || null,
           render: (value) => {
             if (!value) return '—'
             return dayjs(value).locale('vi').format('DD/MM/YYYY HH:mm')

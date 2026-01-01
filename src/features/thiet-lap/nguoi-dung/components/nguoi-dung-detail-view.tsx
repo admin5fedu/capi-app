@@ -42,14 +42,14 @@ export function NguoiDungDetailView({ id, onEdit, onDelete, onBack }: NguoiDungD
 
   // Update breadcrumb với tên người dùng
   useEffect(() => {
-    if (nguoiDung?.ho_ten) {
-      setDetailLabel(nguoiDung.ho_ten)
+    if (nguoiDung?.ho_va_ten || nguoiDung?.ho_ten) {
+      setDetailLabel(nguoiDung.ho_va_ten || nguoiDung.ho_ten || '')
     }
     // Cleanup khi unmount
     return () => {
       setDetailLabel(null)
     }
-  }, [nguoiDung?.ho_ten, setDetailLabel])
+  }, [nguoiDung?.ho_va_ten, nguoiDung?.ho_ten, setDetailLabel])
 
   // Reset avatar error khi nguoiDung thay đổi
   useEffect(() => {
@@ -69,22 +69,23 @@ export function NguoiDungDetailView({ id, onEdit, onDelete, onBack }: NguoiDungD
   // Render title với avatar
   const renderTitle = (data: NguoiDung) => {
     const hasAvatar = data.avatar_url && data.avatar_url.trim() !== ''
+    const hoTen = data.ho_va_ten || data.ho_ten || ''
     
     return (
       <div className="flex items-center gap-3 flex-1 min-w-0">
         {hasAvatar && !avatarError ? (
           <img
             src={data.avatar_url!}
-            alt={data.ho_ten}
+            alt={hoTen}
             className="h-12 w-12 rounded-full object-cover border-2 border-border flex-shrink-0"
             onError={() => setAvatarError(true)}
           />
         ) : (
           <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-lg flex-shrink-0">
-            {getInitial(data.ho_ten) || <User className="h-6 w-6" />}
+            {getInitial(hoTen) || <User className="h-6 w-6" />}
           </div>
         )}
-        <h1 className="text-2xl font-bold truncate">{data.ho_ten}</h1>
+        <h1 className="text-2xl font-bold truncate">{hoTen}</h1>
       </div>
     )
   }
@@ -95,9 +96,9 @@ export function NguoiDungDetailView({ id, onEdit, onDelete, onBack }: NguoiDungD
       title: 'Thông tin cơ bản',
       fields: [
         {
-          key: 'ho_ten',
+          key: 'ho_va_ten',
           label: 'Họ tên',
-          accessor: 'ho_ten',
+          accessor: (data: NguoiDung) => data.ho_va_ten || data.ho_ten || '—',
         },
         {
           key: 'email',
@@ -105,19 +106,28 @@ export function NguoiDungDetailView({ id, onEdit, onDelete, onBack }: NguoiDungD
           accessor: 'email',
         },
         {
-          key: 'vai_tro_id',
-          label: 'Vai trò ID',
-          accessor: 'vai_tro_id',
+          key: 'ten_vai_tro',
+          label: 'Vai trò',
+          accessor: (data: NguoiDung) => data.ten_vai_tro || data.vai_tro_id || '—',
         },
         {
-          key: 'is_active',
+          key: 'ten_phong_ban',
+          label: 'Phòng ban',
+          accessor: (data: NguoiDung) => data.ten_phong_ban || '—',
+        },
+        {
+          key: 'trang_thai',
           label: 'Trạng thái',
-          accessor: 'is_active',
-          render: (value) => (
-            <Badge variant={getStatusBadgeVariant(value)}>
-              {value ? 'Hoạt động' : 'Vô hiệu hóa'}
-            </Badge>
-          ),
+          accessor: 'trang_thai',
+          render: (value) => {
+            const trangThaiLower = value?.toLowerCase()
+            const isActive = trangThaiLower === 'hoạt động' || trangThaiLower === 'active'
+            return (
+              <Badge variant={getStatusBadgeVariant(isActive)}>
+                {value || 'Chưa xác định'}
+              </Badge>
+            )
+          },
         },
         {
           key: 'avatar_url',
@@ -149,18 +159,18 @@ export function NguoiDungDetailView({ id, onEdit, onDelete, onBack }: NguoiDungD
       title: 'Thông tin hệ thống',
       fields: [
         {
-          key: 'created_at',
+          key: 'tg_tao',
           label: 'Ngày tạo',
-          accessor: 'created_at',
+          accessor: (data: NguoiDung) => data.tg_tao || data.created_at || null,
           render: (value) => {
             if (!value) return <span className="text-muted-foreground">—</span>
             return dayjs(value).locale('vi').format('DD/MM/YYYY HH:mm')
           },
         },
         {
-          key: 'updated_at',
+          key: 'tg_cap_nhat',
           label: 'Ngày cập nhật',
-          accessor: 'updated_at',
+          accessor: (data: NguoiDung) => data.tg_cap_nhat || data.updated_at || null,
           render: (value) => {
             if (!value) return <span className="text-muted-foreground">—</span>
             return dayjs(value).locale('vi').format('DD/MM/YYYY HH:mm')
@@ -175,7 +185,7 @@ export function NguoiDungDetailView({ id, onEdit, onDelete, onBack }: NguoiDungD
       data={nguoiDung || null}
       isLoading={isLoading}
       error={error || null}
-      title={(data) => data.ho_ten}
+      title={(data) => data.ho_va_ten || data.ho_ten || ''}
       renderTitle={renderTitle}
       onEdit={onEdit}
       onDelete={handleDelete}
@@ -185,7 +195,7 @@ export function NguoiDungDetailView({ id, onEdit, onDelete, onBack }: NguoiDungD
       deleteConfirmTitle="Xác nhận xóa người dùng"
       deleteConfirmDescription={
         nguoiDung
-          ? `Bạn có chắc chắn muốn xóa người dùng "${nguoiDung.ho_ten}"? Hành động này không thể hoàn tác.`
+          ? `Bạn có chắc chắn muốn xóa người dùng "${nguoiDung.ho_va_ten || nguoiDung.ho_ten}"? Hành động này không thể hoàn tác.`
           : 'Bạn có chắc chắn muốn xóa người dùng này? Hành động này không thể hoàn tác.'
       }
     />

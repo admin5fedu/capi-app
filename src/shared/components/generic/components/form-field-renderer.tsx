@@ -39,11 +39,22 @@ export function FormFieldRenderer<TFormData extends FieldValues>({
 
   // Standard field types
   if (field.type === 'textarea') {
+    const currentValue = watch(field.key)
+    const stringValue = currentValue !== undefined && currentValue !== null 
+      ? String(currentValue) 
+      : ''
+    
     return (
       <Textarea
         id={String(field.key)}
-        {...register(field.key)}
         ref={fieldRef as any}
+        value={stringValue}
+        onChange={(e) => {
+          setValue(field.key, e.target.value as any, { shouldValidate: true })
+        }}
+        onBlur={() => {
+          form.trigger(field.key)
+        }}
         placeholder={field.placeholder}
         disabled={field.disabled || isLoading}
         rows={4}
@@ -55,11 +66,34 @@ export function FormFieldRenderer<TFormData extends FieldValues>({
   }
 
   if (field.type === 'select' && field.options) {
+    const currentValue = watch(field.key)
+    // Convert current value to string for comparison with option values
+    const stringValue = currentValue !== undefined && currentValue !== null 
+      ? String(currentValue) 
+      : ''
+    
     return (
       <select
         id={String(field.key)}
-        {...register(field.key)}
         ref={fieldRef as any}
+        value={stringValue}
+        onChange={(e) => {
+          const newValue = e.target.value
+          if (newValue === '') {
+            // Empty value - set to empty string or null based on field requirement
+            setValue(field.key, '' as any, { shouldValidate: true })
+          } else {
+            // Find the selected option to get the original type
+            const selectedOption = field.options?.find(opt => String(opt.value) === newValue)
+            if (selectedOption) {
+              // Use the original value type (string or number)
+              setValue(field.key, selectedOption.value as any, { shouldValidate: true })
+            } else {
+              // Fallback: use string value
+              setValue(field.key, newValue as any, { shouldValidate: true })
+            }
+          }
+        }}
         disabled={field.disabled || isLoading}
         className={cn(
           'flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background',
@@ -72,7 +106,7 @@ export function FormFieldRenderer<TFormData extends FieldValues>({
       >
         <option value="">Chọn {field.label.toLowerCase()}</option>
         {field.options.map((option) => (
-          <option key={String(option.value)} value={option.value}>
+          <option key={String(option.value)} value={String(option.value)}>
             {option.label}
           </option>
         ))}
@@ -99,13 +133,17 @@ export function FormFieldRenderer<TFormData extends FieldValues>({
   }
 
   if (field.type === 'phone') {
+    const currentValue = watch(field.key)
+    const stringValue = currentValue !== undefined && currentValue !== null 
+      ? String(currentValue) 
+      : ''
+    
     return (
       <PhoneInput
         id={String(field.key)}
-        {...register(field.key)}
         ref={fieldRef as any}
-        value={watch(field.key) as string}
-        onChange={(value) => setValue(field.key, value as any)}
+        value={stringValue}
+        onChange={(value) => setValue(field.key, value as any, { shouldValidate: true })}
         placeholder={field.placeholder}
         disabled={field.disabled || isLoading}
         className={cn(
@@ -120,10 +158,9 @@ export function FormFieldRenderer<TFormData extends FieldValues>({
     return (
       <NumberInput
         id={String(field.key)}
-        {...register(field.key)}
         ref={fieldRef as any}
         value={watch(field.key) as number}
-        onChange={(value) => setValue(field.key, value as any)}
+        onChange={(value) => setValue(field.key, value as any, { shouldValidate: true })}
         placeholder={field.placeholder}
         disabled={field.disabled || isLoading}
         allowDecimals={field.allowDecimals}
@@ -138,13 +175,17 @@ export function FormFieldRenderer<TFormData extends FieldValues>({
   }
 
   if (field.type === 'email') {
+    const currentValue = watch(field.key)
+    const stringValue = currentValue !== undefined && currentValue !== null 
+      ? String(currentValue) 
+      : ''
+    
     return (
       <EmailInput
         id={String(field.key)}
-        {...register(field.key)}
         ref={fieldRef as any}
-        value={watch(field.key) as string}
-        onChange={(value) => setValue(field.key, value as any)}
+        value={stringValue}
+        onChange={(value) => setValue(field.key, value as any, { shouldValidate: true })}
         placeholder={field.placeholder}
         disabled={field.disabled || isLoading}
         className={cn(
@@ -159,10 +200,9 @@ export function FormFieldRenderer<TFormData extends FieldValues>({
     return (
       <DatePicker
         id={String(field.key)}
-        {...register(field.key)}
         ref={fieldRef as any}
         value={watch(field.key) as Date | string | null}
-        onChange={(value) => setValue(field.key, value as any)}
+        onChange={(value) => setValue(field.key, value as any, { shouldValidate: true })}
         placeholder={field.placeholder}
         disabled={field.disabled || isLoading}
         className={cn(
@@ -174,14 +214,19 @@ export function FormFieldRenderer<TFormData extends FieldValues>({
   }
 
   if (field.type === 'autocomplete' && field.autocompleteOptions) {
+    const currentValue = watch(field.key)
+    // Autocomplete có thể nhận string hoặc number, nhưng không nên là null
+    const autocompleteValue = currentValue !== undefined && currentValue !== null 
+      ? currentValue 
+      : ''
+    
     return (
       <AutocompleteInput
         id={String(field.key)}
-        {...register(field.key)}
         ref={fieldRef as any}
         options={field.autocompleteOptions}
-        value={watch(field.key) as string | number}
-        onChange={(value) => setValue(field.key, value as any)}
+        value={autocompleteValue as string | number}
+        onChange={(value) => setValue(field.key, value as any, { shouldValidate: true })}
         placeholder={field.placeholder}
         disabled={field.disabled || isLoading}
         className={cn(
@@ -193,10 +238,15 @@ export function FormFieldRenderer<TFormData extends FieldValues>({
   }
 
   if (field.type === 'rich-text') {
+    const currentValue = watch(field.key)
+    const stringValue = currentValue !== undefined && currentValue !== null 
+      ? String(currentValue) 
+      : ''
+    
     return (
       <RichTextEditor
-        value={watch(field.key) as string}
-        onChange={(value) => setValue(field.key, value as any)}
+        value={stringValue}
+        onChange={(value) => setValue(field.key, value as any, { shouldValidate: true })}
         placeholder={field.placeholder}
         disabled={field.disabled || isLoading}
         className={cn(
@@ -210,7 +260,7 @@ export function FormFieldRenderer<TFormData extends FieldValues>({
     return (
       <FileUpload
         value={watch(field.key) as File | string | null}
-        onChange={(file) => setValue(field.key, file as any)}
+        onChange={(file) => setValue(field.key, file as any, { shouldValidate: true })}
         accept={field.accept}
         maxSize={field.maxSize}
         disabled={field.disabled || isLoading}
@@ -221,13 +271,17 @@ export function FormFieldRenderer<TFormData extends FieldValues>({
   }
 
   if (field.type === 'password-strength') {
+    const currentValue = watch(field.key)
+    const stringValue = currentValue !== undefined && currentValue !== null 
+      ? String(currentValue) 
+      : ''
+    
     return (
       <PasswordInput
         id={String(field.key)}
-        {...register(field.key)}
         ref={fieldRef as any}
-        value={watch(field.key) as string}
-        onChange={(value) => setValue(field.key, value as any)}
+        value={stringValue}
+        onChange={(value) => setValue(field.key, value as any, { shouldValidate: true })}
         placeholder={field.placeholder}
         disabled={field.disabled || isLoading}
         showStrengthIndicator={true}
@@ -240,14 +294,18 @@ export function FormFieldRenderer<TFormData extends FieldValues>({
   }
 
   if (field.type === 'masked' && field.mask) {
+    const currentValue = watch(field.key)
+    const stringValue = currentValue !== undefined && currentValue !== null 
+      ? String(currentValue) 
+      : ''
+    
     return (
       <MaskedInput
         id={String(field.key)}
-        {...register(field.key)}
         ref={fieldRef as any}
         mask={field.mask}
-        value={watch(field.key) as string}
-        onChange={(value) => setValue(field.key, value as any)}
+        value={stringValue}
+        onChange={(value) => setValue(field.key, value as any, { shouldValidate: true })}
         placeholder={field.placeholder}
         disabled={field.disabled || isLoading}
         className={cn(
@@ -258,13 +316,25 @@ export function FormFieldRenderer<TFormData extends FieldValues>({
     )
   }
 
-  // Default: text input
+  // Default: text input - Use controlled component to ensure value is always string
+  const currentValue = watch(field.key)
+  const stringValue = currentValue !== undefined && currentValue !== null 
+    ? String(currentValue) 
+    : ''
+  
   return (
     <Input
       id={String(field.key)}
       type={field.type || 'text'}
-      {...register(field.key)}
       ref={fieldRef as any}
+      value={stringValue}
+      onChange={(e) => {
+        setValue(field.key, e.target.value as any, { shouldValidate: true })
+      }}
+      onBlur={() => {
+        // Trigger validation on blur
+        form.trigger(field.key)
+      }}
       placeholder={field.placeholder}
       disabled={field.disabled || isLoading}
       className={cn(

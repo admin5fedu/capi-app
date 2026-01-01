@@ -29,7 +29,7 @@ export function BaoCaoTaiKhoanExport({ data, filters }: BaoCaoTaiKhoanExportProp
         'Tài khoản đi': gd.tai_khoan?.ten || '',
         'Tài khoản đến': gd.tai_khoan_den?.ten || '',
         'Đối tác': gd.doi_tac?.ten || '',
-        'Người tạo': gd.nguoi_tao?.ho_ten || '',
+        'Người tạo': gd.nguoi_tao?.ho_va_ten || gd.nguoi_tao?.ho_ten || '',
       }))
 
       // Create workbook

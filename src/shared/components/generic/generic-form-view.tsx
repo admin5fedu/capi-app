@@ -169,13 +169,45 @@ export function GenericFormView<TFormData extends FieldValues = FieldValues>({
 
   const onSubmitWithErrorHandling = createSubmitHandler(onSubmit)
 
+  // Debug: Log form values and errors (có thể bỏ sau khi fix xong)
+  if (process.env.NODE_ENV === 'development') {
+    const formValues = form.getValues()
+    const formErrors = form.formState.errors
+    if (Object.keys(formErrors).length > 0) {
+      console.log("🔍 [GenericFormView] DỮ LIỆU FORM HIỆN TẠI:", formValues)
+      console.log("❌ [GenericFormView] LỖI VALIDATION:", formErrors)
+    }
+  }
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header - Fixed */}
       <FormHeader title={title} onBack={onBack} />
 
       {/* Body - Scrollable */}
-      <form onSubmit={handleSubmit(onSubmitWithErrorHandling)} className="flex flex-col flex-1 overflow-hidden">
+      <form onSubmit={handleSubmit(onSubmitWithErrorHandling, (errors) => {
+        const errorFields = Object.keys(errors);
+        if (errorFields.length > 0) {
+          // Debug log
+          if (process.env.NODE_ENV === 'development') {
+            const formValues = form.getValues()
+            console.log("🚨 [GenericFormView] LỖI KHI SUBMIT:", errors)
+            console.log("📊 [GenericFormView] DỮ LIỆU FORM:", formValues)
+            // Log chi tiết từng field bị lỗi
+            errorFields.forEach(fieldKey => {
+              const error = errors[fieldKey as keyof typeof errors]
+              const value = formValues[fieldKey as keyof typeof formValues]
+              console.log(`❌ Field "${fieldKey}":`, {
+                value: value,
+                valueType: typeof value,
+                isEmpty: value === '' || value === null || value === undefined,
+                error: error
+              })
+            })
+          }
+          alert("Vui lòng kiểm tra lại các trường: " + errorFields.join(", "));
+        }
+      })} className="flex flex-col flex-1 overflow-hidden">
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 scroll-smooth">
           <div className="space-y-8">
             {/* Render groups */}

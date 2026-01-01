@@ -9,13 +9,14 @@ export function handleXuatExcel(data: NguoiDung[]) {
   try {
     const worksheet = XLSX.utils.json_to_sheet(
       data.map((item) => ({
-        'Họ tên': item.ho_ten,
-        'Email': item.email,
-        'Vai trò ID': item.vai_tro_id,
-        'Trạng thái': item.is_active ? 'Hoạt động' : 'Vô hiệu hóa',
+        'Họ tên': item.ho_va_ten || item.ho_ten || '',
+        'Email': item.email || '',
+        'Vai trò': item.ten_vai_tro || item.vai_tro_id || '',
+        'Phòng ban': item.ten_phong_ban || '',
+        'Trạng thái': item.trang_thai || (item.is_active ? 'Hoạt động' : 'Vô hiệu hóa'),
         'Avatar URL': item.avatar_url || '',
-        'Ngày tạo': item.created_at ? new Date(item.created_at).toLocaleDateString('vi-VN') : '',
-        'Ngày cập nhật': item.updated_at ? new Date(item.updated_at).toLocaleDateString('vi-VN') : '',
+        'Ngày tạo': item.tg_tao || item.created_at ? new Date(item.tg_tao || item.created_at || '').toLocaleDateString('vi-VN') : '',
+        'Ngày cập nhật': item.tg_cap_nhat || item.updated_at ? new Date(item.tg_cap_nhat || item.updated_at || '').toLocaleDateString('vi-VN') : '',
       }))
     )
     const workbook = XLSX.utils.book_new()

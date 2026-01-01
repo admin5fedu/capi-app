@@ -9,15 +9,14 @@ export function handleXuatExcel(data: NhomDoiTac[]) {
   try {
     // Chuẩn bị dữ liệu để export
     const exportData = data.map((item) => ({
-      'Tên nhóm': item.ten,
-      'Loại': item.loai === 'nha_cung_cap' ? 'Nhà cung cấp' : 'Khách hàng',
+      'Tên nhóm': item.ten_nhom || '',
+      'Loại': item.hang_muc === 'nha_cung_cap' ? 'Nhà cung cấp' : 'Khách hàng',
       'Mô tả': item.mo_ta || '',
-      'Trạng thái': item.trang_thai ? 'Hoạt động' : 'Vô hiệu hóa',
-      'Ngày tạo': item.created_at
-        ? new Date(item.created_at).toLocaleDateString('vi-VN')
+      'Ngày tạo': item.tg_tao || item.created_at
+        ? new Date(item.tg_tao || item.created_at || '').toLocaleDateString('vi-VN')
         : '',
-      'Ngày cập nhật': item.updated_at
-        ? new Date(item.updated_at).toLocaleDateString('vi-VN')
+      'Ngày cập nhật': item.tg_cap_nhat || item.updated_at
+        ? new Date(item.tg_cap_nhat || item.updated_at || '').toLocaleDateString('vi-VN')
         : '',
     }))
 
@@ -31,7 +30,6 @@ export function handleXuatExcel(data: NhomDoiTac[]) {
       { wch: 30 }, // Tên nhóm
       { wch: 15 }, // Loại
       { wch: 50 }, // Mô tả
-      { wch: 15 }, // Trạng thái
       { wch: 15 }, // Ngày tạo
       { wch: 15 }, // Ngày cập nhật
     ]
@@ -80,7 +78,7 @@ export function handleNhapExcel(file: File) {
 
     reader.onerror = () => {
       toast.error('Có lỗi xảy ra khi đọc file')
-      reject(new Error('File read error'))
+      reject(new Error('Lỗi đọc file'))
     }
 
     reader.readAsArrayBuffer(file)

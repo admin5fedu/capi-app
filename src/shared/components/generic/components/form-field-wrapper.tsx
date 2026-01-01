@@ -2,6 +2,7 @@ import { ReactNode, RefObject } from 'react'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { FieldErrors, Path } from 'react-hook-form'
+import { translateZodError } from '@/lib/zod-error-translator'
 
 interface FormFieldWrapperProps<TFormData extends Record<string, any>> {
   fieldKey: Path<TFormData>
@@ -50,7 +51,7 @@ export function FormFieldWrapper<TFormData extends Record<string, any>>({
         {hasError && (
           <div ref={isFirstField && hasError ? firstErrorRef : undefined}>
             <p className="text-xs text-destructive mt-1 ml-[108px] font-medium">
-              {error?.message as string}
+              {translateZodError(error?.message as string)}
             </p>
           </div>
         )}
@@ -78,7 +79,7 @@ export function FormFieldWrapper<TFormData extends Record<string, any>>({
       {hasError && (
         <div ref={isFirstField && hasError ? firstErrorRef : undefined}>
           <p className="text-sm text-destructive font-medium mt-1">
-            {error?.message as string}
+            {translateZodError(error?.message as string)}
           </p>
         </div>
       )}
