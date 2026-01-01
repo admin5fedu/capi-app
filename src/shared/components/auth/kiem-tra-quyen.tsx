@@ -27,9 +27,9 @@ interface KiemTraQuyenProps {
  */
 export function KiemTraQuyen({
   children,
-  allowedVaiTroIds,
-  requireAll = false,
-  noPermissionMessage = 'Bạn không có quyền truy cập trang này',
+  allowedVaiTroIds: _allowedVaiTroIds,
+  requireAll: _requireAll = false,
+  noPermissionMessage: _noPermissionMessage = 'Bạn không có quyền truy cập trang này',
 }: KiemTraQuyenProps) {
   const { user, nguoiDung, isLoading } = useAuthStore()
 

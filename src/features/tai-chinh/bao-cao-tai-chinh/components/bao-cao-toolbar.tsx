@@ -156,20 +156,20 @@ export function BaoCaoToolbar({
     const result: Array<{ id: string; label: string; type: string; onRemove: () => void }> = []
     
     filters.danhMucIds?.forEach((id) => {
-      const danhMuc = danhMucList.find((dm) => dm.id === id)
+      const danhMuc = danhMucList.find((dm) => String(dm.id) === id)
       result.push({
         id: `danhMuc-${id}`,
-        label: danhMuc?.ten || id,
+        label: danhMuc?.ten || danhMuc?.ten_danh_muc || id,
         type: 'Danh mục',
         onRemove: () => toggleArrayFilter('danhMucIds', id, filters.danhMucIds),
       })
     })
     
     filters.doiTacIds?.forEach((id) => {
-      const doiTac = doiTacList.find((dt) => dt.id === id)
+      const doiTac = doiTacList.find((dt) => String(dt.id) === id)
       result.push({
         id: `doiTac-${id}`,
-        label: doiTac?.ten || id,
+        label: doiTac?.ten_doi_tac || id,
         type: 'Đối tác',
         onRemove: () => toggleArrayFilter('doiTacIds', id, filters.doiTacIds),
       })
@@ -189,7 +189,7 @@ export function BaoCaoToolbar({
     })
     
     filters.nguoiTaoIds?.forEach((id) => {
-      const nguoiDung = nguoiDungList.find((nd) => nd.id === id)
+      const nguoiDung = nguoiDungList.find((nd) => String(nd.id) === id)
       result.push({
         id: `nguoiTao-${id}`,
         label: nguoiDung?.ho_va_ten || nguoiDung?.ho_ten || nguoiDung?.email || id,
@@ -199,10 +199,10 @@ export function BaoCaoToolbar({
     })
     
     filters.taiKhoanIds?.forEach((id) => {
-      const taiKhoan = taiKhoanList.find((tk) => tk.id === id)
+      const taiKhoan = taiKhoanList.find((tk) => String(tk.id) === id)
       result.push({
         id: `taiKhoan-${id}`,
-        label: taiKhoan?.ten || id,
+        label: taiKhoan?.ten_tai_khoan || taiKhoan?.ten || id,
         type: 'Tài khoản',
         onRemove: () => toggleArrayFilter('taiKhoanIds', id, filters.taiKhoanIds),
       })
@@ -253,7 +253,7 @@ export function BaoCaoToolbar({
         <MultiSelectPopover
           keyName="danhMuc"
           label="Danh mục"
-          options={danhMucList.map((dm) => ({ value: dm.id, label: dm.ten }))}
+          options={danhMucList.map((dm) => ({ value: String(dm.id), label: dm.ten || '' }))}
           selectedValues={filters.danhMucIds}
           onToggle={(value) => toggleArrayFilter('danhMucIds', value, filters.danhMucIds)}
         />
@@ -262,7 +262,7 @@ export function BaoCaoToolbar({
         <MultiSelectPopover
           keyName="doiTac"
           label="Đối tác"
-          options={doiTacList.map((dt) => ({ value: dt.id, label: dt.ten }))}
+          options={doiTacList.map((dt) => ({ value: String(dt.id), label: dt.ten_doi_tac || '' }))}
           selectedValues={filters.doiTacIds}
           onToggle={(value) => toggleArrayFilter('doiTacIds', value, filters.doiTacIds)}
         />
@@ -290,8 +290,8 @@ export function BaoCaoToolbar({
           keyName="nguoiTao"
           label="Người tạo"
           options={nguoiDungList.map((nd) => ({
-            value: nd.id,
-            label: nd.ho_va_ten || nd.ho_ten || nd.email,
+            value: String(nd.id),
+            label: nd.ho_va_ten || nd.ho_ten || nd.email || '',
           }))}
           selectedValues={filters.nguoiTaoIds}
           onToggle={(value) => toggleArrayFilter('nguoiTaoIds', value, filters.nguoiTaoIds)}
@@ -301,7 +301,7 @@ export function BaoCaoToolbar({
         <MultiSelectPopover
           keyName="taiKhoan"
           label="Tài khoản"
-          options={taiKhoanList.map((tk) => ({ value: tk.id, label: tk.ten }))}
+          options={taiKhoanList.map((tk) => ({ value: String(tk.id), label: tk.ten_tai_khoan || tk.ten || '' }))}
           selectedValues={filters.taiKhoanIds}
           onToggle={(value) => toggleArrayFilter('taiKhoanIds', value, filters.taiKhoanIds)}
         />

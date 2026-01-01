@@ -2,7 +2,8 @@ import { useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store/auth-store'
 import { useCurrentUser } from '@/hooks/use-current-user'
-import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
+import type { AuthChangeEvent } from '@supabase/supabase-js'
+// import type { Session } from '@supabase/supabase-js' // Unused
 
 interface AuthProviderProps {
   children: React.ReactNode
@@ -13,13 +14,13 @@ interface AuthProviderProps {
  * Lắng nghe sự thay đổi của Supabase auth state và tự động cập nhật Zustand Store
  */
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { layPhienLamViecHienTai, reset, session } = useAuthStore()
+  const { layPhienLamViecHienTai, reset } = useAuthStore()
   const isInitialized = useRef(false)
   const initPromiseRef = useRef<Promise<void> | null>(null)
   
   // Sử dụng TanStack Query để fetch user profile khi đã có session
   // Hook này sẽ tự động sync data vào auth store
-  const { user, nguoiDung, isLoading: isLoadingUser } = useCurrentUser()
+  useCurrentUser() // Chỉ cần gọi để sync data, không cần destructure
 
   useEffect(() => {
     // Lấy session ban đầu khi component mount
@@ -46,7 +47,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Lắng nghe sự thay đổi auth state
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
+    } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent) => {
       // Bỏ qua INITIAL_SESSION vì đã xử lý trong initAuth
       if (event === 'INITIAL_SESSION') {
         return

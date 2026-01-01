@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import type { DanhMucWithParent } from '@/types/danh-muc'
-import { getLevel2ItemsByLoai, buildTreeStructure } from '../utils/danh-muc-helpers'
+import { getLevel2ItemsByLoai } from '../utils/danh-muc-helpers'
 
 interface DanhMucComboboxProps {
   value?: string | null
@@ -44,33 +44,65 @@ export function DanhMucCombobox({
     return getLevel2ItemsByLoai(danhSachDanhMuc, loai)
   }, [danhSachDanhMuc, loai])
 
-  // Xây dựng tree structure để nhóm theo parent (chỉ lấy danh mục active)
+  // Xây dựng tree structure để nhóm theo parent (chỉ lấy cấp 1 và cấp 2 của loại này)
   const treeStructure = React.useMemo(() => {
+    // Lấy tất cả danh mục theo loại
     const allItems = danhSachDanhMuc.filter(
-      (item) => item.loai === loai && item.is_active
+      (item) => item.loai === loai || item.hang_muc === loai
     )
-    return buildTreeStructure(allItems)
+    
+    // Chỉ lấy cấp 1 và cấp 2
+    const level1Items = allItems.filter((item) => !item.parent_id || !item.danh_muc_cha_id)
+    const level2Items = allItems.filter((item) => item.parent_id || item.danh_muc_cha_id)
+    
+    // Build tree: chỉ hiển thị cấp 1 có con là cấp 2
+    return level1Items
+      .map((parent) => {
+        const children = level2Items.filter((child) => {
+          const childParentId = child.parent_id || child.danh_muc_cha_id
+          const parentId = parent.id
+          return String(childParentId) === String(parentId)
+        })
+        
+        return {
+          ...parent,
+          children: children.length > 0 ? children : undefined,
+        }
+      })
+      .filter((parent) => parent.children && parent.children.length > 0) // Chỉ hiển thị cấp 1 có con
   }, [danhSachDanhMuc, loai])
 
   // Tìm danh mục được chọn
   const selectedItem = React.useMemo(() => {
     if (!value) return null
-    return level2Items.find((item) => item.id === value)
+    const numValue = typeof value === 'string' ? Number(value) : value
+    return level2Items.find((item) => {
+      const itemId = typeof item.id === 'string' ? Number(item.id) : item.id
+      return itemId === numValue
+    })
   }, [value, level2Items])
 
   // Tìm parent của danh mục được chọn
   const selectedParent = React.useMemo(() => {
-    if (!selectedItem?.parent_id) return null
-    return danhSachDanhMuc.find((item) => item.id === selectedItem.parent_id)
+    if (!selectedItem) return null
+    const parentId = selectedItem.parent_id || selectedItem.danh_muc_cha_id
+    if (!parentId) return null
+    return danhSachDanhMuc.find((item) => {
+      const itemId = typeof item.id === 'string' ? Number(item.id) : item.id
+      const parentIdNum = typeof parentId === 'string' ? Number(parentId) : parentId
+      return itemId === parentIdNum
+    })
   }, [selectedItem, danhSachDanhMuc])
 
   // Format hiển thị: [Cấp 1] > [Cấp 2]
   const displayValue = React.useMemo(() => {
     if (!selectedItem) return placeholder
-    if (selectedParent) {
-      return `${selectedParent.ten} > ${selectedItem.ten}`
+    const parentName = selectedParent?.ten || selectedParent?.ten_danh_muc || ''
+    const itemName = selectedItem.ten || selectedItem.ten_danh_muc || ''
+    if (selectedParent && parentName) {
+      return `${parentName} > ${itemName}`
     }
-    return selectedItem.ten
+    return itemName
   }, [selectedItem, selectedParent, placeholder])
 
   return (
@@ -96,26 +128,42 @@ export function DanhMucCombobox({
               const children = parent.children || []
               if (children.length === 0) return null
 
+              const parentName = parent.ten || parent.ten_danh_muc || ''
+
               return (
-                <CommandGroup key={parent.id} heading={parent.ten}>
-                  {children.map((child) => (
-                    <CommandItem
-                      key={child.id}
-                      value={`${parent.ten} ${child.ten}`}
-                      onSelect={() => {
-                        onChange(child.id)
-                        setOpen(false)
-                      }}
-                    >
-                      <Check
-                        className={cn(
-                          'mr-2 h-4 w-4',
-                          value === child.id ? 'opacity-100' : 'opacity-0'
-                        )}
-                      />
-                      <span>{child.ten}</span>
-                    </CommandItem>
-                  ))}
+                <CommandGroup key={parent.id} heading={parentName}>
+                  {children.map((child) => {
+                    const childName = child.ten || child.ten_danh_muc || ''
+                    const childId = typeof child.id === 'string' ? Number(child.id) : child.id
+                    const currentValue = typeof value === 'string' ? Number(value) : value
+                    
+                    return (
+                      <CommandItem
+                        key={child.id}
+                        value={`${parentName} ${childName}`}
+                        onSelect={() => {
+                          // Đảm bảo onSelect được gọi khi click chuột
+                          onChange(String(childId))
+                          setOpen(false)
+                        }}
+                        onClick={(e) => {
+                          // Xử lý click trực tiếp như một fallback
+                          e.preventDefault()
+                          e.stopPropagation()
+                          onChange(String(childId))
+                          setOpen(false)
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            'mr-2 h-4 w-4 pointer-events-none',
+                            currentValue === childId ? 'opacity-100' : 'opacity-0'
+                          )}
+                        />
+                        <span className="pointer-events-none">{childName}</span>
+                      </CommandItem>
+                    )
+                  })}
                 </CommandGroup>
               )
             })}

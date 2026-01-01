@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -17,8 +17,14 @@ const doiTacSchema = z.object({
     required_error: 'Loại đối tác là bắt buộc',
   }),
   nhom_doi_tac_id: z.preprocess(
-    (val) => val === '' ? null : (typeof val === 'string' ? Number(val) : val),
-    z.number().nullable().optional()
+    (val) => {
+      if (val === '' || val === null || val === undefined) return undefined
+      return typeof val === 'string' ? Number(val) : val
+    },
+    z.number({ 
+      required_error: 'Nhóm đối tác là bắt buộc', 
+      invalid_type_error: 'Vui lòng chọn nhóm đối tác' 
+    })
   ),
   cong_ty: z.preprocess(
     (val) => val === '' ? null : val,
@@ -77,7 +83,7 @@ export function DoiTacFormView({
     defaultValues: {
       ten_doi_tac: '',
       hang_muc: defaultLoai || 'nha_cung_cap',
-      nhom_doi_tac_id: null,
+      nhom_doi_tac_id: undefined,
       cong_ty: null,
       email: null,
       so_dien_thoai: null,
@@ -99,7 +105,7 @@ export function DoiTacFormView({
       reset({
         ten_doi_tac: chiTiet.ten_doi_tac || '',
         hang_muc: (chiTiet.hang_muc as LoaiDoiTac) || 'nha_cung_cap',
-        nhom_doi_tac_id: chiTiet.nhom_doi_tac_id ? Number(chiTiet.nhom_doi_tac_id) : null,
+        nhom_doi_tac_id: chiTiet.nhom_doi_tac_id ? Number(chiTiet.nhom_doi_tac_id) : undefined,
         cong_ty: chiTiet.cong_ty || null,
         email: chiTiet.email || null,
         so_dien_thoai: chiTiet.so_dien_thoai || null,
@@ -158,11 +164,25 @@ export function DoiTacFormView({
     )
   }
 
-  const title = editId ? 'Chỉnh sửa đối tác' : 'Thêm đối tác mới'
+  // Xác định loại đối tác từ defaultLoai, form data, hoặc chiTiet
+  // Sử dụng form.watch để theo dõi thay đổi real-time
+  const formHangMuc = form.watch('hang_muc') as LoaiDoiTac | undefined
+  const loaiDoiTac = defaultLoai || formHangMuc || (chiTiet?.hang_muc as LoaiDoiTac) || 'nha_cung_cap'
+  const loaiLabel = LOAI_DOI_TAC.find(l => l.value === loaiDoiTac)?.label || 'Đối tác'
+  
+  // Xác định label cho nhóm đối tác dựa trên loại hiện tại (tự động cập nhật khi hang_muc thay đổi)
+  const nhomLabel = loaiDoiTac === 'khach_hang' ? 'Nhóm khách hàng' : 'Nhóm nhà cung cấp'
+  const nhomPlaceholder = loaiDoiTac === 'khach_hang' 
+    ? 'Chọn nhóm khách hàng (tùy chọn)' 
+    : 'Chọn nhóm nhà cung cấp (tùy chọn)'
+  
+  const title = editId 
+    ? `Chỉnh sửa ${loaiLabel.toLowerCase()}` 
+    : `Thêm ${loaiLabel.toLowerCase()} mới`
   const isLoading = isSubmitting || taoMoi.isPending || capNhat.isPending
 
-  // Định nghĩa các nhóm fields
-  const fieldGroups: FormFieldGroup<DoiTacFormData>[] = [
+  // Định nghĩa các nhóm fields - sử dụng useMemo để tự động cập nhật khi loại đối tác thay đổi
+  const fieldGroups: FormFieldGroup<DoiTacFormData>[] = useMemo(() => [
     {
       title: 'Thông tin cơ bản',
       fields: [
@@ -172,14 +192,14 @@ export function DoiTacFormView({
           type: 'text',
           placeholder: 'Nhập tên đối tác',
           required: true,
-          span: 2,
+          span: 2 as const,
         },
         {
           key: 'cong_ty',
           label: 'Công ty',
           type: 'text',
           placeholder: 'Nhập tên công ty',
-          span: 1,
+          span: 1 as const,
         },
         // Chỉ hiện field loại khi chỉnh sửa (để có thể đổi loại) hoặc khi không có defaultLoai
         ...(editId || !defaultLoai
@@ -190,21 +210,21 @@ export function DoiTacFormView({
                 type: 'select' as const,
                 required: true,
                 options: LOAI_DOI_TAC.map((loai) => ({ value: loai.value, label: loai.label })),
-                span: 1,
+                span: 1 as const,
               },
             ]
           : []),
         {
           key: 'nhom_doi_tac_id',
-          label: 'Nhóm đối tác',
+          label: nhomLabel,
           type: 'select',
-          required: false,
+          required: true,
           options: danhSachNhomDoiTac?.map((nhom: any) => ({
             value: nhom.id,
             label: nhom.ten_nhom || nhom.ten || String(nhom.id),
           })) || [],
-          placeholder: 'Chọn nhóm đối tác (tùy chọn)',
-          span: 1,
+          placeholder: nhomPlaceholder,
+          span: 1 as const,
         },
       ],
     },
@@ -216,21 +236,21 @@ export function DoiTacFormView({
           label: 'Email',
           type: 'email',
           placeholder: 'email@example.com',
-          span: 2,
+          span: 2 as const,
         },
         {
           key: 'so_dien_thoai',
           label: 'Số điện thoại',
           type: 'text',
           placeholder: '0912345678',
-          span: 1,
+          span: 1 as const,
         },
         {
           key: 'dia_chi',
           label: 'Địa chỉ',
           type: 'textarea',
           placeholder: 'Nhập địa chỉ',
-          span: 3,
+          span: 3 as const,
         },
       ],
     },
@@ -242,11 +262,11 @@ export function DoiTacFormView({
           label: 'Thông tin khác',
           type: 'textarea',
           placeholder: 'Nhập thông tin khác (tùy chọn)',
-          span: 3,
+          span: 3 as const,
         },
       ],
     },
-  ]
+  ], [loaiDoiTac, nhomLabel, nhomPlaceholder, danhSachNhomDoiTac, editId, defaultLoai])
 
   return (
     <div className="bg-card border rounded-lg overflow-hidden flex-1 flex flex-col min-h-0">

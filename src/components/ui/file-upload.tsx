@@ -33,9 +33,21 @@ const FileUpload = React.forwardRef<HTMLInputElement, FileUploadProps>(
     const [error, setError] = React.useState<string | null>(null)
     const [isDragging, setIsDragging] = React.useState(false)
 
+    // Helper function to check if value is a File object
+    const isFile = (val: any): val is File => {
+      if (val == null || typeof val !== 'object') return false
+      // Check if it has File-like properties
+      return (
+        typeof val.name === 'string' &&
+        typeof val.size === 'number' &&
+        typeof val.type === 'string' &&
+        val instanceof Blob
+      )
+    }
+
     // Generate preview URL
     React.useEffect(() => {
-      if (value instanceof File) {
+      if (isFile(value)) {
         const url = URL.createObjectURL(value)
         setPreviewUrl(url)
         return () => URL.revokeObjectURL(url)
@@ -93,7 +105,7 @@ const FileUpload = React.forwardRef<HTMLInputElement, FileUploadProps>(
     }
 
     const isImage = previewUrl && /\.(jpg|jpeg|png|gif|webp)$/i.test(
-      value instanceof File ? value.name : previewUrl
+      isFile(value) ? value.name : previewUrl
     )
 
     return (
@@ -169,10 +181,10 @@ const FileUpload = React.forwardRef<HTMLInputElement, FileUploadProps>(
                     <File className="h-4 w-4 text-muted-foreground" />
                   )}
                   <p className="text-sm font-medium truncate">
-                    {value instanceof File ? value.name : 'File đã tải lên'}
+                    {isFile(value) ? value.name : 'File đã tải lên'}
                   </p>
                 </div>
-                {value instanceof File && (
+                {isFile(value) && (
                   <p className="text-xs text-muted-foreground">
                     {(value.size / 1024).toFixed(2)} KB
                   </p>

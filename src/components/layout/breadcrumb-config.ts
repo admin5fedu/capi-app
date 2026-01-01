@@ -5,7 +5,7 @@
 export const breadcrumbConfig: Record<string, string> = {
   '/': 'Trang chủ',
   '/tai-chinh': 'Tài chính',
-  '/tai-chinh/danh-muc': 'Danh mục',
+  '/tai-chinh/danh-muc-tai-chinh': 'Danh mục tài chính',
   '/tai-chinh/tai-khoan': 'Tài khoản',
   '/tai-chinh/thu-chi': 'Giao dịch',
   '/tai-chinh/ty-gia': 'Tỷ giá',
@@ -17,12 +17,15 @@ export const breadcrumbConfig: Record<string, string> = {
   '/doi-tac/danh-sach-doi-tac': 'Danh sách đối tác',
   '/doi-tac/danh-sach-nha-cung-cap': 'Danh sách nhà cung cấp',
   '/doi-tac/danh-sach-khach-hang': 'Danh sách khách hàng',
+  '/doi-tac/nhom-khach-hang': 'Nhóm khách hàng',
+  '/doi-tac/nhom-nha-cung-cap': 'Nhóm nhà cung cấp',
   '/thiet-lap': 'Thiết lập',
   '/thiet-lap/nguoi-dung': 'Người dùng',
   '/thiet-lap/vai-tro': 'Vai trò',
   '/thiet-lap/phong-ban': 'Phòng ban',
   '/thiet-lap/phan-quyen': 'Phân quyền',
   '/thiet-lap/cai-dat': 'Cài đặt',
+  '/thiet-lap/thong-tin-cong-ty': 'Thông tin công ty',
   '/ho-so': 'Hồ sơ',
 }
 
@@ -81,12 +84,47 @@ export function getBreadcrumbLabels(pathname: string, hasDetailLabel: boolean = 
  */
 function formatPathPart(part: string): string | null {
   const partMap: Record<string, string> = {
+    // Actions
     detail: 'Chi tiết',
     edit: 'Chỉnh sửa',
     create: 'Tạo mới',
+    new: 'Tạo mới',
+    add: 'Thêm mới',
     'them-moi': 'Thêm mới',
     moi: 'Thêm mới',
     sua: 'Chỉnh sửa',
+    update: 'Cập nhật',
+    delete: 'Xóa',
+    view: 'Xem',
+    list: 'Danh sách',
+    // Modules
+    'nhom': 'Nhóm',
+    'danh-sach': 'Danh sách',
+    'nha-cung-cap': 'Nhà cung cấp',
+    'khach-hang': 'Khách hàng',
+    'nhom-khach-hang': 'Nhóm khách hàng',
+    'nhom-nha-cung-cap': 'Nhóm nhà cung cấp',
+    'danh-sach-nha-cung-cap': 'Danh sách nhà cung cấp',
+    'danh-sach-khach-hang': 'Danh sách khách hàng',
+    // Common terms
+    'tai-chinh': 'Tài chính',
+    'doi-tac': 'Đối tác',
+    'thiet-lap': 'Thiết lập',
+    'nguoi-dung': 'Người dùng',
+    'vai-tro': 'Vai trò',
+    'phong-ban': 'Phòng ban',
+    'phan-quyen': 'Phân quyền',
+    'cai-dat': 'Cài đặt',
+    'thong-tin-cong-ty': 'Thông tin công ty',
+    'ho-so': 'Hồ sơ',
+    'tai-khoan': 'Tài khoản',
+    'danh-muc': 'Danh mục',
+    'danh-muc-tai-chinh': 'Danh mục tài chính',
+    'thu-chi': 'Giao dịch',
+    'ty-gia': 'Tỷ giá',
+    'bao-cao': 'Báo cáo',
+    'bao-cao-tai-chinh': 'Báo cáo tài chính',
+    'bao-cao-tai-khoan': 'Báo cáo tài khoản',
   }
 
   // Nếu là UUID hoặc ID dài (>20 ký tự), không format (sẽ được xử lý bởi detail label)
@@ -117,7 +155,11 @@ function formatPathPart(part: string): string | null {
     return partMap[part]
   }
 
-  // Format default: viết hoa chữ cái đầu, thay gạch ngang bằng space
-  return part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, ' ')
+  // Format default: thay gạch ngang bằng space và viết hoa chữ cái đầu mỗi từ
+  const words = part.split('-')
+  const formattedWords = words.map(word => 
+    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+  )
+  return formattedWords.join(' ')
 }
 

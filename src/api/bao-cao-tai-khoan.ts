@@ -31,11 +31,11 @@ async function getSoDuDauKy(
   // Lấy số dư ban đầu
   const { data: taiKhoan } = await supabase
     .from(TAI_KHOAN_TABLE)
-    .select('so_du_ban_dau')
+    .select('so_du_dau')
     .eq('id', taiKhoanId)
     .single()
 
-  const soDuBanDau = taiKhoan?.so_du_ban_dau || 0
+  const soDuBanDau = taiKhoan?.so_du_dau || 0
 
   // Tính tổng thu/chi trước ngày bắt đầu
   const { data: giaoDichTruoc } = await supabase
@@ -106,9 +106,9 @@ export async function getBaoCaoTaiKhoanData(
     .from(TABLE_NAME)
     .select(`
       *,
-      danh_muc:zz_capi_danh_muc!danh_muc_id(id, ten),
-      tai_khoan:zz_capi_tai_khoan!tai_khoan_id(id, ten, loai, loai_tien),
-      tai_khoan_den:zz_capi_tai_khoan!tai_khoan_den_id(id, ten, loai, loai_tien),
+      danh_muc:zz_capi_danh_muc_tai_chinh!danh_muc_id(id, ten_danh_muc),
+      tai_khoan:zz_capi_tai_khoan!tai_khoan_id(id, ten_tai_khoan, loai_tai_khoan, don_vi),
+      tai_khoan_den:zz_capi_tai_khoan!tai_khoan_den_id(id, ten_tai_khoan, loai_tai_khoan, don_vi),
       doi_tac:zz_capi_danh_sach_doi_tac!doi_tac_id(id, ten),
       nguoi_tao:zz_capi_nguoi_dung!created_by(id, ho_va_ten)
     `)
@@ -151,9 +151,22 @@ export async function getBaoCaoTaiKhoanData(
 
   const giaoDich = (data || []).map((item: any) => ({
     ...item,
-    danh_muc: item.danh_muc || null,
-    tai_khoan: item.tai_khoan || null,
-    tai_khoan_den: item.tai_khoan_den || null,
+    danh_muc: item.danh_muc ? {
+      ...item.danh_muc,
+      ten: item.danh_muc.ten_danh_muc,
+    } : null,
+    tai_khoan: item.tai_khoan ? {
+      ...item.tai_khoan,
+      ten: item.tai_khoan.ten_tai_khoan,
+      loai: item.tai_khoan.loai_tai_khoan,
+      loai_tien: item.tai_khoan.don_vi,
+    } : null,
+    tai_khoan_den: item.tai_khoan_den ? {
+      ...item.tai_khoan_den,
+      ten: item.tai_khoan_den.ten_tai_khoan,
+      loai: item.tai_khoan_den.loai_tai_khoan,
+      loai_tien: item.tai_khoan_den.don_vi,
+    } : null,
     doi_tac: item.doi_tac || null,
     nguoi_tao: item.nguoi_tao || null,
   })) as any[]

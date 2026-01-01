@@ -18,14 +18,14 @@ export function isLevel2(danhMuc: DanhMucWithParent): boolean {
  * Lấy danh sách danh mục cấp 1 (không có parent)
  */
 export function getLevel1Items(items: DanhMucWithParent[]): DanhMucWithParent[] {
-  return items.filter(isLevel1).sort((a, b) => (a.thu_tu ?? 0) - (b.thu_tu ?? 0))
+  return items.filter(isLevel1).sort((a, b) => (a.cap ?? 0) - (b.cap ?? 0))
 }
 
 /**
  * Lấy danh sách danh mục cấp 2 (có parent)
  */
 export function getLevel2Items(items: DanhMucWithParent[]): DanhMucWithParent[] {
-  return items.filter(isLevel2).sort((a, b) => (a.thu_tu ?? 0) - (b.thu_tu ?? 0))
+  return items.filter(isLevel2).sort((a, b) => (a.cap ?? 0) - (b.cap ?? 0))
 }
 
 /**
@@ -37,8 +37,8 @@ export function buildTreeStructure(items: DanhMucWithParent[]): DanhMucWithChild
 
   return level1Items.map((parent) => {
     const children = level2Items
-      .filter((child) => child.parent_id === parent.id)
-      .sort((a, b) => (a.thu_tu ?? 0) - (b.thu_tu ?? 0))
+      .filter((child) => child.parent_id ? String(child.parent_id) === String(parent.id) : false)
+      .sort((a, b) => (a.cap ?? 0) - (b.cap ?? 0))
 
     return {
       ...parent,
@@ -54,7 +54,10 @@ export function getLevel2ItemsByLoai(
   items: DanhMucWithParent[],
   loai: 'thu' | 'chi'
 ): DanhMucWithParent[] {
-  return getLevel2Items(items).filter((item) => item.loai === loai)
+  return getLevel2Items(items).filter((item) => {
+    // Check cả loai (alias) và hang_muc (cột thực tế)
+    return item.loai === loai || item.hang_muc === loai
+  })
 }
 
 /**
@@ -85,7 +88,7 @@ export function canBeParentFor(
   if (child) {
     let current: DanhMucWithParent | null = child
     while (current?.parent_id) {
-      if (current.parent_id === potentialParent.id) return false
+      if (current.parent_id && String(current.parent_id) === String(potentialParent.id)) return false
       // Tìm parent của current (cần có danh sách đầy đủ để check)
       // Tạm thời chỉ check 1 cấp
       break
@@ -139,10 +142,10 @@ function sortByParentAndLevel(items: DanhMucWithParent[]): DanhMucWithParent[] {
   for (const parent of level1Items) {
     result.push(parent)
 
-    // Thêm các cấp 2 của parent này
+    // Thêm các cấp 2 của parent này (so sánh string với string vì parent_id là string)
     const children = level2Items
-      .filter((child) => child.parent_id === parent.id)
-      .sort((a, b) => (a.thu_tu ?? 0) - (b.thu_tu ?? 0))
+      .filter((child) => String(child.parent_id) === String(parent.id))
+      .sort((a, b) => (a.cap ?? 0) - (b.cap ?? 0))
 
     result.push(...children)
   }

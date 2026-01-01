@@ -20,7 +20,7 @@ export function BaoCaoExport({ data, filters }: BaoCaoExportProps) {
       // Prepare data for export
       const exportData = data.giaoDich.map((gd) => ({
         'Mã phiếu': gd.ma_phieu,
-        'Ngày': new Date(gd.ngay).toLocaleDateString('vi-VN'),
+        'Ngày': gd.ngay ? new Date(gd.ngay).toLocaleDateString('vi-VN') : '',
         'Loại': gd.loai === 'thu' ? 'Thu' : gd.loai === 'chi' ? 'Chi' : 'Luân chuyển',
         'Danh mục': gd.danh_muc?.ten || '',
         'Mô tả': gd.mo_ta || '',

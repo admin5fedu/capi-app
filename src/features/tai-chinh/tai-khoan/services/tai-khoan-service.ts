@@ -18,7 +18,7 @@ export async function getTaiKhoanListService(): Promise<TaiKhoan[]> {
 }
 
 export async function getTaiKhoanByIdService(id: string): Promise<TaiKhoan> {
-  return getTaiKhoanById(id)
+  return getTaiKhoanById(parseInt(id, 10))
 }
 
 export async function createTaiKhoanService(data: TaiKhoanInsert): Promise<TaiKhoan> {
@@ -29,11 +29,11 @@ export async function updateTaiKhoanService(
   id: string,
   data: TaiKhoanUpdate
 ): Promise<TaiKhoan> {
-  return updateTaiKhoan(id, data)
+  return updateTaiKhoan(parseInt(id, 10), data)
 }
 
 export async function deleteTaiKhoanService(id: string): Promise<{ success: boolean }> {
-  return deleteTaiKhoan(id)
+  return deleteTaiKhoan(parseInt(id, 10))
 }
 
 export async function searchTaiKhoanService(keyword: string): Promise<TaiKhoan[]> {

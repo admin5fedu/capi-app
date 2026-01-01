@@ -77,6 +77,9 @@ export function DoiTacDetailView({
     )
   }
 
+  // Xác định label cho nhóm đối tác dựa trên loại
+  const nhomLabel = doiTac?.hang_muc === 'khach_hang' ? 'Nhóm khách hàng' : 'Nhóm nhà cung cấp'
+
   const fieldGroups: DetailFieldGroup<DoiTac>[] = [
     {
       title: 'Thông tin cơ bản',
@@ -105,7 +108,7 @@ export function DoiTacDetailView({
         },
         {
           key: 'ten_nhom_doi_tac',
-          label: 'Nhóm đối tác',
+          label: nhomLabel,
           accessor: 'ten_nhom_doi_tac',
           render: () => {
             if (!doiTac?.nhom_doi_tac_id) return <span className="text-muted-foreground">—</span>

@@ -6,13 +6,13 @@ import { useTaiKhoanList, useDeleteTaiKhoan } from '../hooks/use-tai-khoan'
 import { COT_HIEN_THI, TEN_LUU_TRU_COT, LOAI_TAI_KHOAN, LOAI_TIEN } from '../config'
 import { getBulkActions, handleXuatExcel, handleNhapExcel } from '../actions'
 import type { TaiKhoan } from '@/types/tai-khoan'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Edit2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface TaiKhoanListViewProps {
-  onEdit: (id: string) => void
+  onEdit: (id: number) => void
   onAddNew: () => void
-  onView?: (id: string) => void
+  onView?: (id: number) => void
 }
 
 /**
@@ -25,8 +25,8 @@ export function TaiKhoanListView({ onEdit, onAddNew, onView }: TaiKhoanListViewP
 
   const handleXoa = async (taiKhoan: TaiKhoan) => {
     try {
-      setDeletingId(taiKhoan.id)
-      await deleteTaiKhoan.mutateAsync(taiKhoan.id)
+      setDeletingId(String(taiKhoan.id))
+      await deleteTaiKhoan.mutateAsync(String(taiKhoan.id))
       toast.success('Xóa tài khoản thành công')
     } catch (error: any) {
       toast.error(`Lỗi: ${error.message || 'Không thể xóa tài khoản này'}`)
@@ -46,7 +46,7 @@ export function TaiKhoanListView({ onEdit, onAddNew, onView }: TaiKhoanListViewP
   const confirmBulkDelete = async () => {
     try {
       await Promise.all(
-        selectedRowsForDelete.map((taiKhoan) => deleteTaiKhoan.mutateAsync(taiKhoan.id))
+        selectedRowsForDelete.map((taiKhoan) => deleteTaiKhoan.mutateAsync(String(taiKhoan.id)))
       )
       toast.success(`Đã xóa ${selectedRowsForDelete.length} tài khoản thành công`)
       setBulkDeleteOpen(false)
@@ -60,7 +60,7 @@ export function TaiKhoanListView({ onEdit, onAddNew, onView }: TaiKhoanListViewP
   const hanhDongItems = [
     {
       label: 'Chỉnh sửa',
-      icon: Pencil,
+      icon: Edit2,
       onClick: (row: TaiKhoan) => onEdit(row.id),
       variant: 'default' as const,
     },
@@ -69,7 +69,7 @@ export function TaiKhoanListView({ onEdit, onAddNew, onView }: TaiKhoanListViewP
       icon: Trash2,
       onClick: handleXoa,
       variant: 'destructive' as const,
-      hidden: (row: TaiKhoan) => deletingId === row.id, // Ẩn khi đang xóa
+      hidden: (row: TaiKhoan) => deletingId === String(row.id), // Ẩn khi đang xóa
       requiresConfirm: true,
       confirmTitle: 'Xác nhận xóa tài khoản',
       confirmDescription: (row: TaiKhoan) =>

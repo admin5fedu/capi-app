@@ -8,19 +8,23 @@ import { getTaiKhoanLoaiBadgeVariant, getStatusBadgeVariant } from '@/shared/uti
  * Cấu hình module Tài khoản
  */
 
-// Các loại tài khoản
+// Các loại tài khoản (chỉ 2 loại: Tiền mặt và Tài khoản)
 export const LOAI_TAI_KHOAN = [
   { value: 'tien_mat', label: 'Tiền mặt' },
-  { value: 'ngan_hang', label: 'Ngân hàng' },
-  { value: 'vi_dien_tu', label: 'Ví điện tử' },
-  { value: 'khac', label: 'Khác' },
+  { value: 'tai_khoan', label: 'Tài khoản' },
 ] as const
 
-// Các loại tiền
+// Các loại tiền (đơn vị)
 export const LOAI_TIEN = [
   { value: 'VND', label: 'VND' },
   { value: 'USD', label: 'USD' },
   { value: 'EUR', label: 'EUR' },
+] as const
+
+// Các trạng thái
+export const TRANG_THAI = [
+  { value: 'hoat_dong', label: 'Hoạt động' },
+  { value: 'vo_hieu_hoa', label: 'Vô hiệu hóa' },
 ] as const
 
 // Các cột hiển thị trong bảng
@@ -28,7 +32,7 @@ export const COT_HIEN_THI: CotHienThi<TaiKhoan>[] = [
   {
     key: 'ten',
     label: 'Tên tài khoản',
-    accessorKey: 'ten',
+    accessorKey: (row: any) => row.ten_tai_khoan || row.ten || null,
     sortable: true,
     width: 200,
     align: 'left',
@@ -37,16 +41,17 @@ export const COT_HIEN_THI: CotHienThi<TaiKhoan>[] = [
   {
     key: 'loai',
     label: 'Loại',
-    accessorKey: 'loai',
+    accessorKey: (row: any) => row.loai_tai_khoan || row.loai || null,
     sortable: true,
     width: 120,
     align: 'left',
     defaultVisible: true,
     cell: (value, row) => {
-      const loai = LOAI_TAI_KHOAN.find((l) => l.value === value)
-      const label = loai ? loai.label : value || '—'
+      const loaiValue = row.loai_tai_khoan || row.loai || value
+      const loai = LOAI_TAI_KHOAN.find((l) => l.value === loaiValue)
+      const label = loai ? loai.label : loaiValue || '—'
       return (
-        <Badge variant={getTaiKhoanLoaiBadgeVariant(value)}>
+        <Badge variant={getTaiKhoanLoaiBadgeVariant(loaiValue)}>
           {label}
         </Badge>
       )
@@ -54,8 +59,8 @@ export const COT_HIEN_THI: CotHienThi<TaiKhoan>[] = [
   },
   {
     key: 'loai_tien',
-    label: 'Loại tiền',
-    accessorKey: 'loai_tien',
+    label: 'Đơn vị',
+    accessorKey: (row: any) => row.don_vi || row.loai_tien || null,
     sortable: true,
     width: 120,
     align: 'left',
@@ -90,8 +95,8 @@ export const COT_HIEN_THI: CotHienThi<TaiKhoan>[] = [
   },
   {
     key: 'so_du_ban_dau',
-    label: 'Số dư ban đầu',
-    accessorKey: 'so_du_ban_dau',
+    label: 'Số dư đầu',
+    accessorKey: (row: any) => row.so_du_dau ?? row.so_du_ban_dau ?? null,
     sortable: true,
     width: 150,
     align: 'right',
@@ -107,26 +112,44 @@ export const COT_HIEN_THI: CotHienThi<TaiKhoan>[] = [
   {
     key: 'is_active',
     label: 'Trạng thái',
-    accessorKey: 'is_active',
+    accessorKey: (row: any) => {
+      // Convert trang_thai (text) to is_active (boolean) for display
+      const trangThai = row.trang_thai
+      if (!trangThai) return row.is_active ?? null
+      return trangThai.toLowerCase() === 'hoat_dong' || trangThai === 'active' || trangThai === 'true'
+    },
     sortable: true,
     width: 120,
     align: 'center',
     defaultVisible: true,
-    cell: (value) => (
-      <Badge variant={getStatusBadgeVariant(value)}>
-        {value ? 'Hoạt động' : 'Vô hiệu hóa'}
-      </Badge>
-    ),
+    cell: (value, row) => {
+      const trangThai = row.trang_thai
+      const isActive = trangThai 
+        ? (trangThai.toLowerCase() === 'hoat_dong' || trangThai === 'active' || trangThai === 'true')
+        : (value ?? true)
+      return (
+        <Badge variant={getStatusBadgeVariant(isActive)}>
+          {isActive ? 'Hoạt động' : 'Vô hiệu hóa'}
+        </Badge>
+      )
+    },
   },
   {
     key: 'mo_ta',
-    label: 'Mô tả',
-    accessorKey: 'mo_ta',
+    label: 'Ghi chú',
+    accessorKey: (row: any) => row.ghi_chu || row.mo_ta || null,
     sortable: false,
     width: 300,
     align: 'left',
     defaultVisible: false,
-    cell: (value) => (value ? String(value) : null),
+    cell: (value) => {
+      const text = String(value || '')
+      return (
+        <div className="max-w-[300px] line-clamp-2" title={text}>
+          {text || '—'}
+        </div>
+      )
+    },
   },
   {
     key: 'tg_tao',

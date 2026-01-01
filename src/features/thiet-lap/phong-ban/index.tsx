@@ -48,9 +48,9 @@ export function PhongBanModule() {
         ) : (
           <div className="bg-card border rounded-lg p-6 flex-1 flex flex-col min-h-0">
             <PhongBanListView
-              onEdit={(id) => handleEdit(id, 'list')}
+              onEdit={(id) => handleEdit(String(id), 'list')}
               onAddNew={() => handleAddNew('list')}
-              onView={handleView}
+              onView={(id) => handleView(String(id))}
             />
           </div>
         )}

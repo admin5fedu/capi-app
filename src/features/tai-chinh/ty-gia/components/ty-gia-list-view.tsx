@@ -6,7 +6,7 @@ import { useTyGiaList, useDeleteTyGia } from '../hooks/use-ty-gia'
 import { COT_HIEN_THI, TEN_LUU_TRU_COT } from '../config'
 import { getBulkActions, handleXuatExcel, handleNhapExcel } from '../actions'
 import type { TyGia } from '@/types/ty-gia'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Edit2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface TyGiaListViewProps {
@@ -60,7 +60,7 @@ export function TyGiaListView({ onEdit, onAddNew, onView }: TyGiaListViewProps) 
   const hanhDongItems = [
     {
       label: 'Chỉnh sửa',
-      icon: Pencil,
+      icon: Edit2,
       onClick: (row: TyGia) => onEdit(row.id),
       variant: 'default' as const,
     },
@@ -72,8 +72,15 @@ export function TyGiaListView({ onEdit, onAddNew, onView }: TyGiaListViewProps) 
       hidden: (row: TyGia) => deletingId === row.id, // Ẩn khi đang xóa
       requiresConfirm: true,
       confirmTitle: 'Xác nhận xóa tỷ giá',
-      confirmDescription: (row: TyGia) =>
-        `Bạn có chắc chắn muốn xóa tỷ giá ngày ${new Date(row.ngay_ap_dung).toLocaleDateString('vi-VN')}? Hành động này không thể hoàn tác.`,
+      confirmDescription: (row: TyGia) => {
+        const tyGiaFormatted = row.ty_gia
+          ? new Intl.NumberFormat('vi-VN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 4,
+            }).format(Number(row.ty_gia))
+          : ''
+        return `Bạn có chắc chắn muốn xóa tỷ giá ${tyGiaFormatted}? Hành động này không thể hoàn tác.`
+      },
     },
   ]
 
@@ -99,7 +106,7 @@ export function TyGiaListView({ onEdit, onAddNew, onView }: TyGiaListViewProps) 
         tenLuuTru={TEN_LUU_TRU_COT}
         onXuatExcel={handleXuatExcel}
         onNhapExcel={handleNhapExcel}
-        timKiemPlaceholder="Tìm kiếm theo ghi chú..."
+        timKiemPlaceholder="Tìm kiếm theo tỷ giá..."
         onTimKiem={() => {}} // GenericListView sẽ tự filter dữ liệu
         enableRowSelection={true}
         pageSize={50}

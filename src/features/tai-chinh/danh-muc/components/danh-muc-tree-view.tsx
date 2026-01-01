@@ -1,19 +1,19 @@
 import { useState, useMemo } from 'react'
-import { ChevronRight, ChevronDown, Pencil, Trash2, Search, X } from 'lucide-react'
+import { ChevronRight, ChevronDown, Edit2, Trash2, Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import type { DanhMucWithParent, DanhMucWithChildren } from '@/types/danh-muc'
 import { buildTreeStructure, isLevel1 } from '../utils/danh-muc-helpers'
-import { getThuChiBadgeVariant, getStatusBadgeVariant } from '@/shared/utils/color-utils'
+import { getThuChiBadgeVariant } from '@/shared/utils/color-utils'
 import { LOAI_DANH_MUC } from '../config'
 
 interface DanhMucTreeViewProps {
   data: DanhMucWithParent[]
-  onEdit?: (id: string) => void
+  onEdit?: (id: number) => void
   onDelete?: (item: DanhMucWithParent) => void
-  onView?: (id: string) => void
+  onView?: (id: number) => void
   isLoading?: boolean
 }
 
@@ -22,9 +22,9 @@ interface TreeItemProps {
   level: number
   expanded: Set<string>
   onToggleExpand: (id: string) => void
-  onEdit?: (id: string) => void
+  onEdit?: (id: number) => void
   onDelete?: (item: DanhMucWithParent) => void
-  onView?: (id: string) => void
+  onView?: (id: number) => void
 }
 
 function TreeItem({
@@ -37,7 +37,7 @@ function TreeItem({
   onView,
 }: TreeItemProps) {
   const hasChildren = item.children && item.children.length > 0
-  const isExpanded = expanded.has(item.id)
+  const isExpanded = expanded.has(String(item.id))
   const isLevel1Item = isLevel1(item)
 
   return (
@@ -56,7 +56,7 @@ function TreeItem({
               variant="ghost"
               size="icon"
               className="h-5 w-5 p-0"
-              onClick={() => onToggleExpand(item.id)}
+              onClick={() => onToggleExpand(String(item.id))}
             >
               {isExpanded ? (
                 <ChevronDown className="h-4 w-4" />
@@ -87,11 +87,8 @@ function TreeItem({
 
         {/* Badges */}
         <div className="flex items-center gap-2">
-          <Badge variant={getThuChiBadgeVariant(item.loai)}>
-            {LOAI_DANH_MUC.find((l) => l.value === item.loai)?.label || item.loai}
-          </Badge>
-          <Badge variant={getStatusBadgeVariant(item.is_active)}>
-            {item.is_active ? 'Hoạt động' : 'Vô hiệu hóa'}
+          <Badge variant={getThuChiBadgeVariant(item.loai || '')}>
+            {LOAI_DANH_MUC.find((l) => l.value === item.loai)?.label || item.loai || ''}
           </Badge>
         </div>
 
@@ -108,7 +105,7 @@ function TreeItem({
               }}
               title="Sửa"
             >
-              <Pencil className="h-4 w-4" />
+              <Edit2 className="h-4 w-4" />
             </Button>
           )}
           {onDelete && (
@@ -168,7 +165,7 @@ export function DanhMucTreeView({
     
     const lowerSearch = searchTerm.toLowerCase()
     return data.filter((item) => 
-      item.ten.toLowerCase().includes(lowerSearch) ||
+      item.ten?.toLowerCase().includes(lowerSearch) ||
       item.mo_ta?.toLowerCase().includes(lowerSearch) ||
       item.parent_ten?.toLowerCase().includes(lowerSearch)
     )
@@ -191,12 +188,12 @@ export function DanhMucTreeView({
       const allParentIds = new Set<string>()
       treeByLoai.thu.forEach((item) => {
         if (item.children && item.children.length > 0) {
-          allParentIds.add(item.id)
+          allParentIds.add(String(item.id))
         }
       })
       treeByLoai.chi.forEach((item) => {
         if (item.children && item.children.length > 0) {
-          allParentIds.add(item.id)
+          allParentIds.add(String(item.id))
         }
       })
       setExpanded(allParentIds)
@@ -219,12 +216,12 @@ export function DanhMucTreeView({
     const allParentIds = new Set<string>()
     treeByLoai.thu.forEach((item) => {
       if (item.children && item.children.length > 0) {
-        allParentIds.add(item.id)
+        allParentIds.add(String(item.id))
       }
     })
     treeByLoai.chi.forEach((item) => {
       if (item.children && item.children.length > 0) {
-        allParentIds.add(item.id)
+        allParentIds.add(String(item.id))
       }
     })
     setExpanded(allParentIds)

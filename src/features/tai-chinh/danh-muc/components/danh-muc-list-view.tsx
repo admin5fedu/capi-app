@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Pencil, Trash2, FolderPlus } from 'lucide-react'
+import { Edit2, Trash2, FolderPlus } from 'lucide-react'
 import { GenericListView } from '@/shared/components/generic/generic-list-view'
 import { useDanhMucList, useDeleteDanhMuc, useDeleteDanhMucCascade } from '../hooks/use-danh-muc'
 import { isLevel1, sortDanhMucForListView } from '../utils/danh-muc-helpers'
@@ -10,10 +10,10 @@ import { toast } from 'sonner'
 import type { QuickFilter } from '@/shared/components/generic/types'
 
 interface DanhMucListViewProps {
-  onEdit: (id: string) => void
+  onEdit: (id: number) => void
   onAddNew: () => void
-  onAddChild?: (parentId: string, parentLoai: string) => void
-  onView?: (id: string) => void
+  onAddChild?: (parentId: number, parentLoai: string) => void
+  onView?: (id: number) => void
 }
 
 /**
@@ -23,7 +23,7 @@ export function DanhMucListView({ onEdit, onAddNew, onAddChild, onView }: DanhMu
   const { data: danhSach, isLoading, error, refetch } = useDanhMucList()
   const deleteDanhMuc = useDeleteDanhMuc()
   const deleteDanhMucCascade = useDeleteDanhMucCascade()
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   // Sắp xếp dữ liệu: Thu trước, Chi sau. Trong mỗi loại: cấp 1 trước, cấp 2 của nó ngay sau
   const sortedData = useMemo(() => {
@@ -37,10 +37,10 @@ export function DanhMucListView({ onEdit, onAddNew, onAddChild, onView }: DanhMu
 
       // Nếu là cấp 1, dùng cascade delete (tự động xóa cấp 2)
       if (isLevel1(danhMuc)) {
-        await deleteDanhMucCascade.mutateAsync(danhMuc.id)
+        await deleteDanhMucCascade.mutateAsync(String(danhMuc.id))
       } else {
         // Nếu là cấp 2, xóa bình thường
-        await deleteDanhMuc.mutateAsync(danhMuc.id)
+        await deleteDanhMuc.mutateAsync(String(danhMuc.id))
       }
     } catch (error: any) {
       toast.error(`Lỗi: ${error.message || 'Không thể xóa danh mục này'}`)
@@ -53,7 +53,7 @@ export function DanhMucListView({ onEdit, onAddNew, onAddChild, onView }: DanhMu
   const hanhDongItems = [
     {
       label: 'Chỉnh sửa',
-      icon: Pencil,
+      icon: Edit2,
       onClick: (row: DanhMucWithParent) => onEdit(row.id),
       variant: 'default' as const,
     },
@@ -62,7 +62,7 @@ export function DanhMucListView({ onEdit, onAddNew, onAddChild, onView }: DanhMu
       icon: FolderPlus,
       onClick: (row: DanhMucWithParent) => {
         if (onAddChild && isLevel1(row)) {
-          onAddChild(row.id, row.loai)
+          onAddChild(row.id, row.loai || '')
         }
       },
       variant: 'default' as const,
@@ -81,18 +81,40 @@ export function DanhMucListView({ onEdit, onAddNew, onAddChild, onView }: DanhMu
     },
   ]
 
+  // Handler xóa nhiều
+  const handleBulkDelete = async (selectedRows: DanhMucWithParent[]) => {
+    if (selectedRows.length === 0) {
+      toast.error('Vui lòng chọn ít nhất một danh mục để xóa')
+      return
+    }
+
+    try {
+      // Phân loại: cấp 1 dùng cascade, cấp 2 xóa bình thường
+      const level1Items = selectedRows.filter((row) => isLevel1(row))
+      const level2Items = selectedRows.filter((row) => !isLevel1(row))
+
+      // Xóa cấp 1 (cascade - tự động xóa cấp 2 con)
+      for (const item of level1Items) {
+        await deleteDanhMucCascade.mutateAsync(String(item.id))
+      }
+
+      // Xóa cấp 2
+      for (const item of level2Items) {
+        await deleteDanhMuc.mutateAsync(String(item.id))
+      }
+
+      toast.success(`Đã xóa ${selectedRows.length} danh mục thành công`)
+    } catch (error: any) {
+      toast.error(`Lỗi: ${error.message || 'Không thể xóa danh mục'}`)
+    }
+  }
+
   // Thao tác hàng loạt
-  const bulkActions = getBulkActions({ onBulkDelete: () => {} })
+  const bulkActions = getBulkActions({ onBulkDelete: handleBulkDelete })
 
   // Quick filters
   const quickFilters: QuickFilter[] = useMemo(
     () => [
-      {
-        key: 'is_active',
-        label: 'Trạng thái',
-        type: 'boolean',
-        multiSelect: true,
-      },
       {
         key: 'loai',
         label: 'Loại',

@@ -9,14 +9,14 @@ import { useNguoiDungList } from '@/features/thiet-lap/nguoi-dung'
 import { COT_HIEN_THI, TEN_LUU_TRU_COT, TabType } from '../config'
 import { getBulkActions, handleXuatExcel, handleNhapExcel } from '../actions'
 import type { NhomDoiTac } from '@/types/nhom-doi-tac'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Edit2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 
 interface NhomDoiTacListViewProps {
-  onEdit: (id: string) => void
+  onEdit: (id: number) => void
   onAddNew: () => void
-  onView?: (id: string) => void
+  onView?: (id: number) => void
   defaultTab?: TabType
   hideTabs?: boolean // Ẩn tab group khi được gọi từ module wrapper
 }
@@ -50,7 +50,7 @@ export function NhomDoiTacListView({
   const { data: danhSach, isLoading, error, refetch } = useNhomDoiTacList(activeTab)
   const { data: danhSachNguoiDung } = useNguoiDungList()
   const deleteNhomDoiTac = useDeleteNhomDoiTac()
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   // Tạo map để tra cứu tên người dùng nhanh
   const nguoiDungMap = useMemo(() => {
@@ -95,7 +95,7 @@ export function NhomDoiTacListView({
   const handleXoa = async (nhomDoiTac: NhomDoiTac) => {
     try {
       setDeletingId(nhomDoiTac.id)
-      await deleteNhomDoiTac.mutateAsync(nhomDoiTac.id)
+      await deleteNhomDoiTac.mutateAsync(String(nhomDoiTac.id))
       toast.success('Xóa nhóm đối tác thành công')
     } catch (error: any) {
       toast.error(`Lỗi: ${error.message || 'Không thể xóa nhóm đối tác này'}`)
@@ -115,7 +115,7 @@ export function NhomDoiTacListView({
   const confirmBulkDelete = async () => {
     try {
       await Promise.all(
-        selectedRowsForDelete.map((nhomDoiTac) => deleteNhomDoiTac.mutateAsync(nhomDoiTac.id))
+        selectedRowsForDelete.map((nhomDoiTac) => deleteNhomDoiTac.mutateAsync(String(nhomDoiTac.id)))
       )
       toast.success(`Đã xóa ${selectedRowsForDelete.length} nhóm đối tác thành công`)
       setBulkDeleteOpen(false)
@@ -129,7 +129,7 @@ export function NhomDoiTacListView({
   const hanhDongItems = [
     {
       label: 'Chỉnh sửa',
-      icon: Pencil,
+      icon: Edit2,
       onClick: (row: NhomDoiTac) => onEdit(row.id),
       variant: 'default' as const,
     },
@@ -177,24 +177,35 @@ export function NhomDoiTacListView({
   if (hideTabs) {
     return (
       <>
-        <GenericListView<NhomDoiTac>
-          data={danhSach || []}
-          cotHienThi={filteredCotHienThi}
-          hanhDongItems={hanhDongItems}
-          bulkActions={bulkActions}
-          quickFilters={quickFilters}
-          isLoading={isLoading}
-          error={error}
-          onRefresh={() => refetch()}
-          onAddNew={() => onAddNew()}
-          onRowClick={(row) => onView?.(row.id)}
-          tenLuuTru={`${TEN_LUU_TRU_COT}-${activeTab}`}
-          onXuatExcel={handleXuatExcel}
-          onNhapExcel={handleNhapExcel}
-          timKiemPlaceholder="Tìm kiếm theo tên, mô tả..."
-          onTimKiem={() => {}} // GenericListView sẽ tự filter dữ liệu
-          enableRowSelection={true}
-          pageSize={50}
+        <div className="flex flex-col h-full min-h-0 overflow-hidden">
+          <GenericListView<NhomDoiTac>
+            data={danhSach || []}
+            cotHienThi={filteredCotHienThi}
+            hanhDongItems={hanhDongItems}
+            bulkActions={bulkActions}
+            quickFilters={quickFilters}
+            isLoading={isLoading}
+            error={error}
+            onRefresh={() => refetch()}
+            onAddNew={() => onAddNew()}
+            onRowClick={(row) => onView?.(row.id)}
+            tenLuuTru={`${TEN_LUU_TRU_COT}-${activeTab}`}
+            onXuatExcel={handleXuatExcel}
+            onNhapExcel={handleNhapExcel}
+            timKiemPlaceholder="Tìm kiếm theo tên, mô tả..."
+            onTimKiem={() => {}} // GenericListView sẽ tự filter dữ liệu
+            enableRowSelection={true}
+            pageSize={50}
+          />
+        </div>
+        <ConfirmDeleteDialog
+          open={bulkDeleteOpen}
+          onOpenChange={setBulkDeleteOpen}
+          onConfirm={confirmBulkDelete}
+          title="Xác nhận xóa nhiều nhóm đối tác"
+          description={`Bạn có chắc chắn muốn xóa ${selectedRowsForDelete.length} nhóm đối tác đã chọn? Hành động này không thể hoàn tác.`}
+          confirmLabel="Xóa"
+          cancelLabel="Hủy"
         />
       </>
     )

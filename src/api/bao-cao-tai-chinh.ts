@@ -36,10 +36,10 @@ export async function getBaoCaoData(
     .from(TABLE_NAME)
     .select(`
       *,
-      danh_muc:zz_capi_danh_muc!danh_muc_id(id, ten, loai),
-      ty_gia:zz_capi_ty_gia!ty_gia_id(id, ty_gia, ngay_ap_dung),
-      tai_khoan:zz_capi_tai_khoan!tai_khoan_id(id, ten, loai_tien),
-      tai_khoan_den:zz_capi_tai_khoan!tai_khoan_den_id(id, ten, loai_tien),
+      danh_muc:zz_capi_danh_muc_tai_chinh!danh_muc_id(id, ten_danh_muc, hang_muc),
+      ty_gia:zz_capi_ty_gia!ty_gia_id(id, ty_gia),
+      tai_khoan:zz_capi_tai_khoan!tai_khoan_id(id, ten_tai_khoan, don_vi),
+      tai_khoan_den:zz_capi_tai_khoan!tai_khoan_den_id(id, ten_tai_khoan, don_vi),
       doi_tac:zz_capi_danh_sach_doi_tac!doi_tac_id(id, ten, loai),
       nguoi_tao:zz_capi_nguoi_dung!created_by(id, ho_va_ten)
     `)
@@ -83,10 +83,22 @@ export async function getBaoCaoData(
 
   const giaoDich = (data || []).map((item: any) => ({
     ...item,
-    danh_muc: item.danh_muc || null,
+    danh_muc: item.danh_muc ? {
+      ...item.danh_muc,
+      ten: item.danh_muc.ten_danh_muc,
+      loai: item.danh_muc.hang_muc,
+    } : null,
     ty_gia: item.ty_gia || null,
-    tai_khoan: item.tai_khoan || null,
-    tai_khoan_den: item.tai_khoan_den || null,
+    tai_khoan: item.tai_khoan ? {
+      ...item.tai_khoan,
+      ten: item.tai_khoan.ten_tai_khoan,
+      loai_tien: item.tai_khoan.don_vi,
+    } : null,
+    tai_khoan_den: item.tai_khoan_den ? {
+      ...item.tai_khoan_den,
+      ten: item.tai_khoan_den.ten_tai_khoan,
+      loai_tien: item.tai_khoan_den.don_vi,
+    } : null,
     doi_tac: item.doi_tac || null,
     nguoi_tao: item.nguoi_tao || null,
   })) as GiaoDichWithRelations[]
@@ -95,7 +107,7 @@ export async function getBaoCaoData(
   let filteredGiaoDich = giaoDich
   if (filters.loaiTien && filters.loaiTien.length > 0) {
     filteredGiaoDich = giaoDich.filter((gd) => {
-      const loaiTien = gd.tai_khoan?.loai_tien || gd.tai_khoan_den?.loai_tien
+      const loaiTien = gd.tai_khoan_di?.loai_tien || gd.tai_khoan_den?.loai_tien
       return loaiTien && filters.loaiTien?.includes(loaiTien as 'VND' | 'USD')
     })
   }
@@ -168,8 +180,8 @@ export async function getBaoCaoData(
   // Top 10 giao dịch lớn nhất
   const topGiaoDich = [...filteredGiaoDich]
     .sort((a, b) => {
-      const soTienA = a.so_tien_vnd || a.so_tien
-      const soTienB = b.so_tien_vnd || b.so_tien
+      const soTienA = a.so_tien_vnd || a.so_tien || 0
+      const soTienB = b.so_tien_vnd || b.so_tien || 0
       return soTienB - soTienA
     })
     .slice(0, 10)
@@ -204,7 +216,7 @@ function calculateSummary(giaoDich: GiaoDichWithRelations[]): BaoCaoSummary {
   let soLuongLuânChuyen = 0
 
   giaoDich.forEach((gd) => {
-    const soTien = gd.so_tien_vnd || gd.so_tien
+    const soTien = (gd.so_tien_vnd || gd.so_tien) ?? 0
 
     if (gd.loai === 'thu') {
       tongThu += soTien
@@ -276,7 +288,7 @@ function groupByTime(
     }
 
     const item = grouped.get(periodKey)!
-    const soTien = gd.so_tien_vnd || gd.so_tien
+    const soTien = (gd.so_tien_vnd || gd.so_tien) ?? 0
 
     if (gd.loai === 'thu') {
       item.tongThu += soTien
@@ -301,11 +313,11 @@ function groupByDanhMuc(
   giaoDich.forEach((gd) => {
     if (!gd.danh_muc) return
 
-    const danhMucId = gd.danh_muc.id
+    const danhMucId = String(gd.danh_muc.id)
     if (!grouped.has(danhMucId)) {
       grouped.set(danhMucId, {
         danhMucId,
-        danhMucTen: gd.danh_muc.ten,
+        danhMucTen: gd.danh_muc.ten_danh_muc || gd.danh_muc.ten || '',
         tongThu: 0,
         tongChi: 0,
         soDu: 0,
@@ -314,7 +326,7 @@ function groupByDanhMuc(
     }
 
     const item = grouped.get(danhMucId)!
-    const soTien = gd.so_tien_vnd || gd.so_tien
+    const soTien = (gd.so_tien_vnd || gd.so_tien) ?? 0
 
     if (gd.loai === 'thu') {
       item.tongThu += soTien
@@ -339,11 +351,11 @@ function groupByDoiTac(
   giaoDich.forEach((gd) => {
     if (!gd.doi_tac) return
 
-    const doiTacId = gd.doi_tac.id
+    const doiTacId = String(gd.doi_tac.id)
     if (!grouped.has(doiTacId)) {
       grouped.set(doiTacId, {
         doiTacId,
-        doiTacTen: gd.doi_tac.ten,
+        doiTacTen: gd.doi_tac.ten_doi_tac || gd.doi_tac.ten || '',
         tongThu: 0,
         tongChi: 0,
         soDu: 0,
@@ -352,7 +364,7 @@ function groupByDoiTac(
     }
 
     const item = grouped.get(doiTacId)!
-    const soTien = gd.so_tien_vnd || gd.so_tien
+    const soTien = (gd.so_tien_vnd || gd.so_tien) ?? 0
 
     if (gd.loai === 'thu') {
       item.tongThu += soTien
@@ -373,16 +385,19 @@ function groupByLoai(giaoDich: GiaoDichWithRelations[]): BaoCaoGroupedByLoai[] {
   const grouped = new Map<LoaiGiaoDich, BaoCaoGroupedByLoai>()
 
   giaoDich.forEach((gd) => {
-    if (!grouped.has(gd.loai)) {
-      grouped.set(gd.loai, {
-        loai: gd.loai,
+    const loai = (gd.loai || gd.hang_muc) as LoaiGiaoDich
+    if (!loai || !['thu', 'chi', 'luan_chuyen'].includes(loai)) return
+    
+    if (!grouped.has(loai)) {
+      grouped.set(loai, {
+        loai,
         tongTien: 0,
         soLuongGiaoDich: 0,
       })
     }
 
-    const item = grouped.get(gd.loai)!
-    const soTien = gd.so_tien_vnd || gd.so_tien
+    const item = grouped.get(loai)!
+    const soTien = (gd.so_tien_vnd || gd.so_tien) ?? 0
     item.tongTien += soTien
     item.soLuongGiaoDich++
   })
@@ -401,11 +416,11 @@ function groupByNguoiTao(
   giaoDich.forEach((gd) => {
     if (!gd.nguoi_tao) return
 
-    const nguoiTaoId = gd.nguoi_tao.id
+    const nguoiTaoId = String(gd.nguoi_tao.id)
     if (!grouped.has(nguoiTaoId)) {
       grouped.set(nguoiTaoId, {
         nguoiTaoId,
-        nguoiTaoTen: gd.nguoi_tao.ho_va_ten || gd.nguoi_tao.ho_ten,
+        nguoiTaoTen: gd.nguoi_tao.ho_va_ten || gd.nguoi_tao.ho_ten || '',
         tongThu: 0,
         tongChi: 0,
         soDu: 0,
@@ -414,7 +429,7 @@ function groupByNguoiTao(
     }
 
     const item = grouped.get(nguoiTaoId)!
-    const soTien = gd.so_tien_vnd || gd.so_tien
+    const soTien = (gd.so_tien_vnd || gd.so_tien) ?? 0
 
     if (gd.loai === 'thu') {
       item.tongThu += soTien
@@ -511,18 +526,18 @@ function calculateTopDanhMuc(
   giaoDich.forEach((gd) => {
     if (!gd.danh_muc) return
 
-    const danhMucId = gd.danh_muc.id
+    const danhMucId = String(gd.danh_muc.id)
     if (!grouped.has(danhMucId)) {
       grouped.set(danhMucId, {
         id: danhMucId,
-        ten: gd.danh_muc.ten,
+        ten: gd.danh_muc.ten_danh_muc || gd.danh_muc.ten || '',
         tongTien: 0,
         soLuongGiaoDich: 0,
       })
     }
 
     const item = grouped.get(danhMucId)!
-    const soTien = gd.so_tien_vnd || gd.so_tien
+    const soTien = (gd.so_tien_vnd || gd.so_tien) ?? 0
     item.tongTien += soTien
     item.soLuongGiaoDich++
   })
@@ -544,18 +559,18 @@ function calculateTopDoiTac(
   giaoDich.forEach((gd) => {
     if (!gd.doi_tac) return
 
-    const doiTacId = gd.doi_tac.id
+    const doiTacId = String(gd.doi_tac.id)
     if (!grouped.has(doiTacId)) {
       grouped.set(doiTacId, {
         id: doiTacId,
-        ten: gd.doi_tac.ten,
+        ten: gd.doi_tac.ten_doi_tac || gd.doi_tac.ten || '',
         tongTien: 0,
         soLuongGiaoDich: 0,
       })
     }
 
     const item = grouped.get(doiTacId)!
-    const soTien = gd.so_tien_vnd || gd.so_tien
+    const soTien = (gd.so_tien_vnd || gd.so_tien) ?? 0
     item.tongTien += soTien
     item.soLuongGiaoDich++
   })
@@ -575,15 +590,15 @@ function groupByTaiKhoan(
 
   giaoDich.forEach((gd) => {
     // Xử lý tài khoản đi (cho chi và luân chuyển)
-    if (gd.tai_khoan) {
-      const taiKhoanId = gd.tai_khoan.id
+    if (gd.tai_khoan_di) {
+      const taiKhoanId = String(gd.tai_khoan_di.id)
       const key = `tk_${taiKhoanId}`
       
       if (!grouped.has(key)) {
         grouped.set(key, {
           taiKhoanId,
-          taiKhoanTen: gd.tai_khoan.ten,
-          loaiTien: gd.tai_khoan.loai_tien || 'VND',
+          taiKhoanTen: gd.tai_khoan_di.ten_tai_khoan || gd.tai_khoan_di.ten || '',
+          loaiTien: gd.tai_khoan_di.loai_tien || 'VND',
           tongThu: 0,
           tongChi: 0,
           soDu: 0,
@@ -592,7 +607,7 @@ function groupByTaiKhoan(
       }
 
       const item = grouped.get(key)!
-      const soTien = gd.so_tien_vnd || gd.so_tien
+      const soTien = (gd.so_tien_vnd || gd.so_tien) ?? 0
 
       if (gd.loai === 'chi') {
         item.tongChi += soTien
@@ -605,13 +620,13 @@ function groupByTaiKhoan(
 
     // Xử lý tài khoản đến (cho thu và luân chuyển)
     if (gd.tai_khoan_den) {
-      const taiKhoanId = gd.tai_khoan_den.id
+      const taiKhoanId = String(gd.tai_khoan_den.id)
       const key = `tk_${taiKhoanId}`
       
       if (!grouped.has(key)) {
         grouped.set(key, {
           taiKhoanId,
-          taiKhoanTen: gd.tai_khoan_den.ten,
+          taiKhoanTen: gd.tai_khoan_den.ten_tai_khoan || gd.tai_khoan_den.ten || '',
           loaiTien: gd.tai_khoan_den.loai_tien || 'VND',
           tongThu: 0,
           tongChi: 0,
@@ -621,7 +636,7 @@ function groupByTaiKhoan(
       }
 
       const item = grouped.get(key)!
-      const soTien = gd.so_tien_vnd || gd.so_tien
+      const soTien = (gd.so_tien_vnd || gd.so_tien) ?? 0
 
       if (gd.loai === 'thu') {
         item.tongThu += soTien
@@ -647,8 +662,8 @@ function groupByLoaiTien(
   giaoDich.forEach((gd) => {
     // Lấy loại tiền từ tài khoản đi hoặc đến
     let loaiTien = 'VND' // Default
-    if (gd.tai_khoan?.loai_tien) {
-      loaiTien = gd.tai_khoan.loai_tien
+    if (gd.tai_khoan_di?.loai_tien) {
+      loaiTien = gd.tai_khoan_di.loai_tien
     } else if (gd.tai_khoan_den?.loai_tien) {
       loaiTien = gd.tai_khoan_den.loai_tien
     }
@@ -664,7 +679,7 @@ function groupByLoaiTien(
     }
 
     const item = grouped.get(loaiTien)!
-    const soTien = gd.so_tien_vnd || gd.so_tien
+    const soTien = (gd.so_tien_vnd || gd.so_tien) ?? 0
 
     if (gd.loai === 'thu') {
       item.tongThu += soTien

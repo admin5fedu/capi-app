@@ -5,13 +5,13 @@ import { usePhongBanList, useDeletePhongBan } from '../hooks/use-phong-ban'
 import { COT_HIEN_THI, TEN_LUU_TRU_COT } from '../config'
 import { getBulkActions, handleXuatExcel, handleNhapExcel } from '../actions'
 import type { PhongBan } from '@/types/phong-ban'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Edit2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface PhongBanListViewProps {
-  onEdit: (id: string) => void
+  onEdit: (id: number) => void
   onAddNew: () => void
-  onView?: (id: string) => void
+  onView?: (id: number) => void
 }
 
 /**
@@ -20,12 +20,12 @@ interface PhongBanListViewProps {
 export function PhongBanListView({ onEdit, onAddNew, onView }: PhongBanListViewProps) {
   const { data: danhSach, isLoading, error, refetch } = usePhongBanList()
   const deletePhongBan = useDeletePhongBan()
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   const handleXoa = async (phongBan: PhongBan) => {
     try {
       setDeletingId(phongBan.id)
-      await deletePhongBan.mutateAsync(phongBan.id)
+      await deletePhongBan.mutateAsync(String(phongBan.id))
       toast.success('Xóa phòng ban thành công')
     } catch (error: any) {
       // Backend sẽ validate và trả về lỗi nếu phòng ban đang được sử dụng
@@ -45,7 +45,7 @@ export function PhongBanListView({ onEdit, onAddNew, onView }: PhongBanListViewP
 
   const confirmBulkDelete = async () => {
     try {
-      await Promise.all(selectedRowsForDelete.map((phongBan) => deletePhongBan.mutateAsync(phongBan.id)))
+      await Promise.all(selectedRowsForDelete.map((phongBan) => deletePhongBan.mutateAsync(String(phongBan.id))))
       toast.success(`Đã xóa ${selectedRowsForDelete.length} phòng ban thành công`)
       setBulkDeleteOpen(false)
       setSelectedRowsForDelete([])
@@ -58,7 +58,7 @@ export function PhongBanListView({ onEdit, onAddNew, onView }: PhongBanListViewP
   const hanhDongItems = [
     {
       label: 'Chỉnh sửa',
-      icon: Pencil,
+      icon: Edit2,
       onClick: (row: PhongBan) => onEdit(row.id),
       variant: 'default' as const,
     },

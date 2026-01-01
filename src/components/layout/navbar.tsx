@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { getBreadcrumbLabels } from './breadcrumb-config'
 import { useBreadcrumb } from './breadcrumb-context'
+import { useMobile } from '@/shared/components/generic/hooks/use-mobile'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,6 +31,7 @@ export function Navbar({ onToggleSidebar, onToggleDesktopSidebar }: NavbarProps)
   const [showLogoutDialog, setShowLogoutDialog] = useState(false)
   const [showDoiMatKhauDialog, setShowDoiMatKhauDialog] = useState(false)
   const { detailLabel } = useBreadcrumb()
+  const isMobile = useMobile()
 
   // Get base breadcrumb labels from path
   // Pass hasDetailLabel để skip ID ở cuối path nếu có detailLabel
@@ -39,6 +41,12 @@ export function Navbar({ onToggleSidebar, onToggleDesktopSidebar }: NavbarProps)
   if (detailLabel) {
     breadcrumbLabels = [...breadcrumbLabels, detailLabel]
   }
+
+  // Chỉ hiển thị 2 router cuối cùng trên mobile, desktop hiển thị hết
+  const displayBreadcrumbs = isMobile && breadcrumbLabels.length > 2 
+    ? breadcrumbLabels.slice(-2) 
+    : breadcrumbLabels
+  const hasMoreBreadcrumbs = isMobile && breadcrumbLabels.length > 2
 
   const handleDangXuat = async () => {
     try {
@@ -70,7 +78,7 @@ export function Navbar({ onToggleSidebar, onToggleDesktopSidebar }: NavbarProps)
   }
 
   return (
-    <header className="h-16 border-b bg-card flex items-center justify-between px-4 sticky top-0 z-10">
+    <header className="h-16 border-b bg-card flex items-center justify-between px-4 sticky top-0 z-50">
       <div className="flex items-center gap-3">
         {/* Hamburger Menu - Mobile */}
         {onToggleSidebar && (
@@ -96,24 +104,35 @@ export function Navbar({ onToggleSidebar, onToggleDesktopSidebar }: NavbarProps)
         
         {/* Breadcrumbs */}
         <nav className="flex items-center gap-2 text-sm">
-          {breadcrumbLabels.map((label, index) => {
-            const isLast = index === breadcrumbLabels.length - 1
+          {hasMoreBreadcrumbs && (
+            <>
+              <span className="text-muted-foreground">...</span>
+              <span className="text-muted-foreground">/</span>
+            </>
+          )}
+          {displayBreadcrumbs.map((label, displayIndex) => {
+            // Tính index thực tế trong breadcrumbLabels gốc
+            const actualIndex = hasMoreBreadcrumbs 
+              ? breadcrumbLabels.length - displayBreadcrumbs.length + displayIndex
+              : displayIndex
+            const isLast = actualIndex === breadcrumbLabels.length - 1
+            
             // Build path từ breadcrumb labels để đảm bảo đúng
             let path = '/'
-            if (index > 0) {
-              // Build path từ location.pathname dựa trên index
+            if (actualIndex > 0) {
+              // Build path từ location.pathname dựa trên actualIndex
               const pathParts = location.pathname.split('/').filter(Boolean)
-              if (index <= pathParts.length) {
-                path = '/' + pathParts.slice(0, index).join('/')
+              if (actualIndex <= pathParts.length) {
+                path = '/' + pathParts.slice(0, actualIndex).join('/')
               } else {
-                // Nếu là detail label (index vượt quá pathParts), link về page trước
+                // Nếu là detail label (actualIndex vượt quá pathParts), link về page trước
                 path = location.pathname
               }
             }
             
             return (
-              <span key={index} className="flex items-center gap-2">
-                {index > 0 && <span className="text-muted-foreground">/</span>}
+              <span key={actualIndex} className="flex items-center gap-2">
+                {displayIndex > 0 && <span className="text-muted-foreground">/</span>}
                 {isLast ? (
                   <span className="text-foreground font-medium">{label}</span>
                 ) : (
@@ -141,7 +160,7 @@ export function Navbar({ onToggleSidebar, onToggleDesktopSidebar }: NavbarProps)
         </button>
 
         {/* User Menu */}
-        <div className="relative z-50">
+        <div className="relative z-[100]">
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
             className="flex items-center gap-2 p-2 hover:bg-muted rounded-md transition-colors"

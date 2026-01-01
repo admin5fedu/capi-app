@@ -2,11 +2,11 @@ import { useEffect } from 'react'
 import { useGiaoDichById, useDeleteGiaoDich } from '../hooks/use-giao-dich'
 import { GenericDetailView, DetailFieldGroup } from '@/shared/components/generic/generic-detail-view'
 import { useBreadcrumb } from '@/components/layout/breadcrumb-context'
-import { LOAI_GIAO_DICH } from '../config'
+// LOAI_GIAO_DICH không còn cần thiết trong detail view
 import type { GiaoDichWithRelations } from '@/types/giao-dich'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
-import { getLoaiGiaoDichBadgeVariant } from '../config'
+import { getHangMucBadgeVariant } from '../config'
 
 interface GiaoDichDetailViewProps {
   id: number
@@ -42,13 +42,13 @@ export function GiaoDichDetailView({
   }
 
   useEffect(() => {
-    if (giaoDich?.ma_phieu) {
-      setDetailLabel(giaoDich.ma_phieu)
+    if (giaoDich?.hang_muc || giaoDich?.loai) {
+      setDetailLabel(giaoDich.hang_muc || giaoDich.loai || 'Giao dịch')
     }
     return () => {
       setDetailLabel(null)
     }
-  }, [giaoDich?.ma_phieu, setDetailLabel])
+  }, [giaoDich?.hang_muc, giaoDich?.loai, setDetailLabel])
 
   if (isLoading) {
     return (
@@ -73,11 +73,6 @@ export function GiaoDichDetailView({
       title: 'Thông tin cơ bản',
       fields: [
         {
-          key: 'ma_phieu',
-          label: 'Mã phiếu',
-          accessor: 'ma_phieu',
-        },
-        {
           key: 'ngay',
           label: 'Ngày',
           accessor: 'ngay',
@@ -91,19 +86,18 @@ export function GiaoDichDetailView({
           },
         },
         {
-          key: 'loai',
-          label: 'Loại',
-          accessor: 'loai',
+          key: 'hang_muc',
+          label: 'Hạng mục',
+          accessor: (data) => data.hang_muc || data.loai || null,
           render: (value) => {
-            const loai = LOAI_GIAO_DICH.find((l) => l.value === value)
-            const label = loai ? loai.label : value || '—'
-            return <Badge variant={getLoaiGiaoDichBadgeVariant(value)}>{label}</Badge>
+            if (!value) return '—'
+            return <Badge variant={getHangMucBadgeVariant(value)}>{value}</Badge>
           },
         },
         {
-          key: 'danh_muc',
+          key: 'ten_danh_muc',
           label: 'Danh mục',
-          accessor: (data) => data.danh_muc?.ten || null,
+          accessor: (data) => data.ten_danh_muc || data.danh_muc?.ten_danh_muc || data.danh_muc?.ten || null,
           render: (value) => value || '—',
         },
         {
@@ -121,22 +115,23 @@ export function GiaoDichDetailView({
           label: 'Số tiền',
           accessor: 'so_tien',
           render: (value) => {
-            const loaiTien =
+            const donVi =
+              giaoDich.tai_khoan_den?.don_vi || giaoDich.tai_khoan_di?.don_vi || 
               giaoDich.tai_khoan_den?.loai_tien || giaoDich.tai_khoan?.loai_tien || 'VND'
             return new Intl.NumberFormat('vi-VN', {
               style: 'currency',
-              currency: loaiTien === 'USD' ? 'USD' : 'VND',
+              currency: donVi === 'USD' ? 'USD' : 'VND',
               minimumFractionDigits: 0,
               maximumFractionDigits: 0,
-            }).format(Number(value))
+            }).format(Number(value || 0))
           },
         },
         {
-          key: 'ty_gia',
+          key: 'so_ty_gia',
           label: 'Tỷ giá',
-          accessor: (data) => data.ty_gia?.ty_gia || null,
+          accessor: (data) => data.so_ty_gia || data.ty_gia?.ty_gia || null,
           render: (value) => {
-            if (!value) return '—'
+            if (value === null || value === undefined) return '—'
             return new Intl.NumberFormat('vi-VN', {
               minimumFractionDigits: 2,
               maximumFractionDigits: 4,
@@ -144,9 +139,9 @@ export function GiaoDichDetailView({
           },
         },
         {
-          key: 'so_tien_vnd',
-          label: 'Số tiền VND',
-          accessor: 'so_tien_vnd',
+          key: 'so_tien_quy_doi',
+          label: 'Số tiền quy đổi',
+          accessor: (data) => data.so_tien_quy_doi || data.so_tien_vnd || null,
           render: (value) => {
             if (value === null || value === undefined) return '—'
             return new Intl.NumberFormat('vi-VN', {
@@ -158,27 +153,22 @@ export function GiaoDichDetailView({
           },
         },
         {
-          key: 'tai_khoan',
+          key: 'ten_tai_khoan_di',
           label: 'Tài khoản đi',
-          accessor: (data) => data.tai_khoan?.ten || null,
+          accessor: (data) => data.ten_tai_khoan_di || data.tai_khoan_di?.ten_tai_khoan || data.tai_khoan?.ten || null,
           render: (value) => value || '—',
         },
         {
-          key: 'tai_khoan_den',
+          key: 'ten_tai_khoan_den',
           label: 'Tài khoản đến',
-          accessor: (data) => data.tai_khoan_den?.ten || null,
+          accessor: (data) => data.ten_tai_khoan_den || data.tai_khoan_den?.ten_tai_khoan || data.tai_khoan_den?.ten || null,
           render: (value) => value || '—',
         },
         {
-          key: 'doi_tac',
-          label: 'Đối tác',
-          accessor: (data) => data.doi_tac?.ten || null,
+          key: 'chung_tu',
+          label: 'Chứng từ',
+          accessor: (data) => data.chung_tu || data.so_chung_tu || null,
           render: (value) => value || '—',
-        },
-        {
-          key: 'so_chung_tu',
-          label: 'Số chứng từ',
-          accessor: 'so_chung_tu',
         },
       ],
     },
@@ -267,7 +257,7 @@ export function GiaoDichDetailView({
       onDelete={handleDelete}
       onBack={onBack}
       deleteConfirmTitle="Xác nhận xóa giao dịch"
-      deleteConfirmDescription={`Bạn có chắc chắn muốn xóa giao dịch "${giaoDich.ma_phieu}"? Hành động này không thể hoàn tác.`}
+      deleteConfirmDescription={`Bạn có chắc chắn muốn xóa giao dịch "${giaoDich.hang_muc || giaoDich.loai || 'này'}"? Hành động này không thể hoàn tác.`}
     />
   )
 }

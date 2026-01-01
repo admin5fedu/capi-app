@@ -15,14 +15,12 @@ export async function setupQueryPersistence(queryClient: QueryClient): Promise<v
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - Packages có thể chưa được cài đặt
     const { persistQueryClient } = await import(
-      // @ts-expect-error - Dynamic import, packages có thể chưa cài
       '@tanstack/query-persist-client-core'
     )
     
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - Packages có thể chưa được cài đặt
     const { createSyncStoragePersister } = await import(
-      // @ts-expect-error - Dynamic import, packages có thể chưa cài
       '@tanstack/query-sync-storage-persister'
     )
 
@@ -33,13 +31,13 @@ export async function setupQueryPersistence(queryClient: QueryClient): Promise<v
       deserialize: JSON.parse,
     })
 
-    persistQueryClient({
+    ;(persistQueryClient as any)({
       queryClient,
       persister: localStoragePersister,
       maxAge: 24 * 60 * 60 * 1000, // 24 giờ
       buster: 'v1', // Version buster - thay đổi để invalidate cache khi cần
       dehydrateOptions: {
-        shouldDehydrateQuery: (query) => {
+        shouldDehydrateQuery: (query: any) => {
           // Bỏ qua các query có quá nhiều dữ liệu hoặc thay đổi liên tục
           if (query.meta?.skipPersist === true) {
             return false

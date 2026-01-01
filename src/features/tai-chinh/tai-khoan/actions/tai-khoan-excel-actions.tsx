@@ -8,20 +8,32 @@ import type { TaiKhoan } from '@/types/tai-khoan'
 export function handleXuatExcel(data: TaiKhoan[]) {
   try {
     // Chuẩn bị dữ liệu để xuất
-    const excelData = data.map((item) => ({
-      'Tên tài khoản': item.ten,
-      'Loại': item.loai,
-      'Loại tiền': item.loai_tien,
-      'Số tài khoản': item.so_tai_khoan || '',
-      'Ngân hàng': item.ngan_hang || '',
-      'Chủ tài khoản': item.chu_tai_khoan || '',
-      'Số dư ban đầu': item.so_du_ban_dau ?? 0,
-      'Trạng thái': item.is_active ? 'Hoạt động' : 'Vô hiệu hóa',
-      'Mô tả': item.mo_ta || '',
-      'Ngày tạo': item.tg_tao || item.created_at
-        ? new Date(item.tg_tao || item.created_at || '').toLocaleDateString('vi-VN')
-        : '',
-    }))
+    const excelData = data.map((item) => {
+      const ten = item.ten_tai_khoan || item.ten || ''
+      const loai = item.loai_tai_khoan || item.loai || ''
+      const donVi = item.don_vi || item.loai_tien || ''
+      const soDuDau = item.so_du_dau ?? item.so_du_ban_dau ?? 0
+      const ghiChu = item.ghi_chu || item.mo_ta || ''
+      const trangThai = item.trang_thai
+      const isActive = trangThai 
+        ? (trangThai.toLowerCase() === 'hoat_dong' || trangThai === 'active' || trangThai === 'true')
+        : (item.is_active ?? true)
+      
+      return {
+        'Tên tài khoản': ten,
+        'Loại': loai,
+        'Đơn vị': donVi,
+        'Số tài khoản': item.so_tai_khoan || '',
+        'Ngân hàng': item.ngan_hang || '',
+        'Chủ tài khoản': item.chu_tai_khoan || '',
+        'Số dư đầu': soDuDau,
+        'Trạng thái': isActive ? 'Hoạt động' : 'Vô hiệu hóa',
+        'Ghi chú': ghiChu,
+        'Ngày tạo': item.tg_tao || item.created_at
+          ? new Date(item.tg_tao || item.created_at || '').toLocaleDateString('vi-VN')
+          : '',
+      }
+    })
 
     // Tạo workbook và worksheet
     const ws = XLSX.utils.json_to_sheet(excelData)

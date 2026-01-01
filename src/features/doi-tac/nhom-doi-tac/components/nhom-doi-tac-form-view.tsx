@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -49,15 +49,31 @@ export function NhomDoiTacFormView({
   const taoMoi = useCreateNhomDoiTac()
   const capNhat = useUpdateNhomDoiTac()
 
-  const form = useForm<NhomDoiTacFormData>({
-    resolver: zodResolver(nhomDoiTacSchema),
-    defaultValues: {
+  // Use chiTiet data as defaultValues if available (for edit mode)
+  // Memoize to prevent unnecessary recalculations
+  // IMPORTANT: All hooks must be called before any early returns
+  const defaultValues = useMemo(() => {
+    // If editing and chiTiet is available, use it
+    if (editId && chiTiet && chiTiet.id?.toString() === editId.toString()) {
+      return {
+        ten_nhom: String(chiTiet.ten_nhom || ''),
+        hang_muc: (chiTiet.hang_muc as LoaiDoiTac) || 'nha_cung_cap',
+        mo_ta: chiTiet.mo_ta || null,
+        nguoi_tao_id: chiTiet.nguoi_tao_id ? Number(chiTiet.nguoi_tao_id) : null,
+      }
+    }
+    // For new mode or when chiTiet is not yet loaded
+    return {
       ten_nhom: '',
-      hang_muc: defaultLoai || 'nha_cung_cap',
+      hang_muc: (defaultLoai as LoaiDoiTac) || 'nha_cung_cap',
       mo_ta: null,
       nguoi_tao_id: nguoiDung?.id ? Number(nguoiDung.id) : null,
-    },
-    mode: 'onChange', // Validate khi thay đổi để hiển thị lỗi sớm
+    }
+  }, [chiTiet, editId, defaultLoai, nguoiDung])
+
+  const form = useForm<NhomDoiTacFormData>({
+    resolver: zodResolver(nhomDoiTacSchema),
+    defaultValues,
   })
 
   const {
@@ -65,34 +81,35 @@ export function NhomDoiTacFormView({
     reset,
   } = form
 
-  // Load dữ liệu khi chỉnh sửa
+  // Load dữ liệu khi chỉnh sửa - CHỈ chạy khi có chiTiet và editId
   useEffect(() => {
-    if (chiTiet) {
+    if (editId && chiTiet && chiTiet.id?.toString() === editId.toString()) {
       reset({
-        ten_nhom: chiTiet.ten_nhom || '',
+        ten_nhom: String(chiTiet.ten_nhom || ''),
         hang_muc: (chiTiet.hang_muc as LoaiDoiTac) || 'nha_cung_cap',
         mo_ta: chiTiet.mo_ta || null,
         nguoi_tao_id: chiTiet.nguoi_tao_id ? Number(chiTiet.nguoi_tao_id) : null,
       }, { keepDefaultValues: false })
     }
-  }, [chiTiet, reset])
+  }, [chiTiet, editId, reset])
 
-  // Cập nhật hang_muc và nguoi_tao_id khi defaultLoai hoặc nguoiDung thay đổi (chỉ khi thêm mới)
-  useEffect(() => {
-    if (!editId && !chiTiet) {
-      form.setValue('hang_muc', defaultLoai || 'nha_cung_cap')
-      if (nguoiDung?.id) {
-        form.setValue('nguoi_tao_id', Number(nguoiDung.id))
-      }
-    }
-  }, [defaultLoai, nguoiDung, editId, chiTiet, form])
+  // Early return for loading state - AFTER all hooks are called
+  if (editId && (dangTaiChiTiet || !chiTiet)) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-muted-foreground">Đang tải dữ liệu...</div>
+      </div>
+    )
+  }
 
-  // Đồng bộ nguoi_tao_id khi user thay đổi (chỉ khi thêm mới)
-  useEffect(() => {
-    if (!editId && nguoiDung?.id) {
-      form.setValue('nguoi_tao_id', Number(nguoiDung.id))
-    }
-  }, [nguoiDung, editId, form])
+  // If editing but no data after loading completes
+  if (editId && !chiTiet && !dangTaiChiTiet) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-destructive">Không tìm thấy dữ liệu nhóm đối tác</div>
+      </div>
+    )
+  }
 
   const onSubmit = async (data: NhomDoiTacFormData) => {
     try {
@@ -116,15 +133,14 @@ export function NhomDoiTacFormView({
     }
   }
 
-  if (editId && dangTaiChiTiet) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-muted-foreground">Đang tải dữ liệu...</div>
-      </div>
-    )
-  }
-
-  const title = editId ? 'Chỉnh sửa nhóm đối tác' : 'Thêm nhóm đối tác mới'
+  // Xác định loại đối tác từ defaultLoai, form data, hoặc chiTiet
+  const formHangMuc = form.watch('hang_muc') as LoaiDoiTac | undefined
+  const loaiDoiTac = defaultLoai || formHangMuc || (chiTiet?.hang_muc as LoaiDoiTac) || 'nha_cung_cap'
+  const loaiLabel = LOAI_DOI_TAC.find(l => l.value === loaiDoiTac)?.label || 'Đối tác'
+  
+  const title = editId 
+    ? `Chỉnh sửa nhóm ${loaiLabel.toLowerCase()}` 
+    : `Thêm nhóm ${loaiLabel.toLowerCase()} mới`
   const isLoading = isSubmitting || taoMoi.isPending || capNhat.isPending
 
   // Định nghĩa các nhóm fields

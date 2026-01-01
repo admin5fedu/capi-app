@@ -3,6 +3,21 @@ import type { GiaoDich, GiaoDichInsert, GiaoDichUpdate, GiaoDichWithRelations } 
 
 const TABLE_NAME = 'zz_capi_giao_dich'
 
+/**
+ * Map dữ liệu từ DB sang format có aliases
+ */
+function mapGiaoDichData(data: any): GiaoDich {
+  return {
+    ...data,
+    // Aliases for backward compatibility
+    loai: data.hang_muc,
+    so_chung_tu: data.chung_tu,
+    so_tien_vnd: data.so_tien_quy_doi,
+    created_by: data.nguoi_tao_id?.toString() || null,
+    created_at: data.tg_tao,
+    updated_at: data.tg_cap_nhat,
+  }
+}
 
 /**
  * Lấy danh sách giao dịch
@@ -15,7 +30,7 @@ export async function getGiaoDichList(): Promise<GiaoDich[]> {
     .order('tg_tao', { ascending: false })
   
   if (error) throw error
-  return (data || []) as GiaoDich[]
+  return (data || []).map(mapGiaoDichData) as GiaoDich[]
 }
 
 /**
@@ -26,12 +41,11 @@ export async function getGiaoDichById(id: number): Promise<GiaoDichWithRelations
     .from(TABLE_NAME)
     .select(`
       *,
-      danh_muc:zz_capi_danh_muc!danh_muc_id(id, ten, loai),
-      ty_gia:zz_capi_ty_gia!ty_gia_id(id, ty_gia, ngay_ap_dung),
-      tai_khoan:zz_capi_tai_khoan!tai_khoan_id(id, ten, loai_tien),
-      tai_khoan_den:zz_capi_tai_khoan!tai_khoan_den_id(id, ten, loai_tien),
-      doi_tac:zz_capi_danh_sach_doi_tac!doi_tac_id(id, ten, loai),
-      nguoi_tao:zz_capi_nguoi_dung!created_by(id, ho_va_ten)
+      danh_muc:zz_capi_danh_muc_tai_chinh!danh_muc_id(id, ten_danh_muc, hang_muc),
+      ty_gia:zz_capi_ty_gia!ty_gia_id(id, ty_gia),
+      tai_khoan_di:zz_capi_tai_khoan!tai_khoan_di_id(id, ten_tai_khoan, don_vi),
+      tai_khoan_den:zz_capi_tai_khoan!tai_khoan_den_id(id, ten_tai_khoan, don_vi),
+      nguoi_tao:zz_capi_nguoi_dung!nguoi_tao_id(id, ho_va_ten)
     `)
     .eq('id', id)
     .single()
@@ -40,14 +54,36 @@ export async function getGiaoDichById(id: number): Promise<GiaoDichWithRelations
   
   // Map data để match với type GiaoDichWithRelations
   const result = data as any
+  const mapped = mapGiaoDichData(result)
+  
   return {
-    ...result,
-    danh_muc: result.danh_muc || null,
+    ...mapped,
+    danh_muc: result.danh_muc ? {
+      id: result.danh_muc.id,
+      ten_danh_muc: result.danh_muc.ten_danh_muc,
+      hang_muc: result.danh_muc.hang_muc,
+    } : null,
     ty_gia: result.ty_gia || null,
-    tai_khoan: result.tai_khoan || null,
-    tai_khoan_den: result.tai_khoan_den || null,
-    doi_tac: result.doi_tac || null,
+    tai_khoan_di: result.tai_khoan_di ? {
+      id: result.tai_khoan_di.id,
+      ten_tai_khoan: result.tai_khoan_di.ten_tai_khoan,
+      don_vi: result.tai_khoan_di.don_vi,
+    } : null,
+    tai_khoan_den: result.tai_khoan_den ? {
+      id: result.tai_khoan_den.id,
+      ten_tai_khoan: result.tai_khoan_den.ten_tai_khoan,
+      don_vi: result.tai_khoan_den.don_vi,
+    } : null,
     nguoi_tao: result.nguoi_tao || null,
+    // Aliases for backward compatibility
+    loai: result.hang_muc,
+    danh_muc_ten: result.danh_muc?.ten_danh_muc || null,
+    tai_khoan: result.tai_khoan_di ? {
+      id: result.tai_khoan_di.id,
+      ten: result.tai_khoan_di.ten_tai_khoan,
+      loai_tien: result.tai_khoan_di.don_vi,
+    } : null,
+    so_tien_vnd: result.so_tien_quy_doi,
   } as GiaoDichWithRelations
 }
 
@@ -59,13 +95,13 @@ export async function createGiaoDich(data: GiaoDichInsert): Promise<GiaoDich> {
     .from(TABLE_NAME)
     .insert({
       ...data,
-      hinh_anh: data.hinh_anh || [],
+      hinh_anh: data.hinh_anh || null,
     })
     .select()
     .single()
   
   if (error) throw error
-  return result as GiaoDich
+  return mapGiaoDichData(result) as GiaoDich
 }
 
 /**
@@ -80,7 +116,7 @@ export async function updateGiaoDich(id: number, data: GiaoDichUpdate): Promise<
     .single()
   
   if (error) throw error
-  return result as GiaoDich
+  return mapGiaoDichData(result) as GiaoDich
 }
 
 /**
@@ -103,47 +139,10 @@ export async function searchGiaoDich(keyword: string): Promise<GiaoDich[]> {
   const { data, error } = await supabase
     .from(TABLE_NAME)
     .select('*')
-    .or(`ma_phieu.ilike.%${keyword}%,mo_ta.ilike.%${keyword}%,so_chung_tu.ilike.%${keyword}%,ghi_chu.ilike.%${keyword}%`)
+    .or(`hang_muc.ilike.%${keyword}%,mo_ta.ilike.%${keyword}%,chung_tu.ilike.%${keyword}%,ghi_chu.ilike.%${keyword}%,ten_danh_muc.ilike.%${keyword}%,ten_tai_khoan_di.ilike.%${keyword}%,ten_tai_khoan_den.ilike.%${keyword}%`)
     .order('ngay', { ascending: false })
     .order('tg_tao', { ascending: false })
   
   if (error) throw error
-  return (data || []) as GiaoDich[]
+  return (data || []).map(mapGiaoDichData) as GiaoDich[]
 }
-
-/**
- * Lấy mã phiếu tiếp theo theo loại (dùng khi tạo mới)
- */
-export async function getNextMaPhieuByLoai(loai: 'thu' | 'chi' | 'luan_chuyen'): Promise<string> {
-  // Đếm số lượng giao dịch hiện có theo loại để tạo mã mới
-  const { count, error } = await supabase
-    .from(TABLE_NAME)
-    .select('*', { count: 'exact', head: true })
-    .eq('loai', loai)
-  
-  if (error) throw error
-  
-  const prefix = loai === 'thu' ? 'PT' : loai === 'chi' ? 'PC' : 'LC'
-  const nextNumber = (count || 0) + 1
-  return `${prefix}-${nextNumber}`
-}
-
-/**
- * Kiểm tra mã phiếu đã tồn tại chưa
- */
-export async function checkMaPhieuExists(maPhieu: string, excludeId?: number): Promise<boolean> {
-  let query = supabase
-    .from(TABLE_NAME)
-    .select('id', { count: 'exact', head: true })
-    .eq('ma_phieu', maPhieu)
-  
-  if (excludeId) {
-    query = query.neq('id', excludeId)
-  }
-  
-  const { count, error } = await query
-  
-  if (error) throw error
-  return (count || 0) > 0
-}
-

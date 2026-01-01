@@ -5,6 +5,7 @@ import {
   UserCog,
   Shield,
   Building2,
+  Building,
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card'
 
@@ -51,6 +52,13 @@ const thietLapModules: ModuleCard[] = [
     description: 'Cấu hình hệ thống và thông số chung',
     icon: Settings,
     path: '/thiet-lap/cai-dat',
+  },
+  {
+    id: 'thong-tin-cong-ty',
+    title: 'Thông tin công ty',
+    description: 'Quản lý thông tin công ty và logo',
+    icon: Building,
+    path: '/thiet-lap/thong-tin-cong-ty',
   },
 ]
 

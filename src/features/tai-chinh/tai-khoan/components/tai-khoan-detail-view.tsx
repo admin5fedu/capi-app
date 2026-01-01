@@ -40,13 +40,16 @@ export function TaiKhoanDetailView({ id, onEdit, onDelete, onBack }: TaiKhoanDet
 
   // Update breadcrumb với title của tài khoản
   useEffect(() => {
-    if (taiKhoan?.ten) {
-      setDetailLabel(taiKhoan.ten)
+    if (taiKhoan) {
+      const ten = taiKhoan.ten_tai_khoan || taiKhoan.ten
+      if (ten) {
+        setDetailLabel(ten)
+      }
     }
     return () => {
       setDetailLabel(null)
     }
-  }, [taiKhoan?.ten, setDetailLabel])
+  }, [taiKhoan, setDetailLabel])
 
   if (isLoading) {
     return (
@@ -71,12 +74,12 @@ export function TaiKhoanDetailView({ id, onEdit, onDelete, onBack }: TaiKhoanDet
         {
           key: 'ten',
           label: 'Tên tài khoản',
-          accessor: 'ten',
+          accessor: (data: any) => data.ten_tai_khoan || data.ten || null,
         },
         {
           key: 'loai',
           label: 'Loại tài khoản',
-          accessor: 'loai',
+          accessor: (data: any) => data.loai_tai_khoan || data.loai || null,
           render: (value) => {
             const loai = LOAI_TAI_KHOAN.find((l) => l.value === value)
             const label = loai ? loai.label : value || '—'
@@ -85,13 +88,13 @@ export function TaiKhoanDetailView({ id, onEdit, onDelete, onBack }: TaiKhoanDet
         },
         {
           key: 'loai_tien',
-          label: 'Loại tiền',
-          accessor: 'loai_tien',
+          label: 'Đơn vị',
+          accessor: (data: any) => data.don_vi || data.loai_tien || null,
         },
         {
           key: 'so_du_ban_dau',
-          label: 'Số dư ban đầu',
-          accessor: 'so_du_ban_dau',
+          label: 'Số dư đầu',
+          accessor: (data: any) => data.so_du_dau ?? data.so_du_ban_dau ?? null,
           render: (value) => {
             if (value === null || value === undefined) return '—'
             return new Intl.NumberFormat('vi-VN', {
@@ -103,12 +106,22 @@ export function TaiKhoanDetailView({ id, onEdit, onDelete, onBack }: TaiKhoanDet
         {
           key: 'is_active',
           label: 'Trạng thái',
-          accessor: 'is_active',
-          render: (value) => (
-            <Badge variant={getStatusBadgeVariant(value)}>
-              {value ? 'Hoạt động' : 'Vô hiệu hóa'}
-            </Badge>
-          ),
+          accessor: (data: any) => {
+            const trangThai = data.trang_thai
+            if (!trangThai) return data.is_active ?? null
+            return trangThai.toLowerCase() === 'hoat_dong' || trangThai === 'active' || trangThai === 'true'
+          },
+          render: (value, data: any) => {
+            const trangThai = data.trang_thai
+            const isActive = trangThai 
+              ? (trangThai.toLowerCase() === 'hoat_dong' || trangThai === 'active' || trangThai === 'true')
+              : (value ?? true)
+            return (
+              <Badge variant={getStatusBadgeVariant(isActive)}>
+                {isActive ? 'Hoạt động' : 'Vô hiệu hóa'}
+              </Badge>
+            )
+          },
         },
       ],
     },
@@ -133,12 +146,6 @@ export function TaiKhoanDetailView({ id, onEdit, onDelete, onBack }: TaiKhoanDet
           accessor: 'chu_tai_khoan',
           render: (value) => value || '—',
         },
-        {
-          key: 'ma_qr',
-          label: 'Mã QR',
-          accessor: 'ma_qr',
-          render: (value) => value || '—',
-        },
       ],
     },
     {
@@ -146,8 +153,8 @@ export function TaiKhoanDetailView({ id, onEdit, onDelete, onBack }: TaiKhoanDet
       fields: [
         {
           key: 'mo_ta',
-          label: 'Mô tả',
-          accessor: 'mo_ta',
+          label: 'Ghi chú',
+          accessor: (data: any) => data.ghi_chu || data.mo_ta || null,
           span: 3,
           render: (value) => value || <span className="text-muted-foreground">—</span>,
         },
@@ -182,7 +189,7 @@ export function TaiKhoanDetailView({ id, onEdit, onDelete, onBack }: TaiKhoanDet
       onBack={onBack}
       title="Chi tiết tài khoản"
       deleteConfirmTitle="Xác nhận xóa tài khoản"
-      deleteConfirmDescription={`Bạn có chắc chắn muốn xóa tài khoản "${taiKhoan.ten}"? Hành động này không thể hoàn tác.`}
+      deleteConfirmDescription={`Bạn có chắc chắn muốn xóa tài khoản "${taiKhoan.ten_tai_khoan || taiKhoan.ten}"? Hành động này không thể hoàn tác.`}
     />
   )
 }

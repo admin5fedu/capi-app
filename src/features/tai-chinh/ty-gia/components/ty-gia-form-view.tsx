@@ -6,15 +6,19 @@ import { useTyGiaById, useCreateTyGia, useUpdateTyGia } from '../hooks/use-ty-gi
 import type { TyGiaInsert, TyGiaUpdate } from '@/types/ty-gia'
 import { GenericFormView } from '@/shared/components/generic/generic-form-view'
 import type { FormFieldGroup } from '@/shared/components/generic/generic-form-view'
-import { useAuthStore } from '@/store/auth-store'
+// import { useAuthStore } from '@/store/auth-store' // Unused
 
 // Schema validation
 const tyGiaSchema = z.object({
-  ty_gia: z.number().min(0.0001, 'Tỷ giá phải lớn hơn 0').max(1000000, 'Tỷ giá quá lớn'),
-  ngay_ap_dung: z.string().min(1, 'Ngày áp dụng là bắt buộc'),
-  ghi_chu: z.preprocess(
-    (val) => val === '' ? null : val,
-    z.string().max(1000, 'Ghi chú quá dài').nullable().optional()
+  ty_gia: z.preprocess(
+    (val) => {
+      if (val === '' || val === null || val === undefined) return undefined
+      const num = typeof val === 'string' ? parseFloat(val) : Number(val)
+      return isNaN(num) ? undefined : num
+    },
+    z.number({ required_error: 'Tỷ giá là bắt buộc', invalid_type_error: 'Tỷ giá phải là số' })
+      .min(0.0001, 'Tỷ giá phải lớn hơn 0')
+      .max(1000000, 'Tỷ giá quá lớn')
   ),
 })
 
@@ -38,14 +42,12 @@ export function TyGiaFormView({
   const { data: chiTiet, isLoading: dangTaiChiTiet } = useTyGiaById(editId || null)
   const taoMoi = useCreateTyGia()
   const capNhat = useUpdateTyGia()
-  const { nguoiDung } = useAuthStore()
+  // const { nguoiDung } = useAuthStore() // Unused
 
   const form = useForm<TyGiaFormData>({
     resolver: zodResolver(tyGiaSchema),
     defaultValues: {
-      ty_gia: 0,
-      ngay_ap_dung: new Date().toISOString().split('T')[0], // Format YYYY-MM-DD
-      ghi_chu: null,
+      ty_gia: undefined as any, // Không set default 0 để tránh validation error
     },
   })
 
@@ -58,9 +60,7 @@ export function TyGiaFormView({
   useEffect(() => {
     if (chiTiet) {
       reset({
-        ty_gia: chiTiet.ty_gia,
-        ngay_ap_dung: chiTiet.ngay_ap_dung.split('T')[0], // Format YYYY-MM-DD
-        ghi_chu: chiTiet.ghi_chu || null,
+        ty_gia: chiTiet.ty_gia || 0,
       })
     }
   }, [chiTiet, reset])
@@ -69,17 +69,12 @@ export function TyGiaFormView({
     try {
       const formData: TyGiaInsert | TyGiaUpdate = {
         ty_gia: data.ty_gia,
-        ngay_ap_dung: data.ngay_ap_dung,
-        ghi_chu: data.ghi_chu || null,
       }
 
       if (editId) {
         await capNhat.mutateAsync({ id: editId, data: formData as TyGiaUpdate })
       } else {
-        await taoMoi.mutateAsync({
-          ...(formData as TyGiaInsert),
-          created_by: nguoiDung?.id || null,
-        })
+        await taoMoi.mutateAsync(formData as TyGiaInsert)
       }
 
       onComplete()
@@ -107,23 +102,11 @@ export function TyGiaFormView({
         {
           key: 'ty_gia',
           label: 'Tỷ giá',
-          type: 'number',
+          type: 'number-formatted',
           placeholder: 'Nhập tỷ giá (ví dụ: 24000)',
           required: true,
-          // step: 0.0001, // Not supported in FormField type
+          allowDecimals: true,
           min: 0.0001,
-        },
-        {
-          key: 'ngay_ap_dung',
-          label: 'Ngày áp dụng',
-          type: 'date',
-          required: true,
-        },
-        {
-          key: 'ghi_chu',
-          label: 'Ghi chú',
-          type: 'textarea',
-          placeholder: 'Nhập ghi chú (tùy chọn)',
           span: 3,
         },
       ],

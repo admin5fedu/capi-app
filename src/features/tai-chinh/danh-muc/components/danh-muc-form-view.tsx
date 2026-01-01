@@ -26,8 +26,6 @@ const danhMucSchema = z.object({
     (val) => val === '' ? null : val,
     z.string().max(1000, 'Mô tả quá dài').nullable().optional()
   ),
-  thu_tu: z.number().int().min(0, 'Thứ tự phải >= 0'),
-  is_active: z.string().min(1, 'Trạng thái là bắt buộc'),
 })
 
 type DanhMucFormData = z.infer<typeof danhMucSchema>
@@ -66,8 +64,6 @@ export function DanhMucFormView({
       loai: '',
       parent_id: '',
       mo_ta: null,
-      thu_tu: 0,
-      is_active: 'true',
     },
   })
 
@@ -78,21 +74,6 @@ export function DanhMucFormView({
   } = form
 
   const selectedLoai = watch('loai')
-  
-  // Tính toán thứ tự tự động dựa trên loại đã chọn
-  const autoThuTu = useMemo(() => {
-    if (!selectedLoai || !danhSachDanhMuc) return 0
-    
-    // Lấy tất cả danh mục cùng loại
-    const sameLoaiItems = danhSachDanhMuc.filter((dm) => dm.loai === selectedLoai)
-    
-    // Tìm max thu_tu
-    const maxThuTu = sameLoaiItems.reduce((max, dm) => {
-      return Math.max(max, dm.thu_tu ?? 0)
-    }, 0)
-    
-    return maxThuTu + 1
-  }, [selectedLoai, danhSachDanhMuc])
 
   // Kiểm tra danh mục hiện tại là cấp mấy
   const currentLevel = useMemo(() => {
@@ -113,12 +94,10 @@ export function DanhMucFormView({
   useEffect(() => {
     if (chiTiet) {
       reset({
-        ten: chiTiet.ten,
-        loai: chiTiet.loai,
-        parent_id: chiTiet.parent_id || '',
+        ten: chiTiet.ten || '',
+        loai: chiTiet.loai || '',
+        parent_id: chiTiet.parent_id ? String(chiTiet.parent_id) : '',
         mo_ta: chiTiet.mo_ta || null,
-        thu_tu: chiTiet.thu_tu ?? 0,
-        is_active: chiTiet.is_active ? 'true' : 'false',
       })
     }
   }, [chiTiet, reset])
@@ -128,18 +107,11 @@ export function DanhMucFormView({
     if (initialData && !editId && !chiTiet && !hasInitializedFromInitialData.current) {
       // Đợi danhSachDanhMuc load xong để đảm bảo parent_id có trong options
       if (danhSachDanhMuc && initialData.loai) {
-        // Tính lại autoThuTu cho loại này
-        const sameLoaiItems = danhSachDanhMuc.filter((dm) => dm.loai === initialData.loai)
-        const maxThuTu = sameLoaiItems.reduce((max, dm) => Math.max(max, dm.thu_tu ?? 0), 0)
-        const calculatedThuTu = maxThuTu + 1
-        
         reset({
           ten: '',
           loai: initialData.loai || '',
-          parent_id: initialData.parent_id || '',
+          parent_id: initialData.parent_id ? String(initialData.parent_id) : '',
           mo_ta: null,
-          thu_tu: calculatedThuTu,
-          is_active: 'true',
         })
         
         hasInitializedFromInitialData.current = true
@@ -153,33 +125,25 @@ export function DanhMucFormView({
       hasInitializedFromInitialData.current = false
     }
   }, [editId, chiTiet])
-  
-  // Tự động cập nhật thứ tự khi loại thay đổi (chỉ khi thêm mới, không phải edit)
-  useEffect(() => {
-    if (!editId && !chiTiet && selectedLoai && danhSachDanhMuc && autoThuTu > 0) {
-      // Luôn tự động điền thứ tự khi chọn loại (vẫn cho phép sửa sau)
-      form.setValue('thu_tu', autoThuTu, { shouldValidate: true })
-    }
-  }, [selectedLoai, autoThuTu, editId, chiTiet, danhSachDanhMuc, form])
 
   const onSubmit = async (data: DanhMucFormData) => {
     try {
       // Validation: Kiểm tra parent được chọn có phải cấp 1 không
       if (data.parent_id && data.parent_id !== '') {
-        const selectedParent = danhSachDanhMuc?.find((dm) => dm.id === data.parent_id)
+        const selectedParent = danhSachDanhMuc?.find((dm) => String(dm.id) === String(data.parent_id))
         if (selectedParent && !isLevel1(selectedParent)) {
           toast.error('Chỉ có thể chọn danh mục cấp 1 làm danh mục cha')
           return
         }
       }
 
+      // Map form data to new schema
       const formData: DanhMucInsert | DanhMucUpdate = {
-        ten: data.ten.trim(), // Trim khi submit để loại bỏ khoảng trắng đầu/cuối
-        loai: data.loai,
-        parent_id: data.parent_id && data.parent_id !== '' ? data.parent_id : null,
+        hang_muc: data.loai,
+        ten_danh_muc: data.ten.trim(), // Trim khi submit để loại bỏ khoảng trắng đầu/cuối
         mo_ta: data.mo_ta || null,
-        thu_tu: data.thu_tu ?? 0,
-        is_active: data.is_active === 'true' ? true : data.is_active === 'false' ? false : true,
+        danh_muc_cha_id: data.parent_id && data.parent_id !== '' ? Number(data.parent_id) : null,
+        // cap sẽ được tính tự động: cấp 1 nếu không có cha, cấp 2 nếu có cha
       }
 
       if (editId) {
@@ -187,13 +151,14 @@ export function DanhMucFormView({
       } else {
         await taoMoi.mutateAsync({
           ...(formData as DanhMucInsert),
-          created_by: nguoiDung?.id || null,
+          nguoi_tao_id: nguoiDung?.id ? Number(nguoiDung.id) : null,
         })
       }
 
       onComplete()
-    } catch (error) {
-      console.error('Error:', error)
+    } catch (error: any) {
+      console.error('Error submitting form:', error)
+      toast.error(error?.message || 'Có lỗi xảy ra khi lưu danh mục')
     }
   }
 
@@ -209,7 +174,7 @@ export function DanhMucFormView({
   // Lấy tên danh mục cha nếu đang thêm danh mục con
   const parentName = useMemo(() => {
     if (initialData?.parent_id && danhSachDanhMuc) {
-      const parent = danhSachDanhMuc.find((dm) => dm.id === initialData.parent_id)
+      const parent = danhSachDanhMuc.find((dm) => String(dm.id) === String(initialData.parent_id))
       return parent?.ten
     }
     return null
@@ -240,18 +205,18 @@ export function DanhMucFormView({
       : filtered
     
     const options = available.map((dm) => ({
-      value: dm.id,
-      label: dm.ten,
+      value: String(dm.id), // Convert to string để match với form value
+      label: dm.ten || '',
     }))
     
     // Nếu đang thêm danh mục con và parent_id từ initialData chưa có trong options,
     // thêm nó vào để đảm bảo hiển thị đúng
-    if (initialData?.parent_id && !options.find((opt) => opt.value === initialData.parent_id)) {
-      const parent = danhSachDanhMuc.find((dm) => dm.id === initialData.parent_id)
+    if (initialData?.parent_id && !options.find((opt) => opt.value === String(initialData.parent_id))) {
+      const parent = danhSachDanhMuc.find((dm) => String(dm.id) === String(initialData.parent_id))
       if (parent) {
         options.unshift({
-          value: parent.id,
-          label: parent.ten,
+          value: String(parent.id),
+          label: parent.ten || '',
         })
       }
     }
@@ -319,53 +284,6 @@ export function DanhMucFormView({
               : !selectedLoai
                 ? 'Vui lòng chọn loại danh mục trước để hiển thị danh mục cha.'
                 : undefined,
-        },
-        {
-          key: 'thu_tu',
-          label: 'Thứ tự',
-          type: 'number',
-          placeholder: '0',
-          required: true,
-        },
-        {
-          key: 'is_active',
-          label: 'Trạng thái',
-          type: 'custom',
-          required: true,
-          render: (form) => {
-            const { watch, setValue } = form
-            const currentStatus = watch('is_active')
-            const isActive = currentStatus === 'true'
-            
-            return (
-              <div className="flex gap-2" id="is_active" role="group" aria-labelledby="is_active-label">
-                <Button
-                  type="button"
-                  variant={isActive ? 'default' : 'outline'}
-                  onClick={() => setValue('is_active', 'true', { shouldValidate: true })}
-                  disabled={isLoading}
-                  className={cn(
-                    'flex-1',
-                    isActive && 'bg-primary text-primary-foreground'
-                  )}
-                >
-                  Hoạt động
-                </Button>
-                <Button
-                  type="button"
-                  variant={!isActive ? 'default' : 'outline'}
-                  onClick={() => setValue('is_active', 'false', { shouldValidate: true })}
-                  disabled={isLoading}
-                  className={cn(
-                    'flex-1',
-                    !isActive && 'bg-destructive text-destructive-foreground'
-                  )}
-                >
-                  Vô hiệu hóa
-                </Button>
-              </div>
-            )
-          },
         },
       ],
     },

@@ -9,16 +9,29 @@ export function handleXuatExcel(data: TyGia[]) {
   try {
     // Chuẩn bị dữ liệu để xuất
     const excelData = data.map((item) => ({
-      'Tỷ giá': item.ty_gia,
-      'Ngày áp dụng': item.ngay_ap_dung
-        ? new Date(item.ngay_ap_dung).toLocaleDateString('vi-VN')
+      'Tỷ giá': item.ty_gia
+        ? new Intl.NumberFormat('vi-VN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 4,
+          }).format(Number(item.ty_gia))
         : '',
-      'Ghi chú': item.ghi_chu || '',
       'Ngày tạo': item.tg_tao || item.created_at
-        ? new Date(item.tg_tao || item.created_at || '').toLocaleDateString('vi-VN')
+        ? new Date(item.tg_tao || item.created_at || '').toLocaleDateString('vi-VN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+          })
         : '',
       'Ngày cập nhật': item.tg_cap_nhat || item.updated_at
-        ? new Date(item.tg_cap_nhat || item.updated_at || '').toLocaleDateString('vi-VN')
+        ? new Date(item.tg_cap_nhat || item.updated_at || '').toLocaleDateString('vi-VN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+          })
         : '',
     }))
 

@@ -115,7 +115,7 @@ export function PhongBanDetailView({ id, onEdit, onDelete, onBack }: PhongBanDet
 
   const handleDeleteNguoiDung = async (nguoiDung: NguoiDung) => {
     try {
-      await deleteNguoiDung.mutateAsync(nguoiDung.id)
+      await deleteNguoiDung.mutateAsync(String(nguoiDung.id))
       toast.success('Xóa người dùng thành công')
       refetchNguoiDung()
     } catch (error: any) {
@@ -171,10 +171,15 @@ export function PhongBanDetailView({ id, onEdit, onDelete, onBack }: PhongBanDet
               initialData={{
                 phong_ban_id: Number(id) || null, // Tự động set phong_ban_id từ phòng ban hiện tại
                 ...(initialData && {
-                  ...initialData,
+                  email: initialData.email || '',
+                  trang_thai: initialData.trang_thai || 'Hoạt động',
+                  vai_tro_id: initialData.vai_tro_id || undefined,
+                  ho_va_ten: initialData.ho_va_ten || '',
                   avatar_url: initialData.avatar_url ?? undefined,
+                  ten_vai_tro: initialData.ten_vai_tro ?? undefined,
+                  ten_phong_ban: initialData.ten_phong_ban ?? undefined,
                 }),
-              }}
+              } as any}
             />
           )
         }}

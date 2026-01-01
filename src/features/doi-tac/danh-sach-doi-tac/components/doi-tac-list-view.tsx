@@ -10,14 +10,14 @@ import { useNhomDoiTacList } from '@/features/doi-tac/nhom-doi-tac/hooks'
 import { COT_HIEN_THI, TEN_LUU_TRU_COT, TabType } from '../config'
 import { getBulkActions, handleXuatExcel, handleNhapExcel } from '../actions'
 import type { DoiTac } from '@/types/doi-tac'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Edit2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 
 interface DoiTacListViewProps {
-  onEdit: (id: string) => void
+  onEdit: (id: number) => void
   onAddNew: () => void
-  onView?: (id: string) => void
+  onView?: (id: number) => void
   defaultTab?: TabType
   hideTabs?: boolean // Ẩn tab group khi được gọi từ module wrapper
 }
@@ -47,7 +47,7 @@ export function DoiTacListView({
   const { data: danhSachNguoiDung } = useNguoiDungList()
   const { data: danhSachNhomDoiTac } = useNhomDoiTacList(activeTab)
   const deleteDoiTac = useDeleteDoiTac()
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   // Tạo map để tra cứu tên người dùng nhanh
   const nguoiDungMap = useMemo(() => {
@@ -92,7 +92,7 @@ export function DoiTacListView({
   const handleXoa = async (doiTac: DoiTac) => {
     try {
       setDeletingId(doiTac.id)
-      await deleteDoiTac.mutateAsync(doiTac.id)
+      await deleteDoiTac.mutateAsync(String(doiTac.id))
       toast.success('Xóa đối tác thành công')
     } catch (error: any) {
       toast.error(`Lỗi: ${error.message || 'Không thể xóa đối tác này'}`)
@@ -112,7 +112,7 @@ export function DoiTacListView({
   const confirmBulkDelete = async () => {
     try {
       await Promise.all(
-        selectedRowsForDelete.map((doiTac) => deleteDoiTac.mutateAsync(doiTac.id))
+        selectedRowsForDelete.map((doiTac) => deleteDoiTac.mutateAsync(String(doiTac.id)))
       )
       toast.success(`Đã xóa ${selectedRowsForDelete.length} đối tác thành công`)
       setBulkDeleteOpen(false)
@@ -126,7 +126,7 @@ export function DoiTacListView({
   const hanhDongItems = [
     {
       label: 'Chỉnh sửa',
-      icon: Pencil,
+      icon: Edit2,
       onClick: (row: DoiTac) => onEdit(row.id),
       variant: 'default' as const,
     },
@@ -191,6 +191,44 @@ export function DoiTacListView({
 
     return filters
   }, [danhSachNguoiDung, danhSachNhomDoiTac])
+
+  // Nếu hideTabs = true, chỉ render GenericListView không có tabs
+  if (hideTabs) {
+    return (
+      <>
+        <div className="flex flex-col h-full min-h-0 overflow-hidden">
+          <GenericListView<DoiTac>
+            data={danhSach || []}
+            cotHienThi={cotHienThiWithMaps}
+            hanhDongItems={hanhDongItems}
+            bulkActions={bulkActions}
+            quickFilters={quickFilters}
+            isLoading={isLoading}
+            error={error}
+            onRefresh={() => refetch()}
+            onAddNew={() => onAddNew()}
+            onRowClick={(row) => onView?.(row.id)}
+            tenLuuTru={`${TEN_LUU_TRU_COT}-${activeTab}`}
+            onXuatExcel={handleXuatExcel}
+            onNhapExcel={handleNhapExcel}
+            timKiemPlaceholder="Tìm kiếm theo mã, tên, email, điện thoại..."
+            onTimKiem={() => {}} // GenericListView sẽ tự filter dữ liệu
+            enableRowSelection={true}
+            pageSize={50}
+          />
+        </div>
+        <ConfirmDeleteDialog
+          open={bulkDeleteOpen}
+          onOpenChange={setBulkDeleteOpen}
+          onConfirm={confirmBulkDelete}
+          title="Xác nhận xóa nhiều đối tác"
+          description={`Bạn có chắc chắn muốn xóa ${selectedRowsForDelete.length} đối tác đã chọn? Hành động này không thể hoàn tác.`}
+          confirmLabel="Xóa"
+          cancelLabel="Hủy"
+        />
+      </>
+    )
+  }
 
   return (
     <>

@@ -6,34 +6,26 @@ import { Badge } from '@/components/ui/badge'
  * Cấu hình module Giao dịch
  */
 
-// Các loại giao dịch
+// Các loại giao dịch (dùng cho UI, lưu vào hang_muc)
 export const LOAI_GIAO_DICH = [
   { value: 'thu', label: 'Thu' },
   { value: 'chi', label: 'Chi' },
   { value: 'luan_chuyen', label: 'Luân chuyển' },
 ] as const
 
-// Map loại giao dịch sang badge variant
-export function getLoaiGiaoDichBadgeVariant(loai: string) {
+// Map hang_muc sang badge variant
+export function getHangMucBadgeVariant(hangMuc: string | null | undefined) {
+  if (!hangMuc) return 'outline'
   const map: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
     thu: 'default',
     chi: 'destructive',
     luan_chuyen: 'secondary',
   }
-  return map[loai] || 'outline'
+  return map[hangMuc.toLowerCase()] || 'outline'
 }
 
 // Các cột hiển thị trong bảng
 export const COT_HIEN_THI: CotHienThi<GiaoDichWithRelations>[] = [
-  {
-    key: 'ma_phieu',
-    label: 'Mã phiếu',
-    accessorKey: 'ma_phieu',
-    sortable: true,
-    width: 120,
-    align: 'left',
-    defaultVisible: true,
-  },
   {
     key: 'ngay',
     label: 'Ngày',
@@ -52,34 +44,33 @@ export const COT_HIEN_THI: CotHienThi<GiaoDichWithRelations>[] = [
     },
   },
   {
-    key: 'loai',
-    label: 'Loại',
-    accessorKey: 'loai',
+    key: 'hang_muc',
+    label: 'Hạng mục',
+    accessorKey: 'hang_muc',
     sortable: true,
-    width: 100,
+    width: 120,
     align: 'center',
     defaultVisible: true,
     cell: (value) => {
-      const loai = LOAI_GIAO_DICH.find((l) => l.value === value)
-      const label = loai ? loai.label : value || '—'
+      if (!value) return '—'
       return (
-        <Badge variant={getLoaiGiaoDichBadgeVariant(value)}>
-          {label}
+        <Badge variant={getHangMucBadgeVariant(value)}>
+          {value}
         </Badge>
       )
     },
   },
   {
-    key: 'danh_muc',
+    key: 'ten_danh_muc',
     label: 'Danh mục',
-    accessorKey: (row: GiaoDichWithRelations) => row.danh_muc?.ten || null,
+    accessorKey: 'ten_danh_muc',
     sortable: false,
     width: 150,
     align: 'left',
     defaultVisible: true,
-    cell: (_value, row) => {
-      const danhMuc = (row as GiaoDichWithRelations).danh_muc
-      return danhMuc?.ten || <span className="text-muted-foreground">—</span>
+    cell: (value) => {
+      if (!value) return <span className="text-muted-foreground">—</span>
+      return value
     },
   },
   {
@@ -93,7 +84,7 @@ export const COT_HIEN_THI: CotHienThi<GiaoDichWithRelations>[] = [
     cell: (value) => {
       if (!value) return <span className="text-muted-foreground">—</span>
       const truncated = String(value).length > 50 ? String(value).substring(0, 50) + '...' : String(value)
-      return <span title={String(value)}>{truncated}</span>
+      return <span title={String(value)} className="line-clamp-2">{truncated}</span>
     },
   },
   {
@@ -106,79 +97,62 @@ export const COT_HIEN_THI: CotHienThi<GiaoDichWithRelations>[] = [
     defaultVisible: true,
     cell: (value, row) => {
       const giaoDich = row as GiaoDichWithRelations
-      const loaiTien = giaoDich.tai_khoan_den?.loai_tien || giaoDich.tai_khoan?.loai_tien || 'VND'
+      const donVi = giaoDich.tai_khoan_den?.don_vi || giaoDich.tai_khoan_di?.don_vi || 'VND'
       const formatted = new Intl.NumberFormat('vi-VN', {
         style: 'currency',
-        currency: loaiTien === 'USD' ? 'USD' : 'VND',
+        currency: donVi === 'USD' ? 'USD' : 'VND',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
-      }).format(Number(value))
+      }).format(Number(value || 0))
       return <span className="font-medium">{formatted}</span>
     },
   },
   {
-    key: 'tai_khoan',
+    key: 'ten_tai_khoan_di',
     label: 'Tài khoản đi',
-    accessorKey: (row: GiaoDichWithRelations) => row.tai_khoan?.ten || null,
+    accessorKey: 'ten_tai_khoan_di',
     sortable: false,
     width: 150,
     align: 'left',
     defaultVisible: true,
-    cell: (_value, row) => {
-      const taiKhoan = (row as GiaoDichWithRelations).tai_khoan
-      if (!taiKhoan) return <span className="text-muted-foreground">—</span>
-      return taiKhoan.ten
+    cell: (value) => {
+      if (!value) return <span className="text-muted-foreground">—</span>
+      return value
     },
   },
   {
-    key: 'tai_khoan_den',
+    key: 'ten_tai_khoan_den',
     label: 'Tài khoản đến',
-    accessorKey: (row: GiaoDichWithRelations) => row.tai_khoan_den?.ten || null,
+    accessorKey: 'ten_tai_khoan_den',
     sortable: false,
     width: 150,
     align: 'left',
     defaultVisible: true,
-    cell: (_value, row) => {
-      const taiKhoanDen = (row as GiaoDichWithRelations).tai_khoan_den
-      if (!taiKhoanDen) return <span className="text-muted-foreground">—</span>
-      return taiKhoanDen.ten
+    cell: (value) => {
+      if (!value) return <span className="text-muted-foreground">—</span>
+      return value
     },
   },
   {
-    key: 'doi_tac',
-    label: 'Đối tác',
-    accessorKey: (row: GiaoDichWithRelations) => row.doi_tac?.ten || null,
-    sortable: false,
-    width: 150,
-    align: 'left',
-    defaultVisible: true,
-    cell: (_value, row) => {
-      const doiTac = (row as GiaoDichWithRelations).doi_tac
-      if (!doiTac) return <span className="text-muted-foreground">—</span>
-      return doiTac.ten
-    },
-  },
-  {
-    key: 'ty_gia',
+    key: 'so_ty_gia',
     label: 'Tỷ giá',
-    accessorKey: (row: GiaoDichWithRelations) => row.ty_gia?.ty_gia || null,
+    accessorKey: 'so_ty_gia',
     sortable: false,
     width: 120,
     align: 'right',
     defaultVisible: true,
-    cell: (_value, row) => {
-      const tyGia = (row as GiaoDichWithRelations).ty_gia
-      if (!tyGia) return <span className="text-muted-foreground">—</span>
+    cell: (value) => {
+      if (value === null || value === undefined) return <span className="text-muted-foreground">—</span>
       return new Intl.NumberFormat('vi-VN', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 4,
-      }).format(Number(tyGia.ty_gia))
+      }).format(Number(value))
     },
   },
   {
-    key: 'so_tien_vnd',
-    label: 'Số tiền VND',
-    accessorKey: 'so_tien_vnd',
+    key: 'so_tien_quy_doi',
+    label: 'Số tiền quy đổi',
+    accessorKey: 'so_tien_quy_doi',
     sortable: true,
     width: 150,
     align: 'right',
@@ -194,9 +168,9 @@ export const COT_HIEN_THI: CotHienThi<GiaoDichWithRelations>[] = [
     },
   },
   {
-    key: 'so_chung_tu',
-    label: 'Số chứng từ',
-    accessorKey: 'so_chung_tu',
+    key: 'chung_tu',
+    label: 'Chứng từ',
+    accessorKey: 'chung_tu',
     sortable: false,
     width: 120,
     align: 'left',
@@ -248,4 +222,3 @@ export const TIEU_DE_MODULE = 'Quản lý giao dịch'
 
 // Tên lưu trữ cấu hình cột
 export const TEN_LUU_TRU_COT = 'giao-dich-columns'
-

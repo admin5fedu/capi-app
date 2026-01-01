@@ -3,7 +3,8 @@
  * Hàm upload ảnh lên Cloudinary sử dụng Upload Preset
  */
 
-import { cloudinaryConfig, getCloudinaryUploadUrl } from './cloudinary'
+import { cloudinaryConfig } from './cloudinary'
+// import { getCloudinaryUploadUrl } from './cloudinary' // Unused
 
 export interface CloudinaryUploadResponse {
   public_id: string
@@ -66,7 +67,7 @@ export async function uploadImageToCloudinary(
  * Xóa ảnh khỏi Cloudinary (nếu cần)
  * @param publicId - Public ID của ảnh trên Cloudinary
  */
-export async function deleteImageFromCloudinary(publicId: string): Promise<void> {
+export async function deleteImageFromCloudinary(_publicId: string): Promise<void> {
   if (!cloudinaryConfig.cloudName || !cloudinaryConfig.apiKey || !cloudinaryConfig.apiSecret) {
     throw new Error('Cloudinary API credentials chưa được cấu hình.')
   }

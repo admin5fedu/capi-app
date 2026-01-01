@@ -166,11 +166,11 @@ export function BaoCaoTaiKhoanToolbar({
 
     if (filters.taiKhoanIds && filters.taiKhoanIds.length > 0) {
       filters.taiKhoanIds.forEach((id: string) => {
-        const tk = taiKhoanList.find((t) => t.id === id)
+        const tk = taiKhoanList.find((t) => String(t.id) === id)
         if (tk) {
           activeFilters.push({
             id: `tai-khoan-${id}`,
-            label: tk.ten,
+            label: tk.ten_tai_khoan || tk.ten || '',
             type: 'Tài khoản',
             onRemove: () => {
               const newIds = filters.taiKhoanIds?.filter((i: string) => i !== id)
@@ -227,11 +227,11 @@ export function BaoCaoTaiKhoanToolbar({
 
     if (filters.danhMucIds && filters.danhMucIds.length > 0) {
       filters.danhMucIds.forEach((id: string) => {
-        const dm = danhMucList.find((d) => d.id === id)
+        const dm = danhMucList.find((d) => String(d.id) === id)
         if (dm) {
           activeFilters.push({
             id: `danh-muc-${id}`,
-            label: dm.ten,
+            label: dm.ten || dm.ten_danh_muc || '',
             type: 'Danh mục',
             onRemove: () => {
               const newIds = filters.danhMucIds?.filter((i: string) => i !== id)
@@ -244,11 +244,11 @@ export function BaoCaoTaiKhoanToolbar({
 
     if (filters.doiTacIds && filters.doiTacIds.length > 0) {
       filters.doiTacIds.forEach((id: string) => {
-        const dt = doiTacList.find((d) => d.id === id)
+        const dt = doiTacList.find((d) => String(d.id) === id)
         if (dt) {
           activeFilters.push({
             id: `doi-tac-${id}`,
-            label: dt.ten,
+            label: dt.ten_doi_tac || '',
             type: 'Đối tác',
             onRemove: () => {
               const newIds = filters.doiTacIds?.filter((i: string) => i !== id)
@@ -261,11 +261,11 @@ export function BaoCaoTaiKhoanToolbar({
 
     if (filters.nguoiTaoIds && filters.nguoiTaoIds.length > 0) {
       filters.nguoiTaoIds.forEach((id: string) => {
-        const nt = nguoiDungList.find((n) => n.id === id)
+        const nt = nguoiDungList.find((n) => String(n.id) === id)
         if (nt) {
           activeFilters.push({
             id: `nguoi-tao-${id}`,
-            label: nt.ho_va_ten || nt.ho_ten || '',
+            label: nt.ho_va_ten || nt.ho_ten || nt.email || '',
             type: 'Người tạo',
             onRemove: () => {
               const newIds = filters.nguoiTaoIds?.filter((i: string) => i !== id)
@@ -305,7 +305,7 @@ export function BaoCaoTaiKhoanToolbar({
             <MultiSelectPopover
               keyName="taiKhoan"
               label="Tài khoản"
-              options={taiKhoanList.map((tk) => ({ value: tk.id, label: tk.ten }))}
+              options={taiKhoanList.map((tk) => ({ value: String(tk.id), label: tk.ten_tai_khoan || tk.ten || '' }))}
               selectedValues={filters.taiKhoanIds}
               onToggle={(value) => toggleArrayFilter('taiKhoanIds', value, filters.taiKhoanIds)}
             />
@@ -353,7 +353,7 @@ export function BaoCaoTaiKhoanToolbar({
             <MultiSelectPopover
               keyName="danhMuc"
               label="Danh mục"
-              options={danhMucList.map((dm) => ({ value: dm.id, label: dm.ten }))}
+              options={danhMucList.map((dm) => ({ value: String(dm.id), label: dm.ten || dm.ten_danh_muc || '' }))}
               selectedValues={filters.danhMucIds}
               onToggle={(value) => toggleArrayFilter('danhMucIds', value, filters.danhMucIds)}
             />
@@ -362,7 +362,7 @@ export function BaoCaoTaiKhoanToolbar({
             <MultiSelectPopover
               keyName="doiTac"
               label="Đối tác"
-              options={doiTacList.map((dt) => ({ value: dt.id, label: dt.ten }))}
+              options={doiTacList.map((dt) => ({ value: String(dt.id), label: dt.ten_doi_tac || '' }))}
               selectedValues={filters.doiTacIds}
               onToggle={(value) => toggleArrayFilter('doiTacIds', value, filters.doiTacIds)}
             />
@@ -371,7 +371,7 @@ export function BaoCaoTaiKhoanToolbar({
             <MultiSelectPopover
               keyName="nguoiTao"
               label="Người tạo"
-              options={nguoiDungList.map((nt) => ({ value: nt.id, label: nt.ho_ten }))}
+              options={nguoiDungList.map((nt) => ({ value: String(nt.id), label: nt.ho_va_ten || nt.ho_ten || nt.email || '' }))}
               selectedValues={filters.nguoiTaoIds}
               onToggle={(value) => toggleArrayFilter('nguoiTaoIds', value, filters.nguoiTaoIds)}
             />

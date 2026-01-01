@@ -5,8 +5,6 @@ import {
   updateGiaoDich,
   deleteGiaoDich,
   searchGiaoDich,
-  getNextMaPhieuByLoai,
-  checkMaPhieuExists,
 } from '@/api/giao-dich'
 import type { GiaoDich, GiaoDichInsert, GiaoDichUpdate, GiaoDichWithRelations } from '@/types/giao-dich'
 
@@ -42,14 +40,6 @@ export async function searchGiaoDichService(keyword: string): Promise<GiaoDich[]
   return searchGiaoDich(keyword)
 }
 
-export async function getNextMaPhieuService(loai: 'thu' | 'chi' | 'luan_chuyen'): Promise<string> {
-  return getNextMaPhieuByLoai(loai)
-}
-
-export async function checkMaPhieuExistsService(
-  maPhieu: string,
-  excludeId?: number
-): Promise<boolean> {
-  return checkMaPhieuExists(maPhieu, excludeId)
-}
+// Các hàm này không còn cần thiết vì schema mới không có ma_phieu
+// Đã xóa để tránh lỗi import
 

@@ -263,25 +263,31 @@ export function GenericListView<TData extends Record<string, any>>({
           </div>
         </div>
       ) : (
-        /* Desktop Table View - Scrollable container */
-        <div className="flex-1 min-h-0 overflow-hidden">
-          <div className="border rounded-lg overflow-hidden flex flex-col h-full bg-card">
-            <TableView
-              table={table}
-              columns={columns}
-              isLoading={isLoading}
-              onRowClick={onRowClick}
-            />
-            <TablePagination
-              table={table}
-              currentPageSize={listState.currentPageSize}
-              setCurrentPageSize={listState.setCurrentPageSize}
-              pageInputValue={listState.pageInputValue}
-              setPageInputValue={listState.setPageInputValue}
-              filteredDataLength={listState.filteredData.length}
-              enableRowSelection={enableRowSelection}
-              selectedRowsCount={listState.selectedRows.length}
-            />
+        /* Desktop Table View - Scrollable container với sticky footer */
+        <div className="flex-1 min-h-0 flex flex-col">
+          <div className="border rounded-lg flex flex-col flex-1 min-h-0 bg-card overflow-hidden">
+            {/* Table Content - scrollable */}
+            <div className="flex-1 min-h-0 overflow-hidden relative">
+              <TableView
+                table={table}
+                columns={columns}
+                isLoading={isLoading}
+                onRowClick={onRowClick}
+              />
+            </div>
+            {/* Footer - Sticky bottom, luôn nằm sát mép dưới */}
+            <div className="flex-shrink-0 mt-auto">
+              <TablePagination
+                table={table}
+                currentPageSize={listState.currentPageSize}
+                setCurrentPageSize={listState.setCurrentPageSize}
+                pageInputValue={listState.pageInputValue}
+                setPageInputValue={listState.setPageInputValue}
+                filteredDataLength={listState.filteredData.length}
+                enableRowSelection={enableRowSelection}
+                selectedRowsCount={listState.selectedRows.length}
+              />
+            </div>
           </div>
         </div>
       )}

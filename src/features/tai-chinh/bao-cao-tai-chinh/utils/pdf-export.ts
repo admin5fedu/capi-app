@@ -54,11 +54,11 @@ export function exportBaoCaoToPDF(data: BaoCaoData, filters?: Record<string, any
   // Table data
   const tableData = data.giaoDich.map((gd) => [
     gd.ma_phieu || '',
-    formatDate(gd.ngay),
+    gd.ngay ? formatDate(gd.ngay) : '',
     gd.loai === 'thu' ? 'Thu' : gd.loai === 'chi' ? 'Chi' : 'Luân chuyển',
     gd.danh_muc?.ten || '',
     gd.mo_ta || '',
-    formatCurrency(gd.so_tien_vnd || gd.so_tien),
+    formatCurrency((gd.so_tien_vnd || gd.so_tien) ?? 0),
     gd.tai_khoan?.ten || '',
     gd.tai_khoan_den?.ten || '',
     gd.doi_tac?.ten || '',

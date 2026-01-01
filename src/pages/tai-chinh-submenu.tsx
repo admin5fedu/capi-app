@@ -18,11 +18,11 @@ interface ModuleCard {
 
 const taiChinhModules: ModuleCard[] = [
   {
-    id: 'danh-muc',
-    title: 'Danh mục',
-    description: 'Quản lý danh mục tài chính, khách hàng, nhà cung cấp',
+    id: 'danh-muc-tai-chinh',
+    title: 'Danh mục tài chính',
+    description: 'Quản lý danh mục tài chính thu chi',
     icon: FileText,
-    path: '/tai-chinh/danh-muc',
+    path: '/tai-chinh/danh-muc-tai-chinh',
   },
   {
     id: 'tai-khoan',

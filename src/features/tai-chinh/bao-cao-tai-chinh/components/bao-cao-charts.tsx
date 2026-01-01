@@ -133,7 +133,7 @@ export function BaoCaoCharts({
       const date = dayjs(gd.ngay)
       const ngay = date.format('DD/MM')
       const ngaySort = date.format('YYYY-MM-DD')
-      const soTien = gd.so_tien_vnd || gd.so_tien
+      const soTien = (gd.so_tien_vnd || gd.so_tien) ?? 0
       
       if (!grouped.has(ngaySort)) {
         grouped.set(ngaySort, { ngay, ngaySort, tongTien: 0 })

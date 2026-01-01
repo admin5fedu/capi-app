@@ -27,11 +27,11 @@ export async function getDanhMucByLoaiService(loai: string): Promise<DanhMucWith
 }
 
 export async function getDanhMucChildrenService(parentId: string): Promise<DanhMuc[]> {
-  return getDanhMucChildren(parentId)
+  return getDanhMucChildren(parentId) // API expect string, keep as is
 }
 
 export async function getDanhMucByIdService(id: string): Promise<DanhMucWithParent> {
-  return getDanhMucById(id)
+  return getDanhMucById(parseInt(id, 10))
 }
 
 export async function createDanhMucService(data: DanhMucInsert): Promise<DanhMuc> {
@@ -42,17 +42,17 @@ export async function updateDanhMucService(
   id: string,
   data: DanhMucUpdate
 ): Promise<DanhMuc> {
-  return updateDanhMuc(id, data)
+  return updateDanhMuc(parseInt(id, 10), data)
 }
 
 export async function deleteDanhMucService(id: string): Promise<{ success: boolean }> {
-  return deleteDanhMuc(id)
+  return deleteDanhMuc(parseInt(id, 10))
 }
 
 export async function deleteDanhMucCascadeService(
   id: string
 ): Promise<{ success: boolean; deletedChildren: number }> {
-  return deleteDanhMucCascade(id)
+  return deleteDanhMucCascade(parseInt(id, 10))
 }
 
 export async function deleteAllDanhMucService(): Promise<{ success: boolean; deletedCount: number }> {
@@ -64,6 +64,6 @@ export async function searchDanhMucService(keyword: string): Promise<DanhMucWith
 }
 
 export async function checkDanhMucHasChildrenService(id: string): Promise<boolean> {
-  return checkDanhMucHasChildren(id)
+  return checkDanhMucHasChildren(parseInt(id, 10))
 }
 

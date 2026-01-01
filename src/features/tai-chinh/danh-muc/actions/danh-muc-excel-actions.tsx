@@ -12,8 +12,7 @@ export function handleXuatExcel(data: DanhMucWithParent[]) {
       'Tên danh mục': item.ten,
       'Loại': item.loai,
       'Danh mục cha': item.parent_ten || '',
-      'Thứ tự': item.thu_tu ?? 0,
-      'Trạng thái': item.is_active ? 'Hoạt động' : 'Vô hiệu hóa',
+      'Cấp độ': item.cap ? `Cấp ${item.cap}` : '',
       'Mô tả': item.mo_ta || '',
       'Ngày tạo': item.tg_tao || item.created_at
         ? new Date(item.tg_tao || item.created_at || '').toLocaleDateString('vi-VN')

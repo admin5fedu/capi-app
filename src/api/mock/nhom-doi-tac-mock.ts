@@ -5,7 +5,8 @@ import type { NhomDoiTac } from '@/types/nhom-doi-tac'
  */
 
 // Mock data ban đầu
-const initialMockData: NhomDoiTac[] = [
+// Note: Mock data uses string IDs for compatibility, but real API uses number IDs
+const initialMockData: any[] = [
   // Nhà cung cấp
   {
     id: 'ncc-1',
@@ -120,23 +121,23 @@ class MockNhomDoiTacStore {
     return [...this.data]
   }
 
-  getById(id: string): NhomDoiTac | undefined {
-    return this.data.find((item) => item.id === id)
+  getById(id: string | number): NhomDoiTac | undefined {
+    return this.data.find((item) => String(item.id) === String(id))
   }
 
   add(item: NhomDoiTac): void {
     this.data.push(item)
   }
 
-  update(id: string, updated: NhomDoiTac): void {
-    const index = this.data.findIndex((item) => item.id === id)
+  update(id: string | number, updated: NhomDoiTac): void {
+    const index = this.data.findIndex((item) => String(item.id) === String(id))
     if (index !== -1) {
       this.data[index] = updated
     }
   }
 
-  delete(id: string): void {
-    this.data = this.data.filter((item) => item.id !== id)
+  delete(id: string | number): void {
+    this.data = this.data.filter((item) => String(item.id) !== String(id))
   }
 
   reset(): void {

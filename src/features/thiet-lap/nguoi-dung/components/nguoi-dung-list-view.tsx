@@ -8,13 +8,13 @@ import { useXoaNguoiDung } from '../hooks/use-nguoi-dung'
 import { COT_HIEN_THI, TEN_LUU_TRU_COT } from '../config'
 import { getBulkActions, handleXuatExcel, handleNhapExcel } from '../actions'
 import type { NguoiDung } from '@/types/nguoi-dung'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Edit2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface NguoiDungListViewProps {
-  onEdit: (id: string) => void
+  onEdit: (id: number) => void
   onAddNew: () => void
-  onView?: (id: string) => void
+  onView?: (id: number) => void
 }
 
 /**
@@ -24,12 +24,12 @@ export function NguoiDungListView({ onEdit, onAddNew, onView }: NguoiDungListVie
   const { data: danhSach, isLoading, error, refetch } = useDanhSachNguoiDung()
   const { data: danhSachVaiTro } = useVaiTroList()
   const deleteNguoiDung = useXoaNguoiDung()
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   const handleXoa = async (nguoiDung: NguoiDung) => {
     try {
       setDeletingId(nguoiDung.id)
-      await deleteNguoiDung.mutateAsync(nguoiDung.id)
+      await deleteNguoiDung.mutateAsync(String(nguoiDung.id))
       toast.success('Xóa người dùng thành công')
     } catch (error: any) {
       toast.error(`Lỗi: ${error.message || 'Không thể xóa người dùng này'}`)
@@ -48,7 +48,7 @@ export function NguoiDungListView({ onEdit, onAddNew, onView }: NguoiDungListVie
 
   const confirmBulkDelete = async () => {
     try {
-      await Promise.all(selectedRowsForDelete.map((nguoiDung) => deleteNguoiDung.mutateAsync(nguoiDung.id)))
+      await Promise.all(selectedRowsForDelete.map((nguoiDung) => deleteNguoiDung.mutateAsync(String(nguoiDung.id))))
       toast.success(`Đã xóa ${selectedRowsForDelete.length} người dùng thành công`)
       setBulkDeleteOpen(false)
       setSelectedRowsForDelete([])
@@ -61,7 +61,7 @@ export function NguoiDungListView({ onEdit, onAddNew, onView }: NguoiDungListVie
   const hanhDongItems = [
     {
       label: 'Chỉnh sửa',
-      icon: Pencil,
+      icon: Edit2,
       onClick: (row: NguoiDung) => onEdit(row.id),
       variant: 'default' as const,
     },

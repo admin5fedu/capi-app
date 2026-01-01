@@ -1,4 +1,5 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { createBrowserRouter } from 'react-router-dom'
+// import { Navigate } from 'react-router-dom' // Unused
 import { MainLayout } from '@/components/layout'
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import { HomePage, TaiChinhSubmenuPage, DoiTacSubmenuPage, ThietLapSubmenuPage } from '@/pages'
@@ -8,14 +9,15 @@ import { VaiTroModule } from '@/features/thiet-lap/vai-tro'
 import { PhongBanModule } from '@/features/thiet-lap/phong-ban'
 import { PhanQuyenModule } from '@/features/thiet-lap/phan-quyen'
 import { CaiDatModule } from '@/features/thiet-lap/cai-dat/index'
+import { ThongTinCongTyModule } from '@/features/thiet-lap/thong-tin-cong-ty'
 import { TaiKhoanModule } from '@/features/tai-chinh/tai-khoan'
 import { DanhMucModule } from '@/features/tai-chinh/danh-muc'
 import { TyGiaModule } from '@/features/tai-chinh/ty-gia'
 import { GiaoDichModule } from '@/features/tai-chinh/thu-chi'
 import { BaoCaoTaiChinhModule } from '@/features/tai-chinh/bao-cao-tai-chinh'
 import { BaoCaoTaiKhoanModule } from '@/features/tai-chinh/bao-cao-tai-khoan'
-import { NhomDoiTacModule } from '@/features/doi-tac/nhom-doi-tac/index.tsx'
-import { DanhSachDoiTacModule } from '@/features/doi-tac/danh-sach-doi-tac'
+// import { NhomDoiTacModule } from '@/features/doi-tac/nhom-doi-tac/index.tsx' // Unused - using redirect components
+// import { DanhSachDoiTacModule } from '@/features/doi-tac/danh-sach-doi-tac' // Unused - using redirect components
 import { KhachHangModule } from '@/features/doi-tac/khach-hang'
 import { NhaCungCapModule } from '@/features/doi-tac/nha-cung-cap'
 import { HoSoPage } from '@/pages/ho-so'
@@ -59,19 +61,19 @@ export const router = createBrowserRouter([
         element: <TaiChinhSubmenuPage />,
       },
       {
-        path: 'tai-chinh/danh-muc',
+        path: 'tai-chinh/danh-muc-tai-chinh',
         element: <DanhMucModule />,
       },
       {
-        path: 'tai-chinh/danh-muc/moi',
+        path: 'tai-chinh/danh-muc-tai-chinh/moi',
         element: <DanhMucModule />,
       },
       {
-        path: 'tai-chinh/danh-muc/:id',
+        path: 'tai-chinh/danh-muc-tai-chinh/:id',
         element: <DanhMucModule />,
       },
       {
-        path: 'tai-chinh/danh-muc/:id/sua',
+        path: 'tai-chinh/danh-muc-tai-chinh/:id/sua',
         element: <DanhMucModule />,
       },
       {
@@ -315,6 +317,10 @@ export const router = createBrowserRouter([
       {
         path: 'thiet-lap/cai-dat',
         element: <CaiDatModule />,
+      },
+      {
+        path: 'thiet-lap/thong-tin-cong-ty',
+        element: <ThongTinCongTyModule />,
       },
       {
         path: 'ho-so',

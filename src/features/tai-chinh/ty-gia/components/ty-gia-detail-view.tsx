@@ -35,16 +35,19 @@ export function TyGiaDetailView({ id, onEdit, onDelete, onBack }: TyGiaDetailVie
     }
   }
 
-  // Update breadcrumb với ngày áp dụng
+  // Update breadcrumb với tỷ giá
   useEffect(() => {
-    if (tyGia?.ngay_ap_dung) {
-      const ngay = new Date(tyGia.ngay_ap_dung).toLocaleDateString('vi-VN')
-      setDetailLabel(`Tỷ giá ${ngay}`)
+    if (tyGia?.ty_gia) {
+      const tyGiaFormatted = new Intl.NumberFormat('vi-VN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 4,
+      }).format(Number(tyGia.ty_gia))
+      setDetailLabel(`Tỷ giá ${tyGiaFormatted}`)
     }
     return () => {
       setDetailLabel(null)
     }
-  }, [tyGia?.ngay_ap_dung, setDetailLabel])
+  }, [tyGia?.ty_gia, setDetailLabel])
 
   if (isLoading) {
     return (
@@ -78,26 +81,6 @@ export function TyGiaDetailView({ id, onEdit, onDelete, onBack }: TyGiaDetailVie
             }).format(Number(value))
           },
         },
-        {
-          key: 'ngay_ap_dung',
-          label: 'Ngày áp dụng',
-          accessor: 'ngay_ap_dung',
-          render: (value) => {
-            if (!value) return '—'
-            return new Date(value).toLocaleDateString('vi-VN', {
-              year: 'numeric',
-              month: '2-digit',
-              day: '2-digit',
-            })
-          },
-        },
-        {
-          key: 'ghi_chu',
-          label: 'Ghi chú',
-          accessor: 'ghi_chu',
-          span: 3,
-          render: (value) => value || <span className="text-muted-foreground">—</span>,
-        },
       ],
     },
     {
@@ -125,8 +108,11 @@ export function TyGiaDetailView({ id, onEdit, onDelete, onBack }: TyGiaDetailVie
     },
   ]
 
-  const ngayApDung = tyGia.ngay_ap_dung
-    ? new Date(tyGia.ngay_ap_dung).toLocaleDateString('vi-VN')
+  const tyGiaFormatted = tyGia.ty_gia
+    ? new Intl.NumberFormat('vi-VN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 4,
+      }).format(Number(tyGia.ty_gia))
     : ''
 
   return (
@@ -138,7 +124,7 @@ export function TyGiaDetailView({ id, onEdit, onDelete, onBack }: TyGiaDetailVie
       onBack={onBack}
       title="Chi tiết tỷ giá"
       deleteConfirmTitle="Xác nhận xóa tỷ giá"
-      deleteConfirmDescription={`Bạn có chắc chắn muốn xóa tỷ giá ngày ${ngayApDung}? Hành động này không thể hoàn tác.`}
+      deleteConfirmDescription={`Bạn có chắc chắn muốn xóa tỷ giá ${tyGiaFormatted}? Hành động này không thể hoàn tác.`}
     />
   )
 }

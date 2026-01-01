@@ -5,13 +5,13 @@ import { useVaiTroList, useDeleteVaiTro } from '../hooks/use-vai-tro'
 import { COT_HIEN_THI, TEN_LUU_TRU_COT } from '../config'
 import { getBulkActions, handleXuatExcel, handleNhapExcel } from '../actions'
 import type { VaiTro } from '@/types/vai-tro'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Edit2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface VaiTroListViewProps {
-  onEdit: (id: string) => void
+  onEdit: (id: number) => void
   onAddNew: () => void
-  onView?: (id: string) => void
+  onView?: (id: number) => void
 }
 
 /**
@@ -20,12 +20,12 @@ interface VaiTroListViewProps {
 export function VaiTroListView({ onEdit, onAddNew, onView }: VaiTroListViewProps) {
   const { data: danhSach, isLoading, error, refetch } = useVaiTroList()
   const deleteVaiTro = useDeleteVaiTro()
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   const handleXoa = async (vaiTro: VaiTro) => {
     try {
       setDeletingId(vaiTro.id)
-      await deleteVaiTro.mutateAsync(vaiTro.id)
+      await deleteVaiTro.mutateAsync(String(vaiTro.id))
       toast.success('Xóa vai trò thành công')
     } catch (error: any) {
       // Backend sẽ validate và trả về lỗi nếu vai trò đang được sử dụng
@@ -45,7 +45,7 @@ export function VaiTroListView({ onEdit, onAddNew, onView }: VaiTroListViewProps
 
   const confirmBulkDelete = async () => {
     try {
-      await Promise.all(selectedRowsForDelete.map((vaiTro) => deleteVaiTro.mutateAsync(vaiTro.id)))
+      await Promise.all(selectedRowsForDelete.map((vaiTro) => deleteVaiTro.mutateAsync(String(vaiTro.id))))
       toast.success(`Đã xóa ${selectedRowsForDelete.length} vai trò thành công`)
       setBulkDeleteOpen(false)
       setSelectedRowsForDelete([])
@@ -58,7 +58,7 @@ export function VaiTroListView({ onEdit, onAddNew, onView }: VaiTroListViewProps
   const hanhDongItems = [
     {
       label: 'Chỉnh sửa',
-      icon: Pencil,
+      icon: Edit2,
       onClick: (row: VaiTro) => onEdit(row.id),
       variant: 'default' as const,
     },

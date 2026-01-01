@@ -5,7 +5,7 @@ import type { QuickFilter } from '@/shared/components/generic/types'
 import { useGiaoDichList, useDeleteGiaoDich } from '../hooks/use-giao-dich'
 import { COT_HIEN_THI, TEN_LUU_TRU_COT, LOAI_GIAO_DICH } from '../config'
 import type { GiaoDich } from '@/types/giao-dich'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Edit2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface GiaoDichListViewProps {
@@ -59,7 +59,7 @@ export function GiaoDichListView({ onEdit, onAddNew, onView }: GiaoDichListViewP
   const hanhDongItems = [
     {
       label: 'Chỉnh sửa',
-      icon: Pencil,
+      icon: Edit2,
       onClick: (row: GiaoDich) => onEdit(row.id),
       variant: 'default' as const,
     },
@@ -72,7 +72,7 @@ export function GiaoDichListView({ onEdit, onAddNew, onView }: GiaoDichListViewP
       requiresConfirm: true,
       confirmTitle: 'Xác nhận xóa giao dịch',
       confirmDescription: (row: GiaoDich) =>
-        `Bạn có chắc chắn muốn xóa giao dịch "${row.ma_phieu}"? Hành động này không thể hoàn tác.`,
+        `Bạn có chắc chắn muốn xóa giao dịch "${row.hang_muc || row.loai || 'này'}"? Hành động này không thể hoàn tác.`,
     },
   ]
 
@@ -90,8 +90,8 @@ export function GiaoDichListView({ onEdit, onAddNew, onView }: GiaoDichListViewP
   const quickFilters: QuickFilter[] = useMemo(
     () => [
       {
-        key: 'loai',
-        label: 'Loại giao dịch',
+        key: 'hang_muc',
+        label: 'Hạng mục',
         type: 'select',
         multiSelect: true,
         options: LOAI_GIAO_DICH.map((loai) => ({
@@ -117,7 +117,7 @@ export function GiaoDichListView({ onEdit, onAddNew, onView }: GiaoDichListViewP
         onAddNew={onAddNew}
         onRowClick={(row) => onView?.(row.id)}
         tenLuuTru={TEN_LUU_TRU_COT}
-        timKiemPlaceholder="Tìm kiếm theo mã phiếu, mô tả, số chứng từ..."
+        timKiemPlaceholder="Tìm kiếm theo hạng mục, mô tả, chứng từ..."
         onTimKiem={() => {}}
         enableRowSelection={true}
         pageSize={50}

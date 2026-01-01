@@ -1,9 +1,9 @@
 import type { CotHienThi } from '@/shared/components/generic/types'
 import type { DanhMucWithParent } from '@/types/danh-muc'
 import { Badge } from '@/components/ui/badge'
-import { getThuChiBadgeVariant, getStatusBadgeVariant } from '@/shared/utils/color-utils'
+import { getThuChiBadgeVariant } from '@/shared/utils/color-utils'
 import { isLevel1, isLevel2 } from './utils/danh-muc-helpers'
-import { cn } from '@/lib/utils'
+// import { cn } from '@/lib/utils' // Unused
 
 /**
  * Cấu hình module Danh mục
@@ -27,21 +27,28 @@ export const COT_HIEN_THI: CotHienThi<DanhMucWithParent>[] = [
     defaultVisible: true,
     cell: (value, row) => {
       const danhMuc = row as DanhMucWithParent
-      const isLevel1Item = isLevel1(danhMuc)
       const isLevel2Item = isLevel2(danhMuc)
 
-      return (
-        <div
-          className={cn(
-            'flex items-center',
-            isLevel1Item && 'font-semibold',
-            isLevel2Item && 'pl-6 text-muted-foreground'
-          )}
-        >
-          {isLevel2Item && (
+      if (isLevel2Item) {
+        return (
+          <div className="flex items-center pl-6">
+            {/* Line nối - chỉ 1 line */}
             <span className="mr-2 text-muted-foreground">└─</span>
-          )}
-          <span>{value || '—'}</span>
+            
+            {/* Tên danh mục cấp 2 - in nghiêng */}
+            <span className="italic text-foreground">
+              {value || '—'}
+            </span>
+          </div>
+        )
+      }
+
+      // Cấp 1 - bôi đậm, màu primary
+      return (
+        <div className="flex items-center">
+          <span className="font-semibold text-primary">
+            {value || '—'}
+          </span>
         </div>
       )
     },
@@ -75,28 +82,30 @@ export const COT_HIEN_THI: CotHienThi<DanhMucWithParent>[] = [
     cell: (value) => value || <span className="text-muted-foreground">—</span>,
   },
   {
-    key: 'thu_tu',
-    label: 'Thứ tự',
-    accessorKey: 'thu_tu',
+    key: 'cap',
+    label: 'Cấp độ',
+    accessorKey: 'cap',
     sortable: true,
     width: 100,
     align: 'center',
     defaultVisible: true,
-    cell: (value) => value ?? 0,
-  },
-  {
-    key: 'is_active',
-    label: 'Trạng thái',
-    accessorKey: 'is_active',
-    sortable: true,
-    width: 120,
-    align: 'center',
-    defaultVisible: true,
-    cell: (value) => (
-      <Badge variant={getStatusBadgeVariant(value)}>
-        {value ? 'Hoạt động' : 'Vô hiệu hóa'}
-      </Badge>
-    ),
+    cell: (value, row) => {
+      const danhMuc = row as DanhMucWithParent
+      const isLevel1Item = isLevel1(danhMuc)
+      const isLevel2Item = isLevel2(danhMuc)
+      
+      if (!value) return '—'
+      
+      // Format rules: Cấp 1 - bold primary, Cấp 2 - italic
+      if (isLevel1Item) {
+        return <span className="font-semibold text-primary">Cấp {value}</span>
+      }
+      if (isLevel2Item) {
+        return <span className="italic text-foreground">Cấp {value}</span>
+      }
+      
+      return `Cấp ${value}`
+    },
   },
   {
     key: 'mo_ta',
@@ -106,7 +115,20 @@ export const COT_HIEN_THI: CotHienThi<DanhMucWithParent>[] = [
     width: 300,
     align: 'left',
     defaultVisible: false,
-    cell: (value) => (value ? String(value) : null),
+    cell: (value) => {
+      if (!value) return <span className="text-muted-foreground">—</span>
+      
+      const text = String(value)
+      
+      return (
+        <div 
+          className="line-clamp-2 text-sm text-foreground max-w-[300px]"
+          title={text} // Tooltip hiển thị full text khi hover
+        >
+          {text}
+        </div>
+      )
+    },
   },
   {
     key: 'tg_tao',
@@ -153,7 +175,7 @@ export const QUYEN_TRUY_CAP = {
 }
 
 // Tiêu đề module
-export const TIEU_DE_MODULE = 'Quản lý danh mục'
+export const TIEU_DE_MODULE = 'Quản lý danh mục tài chính'
 
 // Tên lưu trữ cấu hình cột
 export const TEN_LUU_TRU_COT = 'danh-muc-columns'

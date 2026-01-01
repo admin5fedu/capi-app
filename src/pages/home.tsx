@@ -60,19 +60,19 @@ export function HomePage() {
   const { nguoiDung } = useAuthStore()
 
   return (
-    <div className="h-full overflow-y-auto space-y-10">
+    <div className="h-full overflow-y-auto space-y-4 md:space-y-10">
       {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+      <div className="space-y-1 md:space-y-2">
+        <h1 className="text-xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
           Chào mừng trở lại, {nguoiDung?.ho_va_ten || nguoiDung?.ho_ten || 'Người dùng'}!
         </h1>
-        <p className="text-muted-foreground text-lg">
+        <p className="text-muted-foreground text-sm md:text-lg hidden md:block">
           Chọn chức năng để bắt đầu làm việc
         </p>
       </div>
 
       {/* Function Cards Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 md:gap-6 grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
         {functionCards.map((card) => {
           const CardIcon = card.icon
           return (
@@ -81,29 +81,29 @@ export function HomePage() {
                 {/* Gradient Background */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${card.gradientFrom} ${card.gradientTo} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
                 
-                <CardContent className="p-8 relative z-10">
-                  <div className="flex flex-col space-y-6">
+                <CardContent className="p-3 md:p-8 relative z-10">
+                  <div className="flex flex-col space-y-2 md:space-y-6">
                     {/* Icon Section */}
                     <div className="flex items-center justify-center relative">
-                      <div className={`p-4 rounded-2xl ${card.iconBg} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                        <CardIcon className="h-8 w-8 text-white" />
+                      <div className={`p-2 md:p-4 rounded-xl md:rounded-2xl ${card.iconBg} shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                        <CardIcon className="h-5 w-5 md:h-8 md:w-8 text-white" />
                       </div>
-                      <div className="absolute right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="absolute right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:block">
                         <ArrowRight className="h-5 w-5 text-primary" />
                       </div>
                     </div>
                     
                     {/* Content Section */}
-                    <div className="space-y-3 flex-1 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <CardTitle className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">
+                    <div className="space-y-1 md:space-y-3 flex-1 text-center">
+                      <div className="flex items-center justify-center gap-1 md:gap-2">
+                        <CardTitle className="text-base md:text-2xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">
                           {card.title}
                         </CardTitle>
-                        <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                        <span className="text-[10px] md:text-xs font-medium text-muted-foreground bg-muted px-1.5 py-0.5 md:px-2 md:py-1 rounded-full hidden md:inline-flex">
                           {card.moduleCount} module
                         </span>
                       </div>
-                      <CardDescription className="text-sm leading-relaxed text-muted-foreground">
+                      <CardDescription className="text-xs md:text-sm leading-relaxed text-muted-foreground hidden md:block">
                         {card.description}
                       </CardDescription>
                     </div>

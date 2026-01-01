@@ -1,41 +1,34 @@
-import { useEffect, useState, useMemo, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useGiaoDichById, useCreateGiaoDich, useUpdateGiaoDich } from '../hooks/use-giao-dich'
 import { useDanhMucList, DanhMucCombobox } from '@/features/tai-chinh/danh-muc'
 import { useTaiKhoanList } from '@/features/tai-chinh/tai-khoan'
-import { useDoiTacList } from '@/features/doi-tac/danh-sach-doi-tac'
 import { useTyGiaList, useCreateTyGia } from '@/features/tai-chinh/ty-gia'
-import { getNextMaPhieuService, checkMaPhieuExistsService } from '../services/giao-dich-service'
 import { GenericFormView } from '@/shared/components/generic/generic-form-view'
 import type { FormFieldGroup } from '@/shared/components/generic/generic-form-view'
 import { LOAI_GIAO_DICH } from '../config'
 import { useAuthStore } from '@/store/auth-store'
-import type { GiaoDichInsert, GiaoDichUpdate, LoaiGiaoDich } from '@/types/giao-dich'
+import type { GiaoDichInsert, GiaoDichUpdate } from '@/types/giao-dich'
 import { getCloudinaryUploadUrl } from '@/lib/cloudinary'
 import { Button } from '@/components/ui/button'
 import { X, Upload, Camera, Image as ImageIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { NumberInput } from '@/components/ui/number-input'
-import { AutocompleteInput, type AutocompleteOption } from '@/components/ui/autocomplete-input'
+// import { AutocompleteInput, type AutocompleteOption } from '@/components/ui/autocomplete-input' // Unused
 import { translateZodError } from '@/lib/zod-error-translator'
 
-// Schema validation - sẽ được tạo động với editId để validate mã phiếu
-const createGiaoDichSchema = (editId?: number | null) =>
+// Schema validation
+const createGiaoDichSchema = () =>
   z
     .object({
       ngay: z.string().min(1, 'Ngày là bắt buộc'),
-      loai: z.enum(['thu', 'chi', 'luan_chuyen'], {
-        required_error: 'Loại giao dịch là bắt buộc',
-      }),
-      ma_phieu: z
-        .string()
-        .min(1, 'Mã phiếu là bắt buộc'),
+      hang_muc: z.string().min(1, 'Hạng mục là bắt buộc'),
       danh_muc_id: z.preprocess(
-        (val) => val === '' ? null : val,
-        z.string().nullable().optional()
+        (val) => val === '' ? null : Number(val),
+        z.number().nullable().optional()
       ),
       mo_ta: z.preprocess(
         (val) => val === '' ? null : val,
@@ -50,30 +43,28 @@ const createGiaoDichSchema = (editId?: number | null) =>
         (val) => val === '' || val === null || val === undefined ? null : Number(val),
         z.number().nullable().optional()
       ),
-      tai_khoan_id: z.preprocess(
-        (val) => val === '' ? null : val,
-        z.string().nullable().optional()
+      tai_khoan_di_id: z.preprocess(
+        (val) => val === '' ? null : Number(val),
+        z.number().nullable().optional()
       ),
       tai_khoan_den_id: z.preprocess(
-        (val) => val === '' ? null : val,
-        z.string().nullable().optional()
+        (val) => val === '' ? null : Number(val),
+        z.number().nullable().optional()
       ),
-      doi_tac_id: z.preprocess(
+      chung_tu: z.preprocess(
         (val) => val === '' ? null : val,
-        z.string().nullable().optional()
-      ),
-      so_chung_tu: z.preprocess(
-        (val) => val === '' ? null : val,
-        z.string().max(100, 'Số chứng từ quá dài').nullable().optional()
+        z.string().max(100, 'Chứng từ quá dài').nullable().optional()
       ),
       hinh_anh: z.preprocess(
         (val) => val === null || val === undefined ? null : val,
-        z.array(z.string()).nullable().optional()
+        z.any().nullable().optional()
       ),
       ghi_chu: z.preprocess(
         (val) => val === '' ? null : val,
         z.string().max(2000, 'Ghi chú quá dài').nullable().optional()
       ),
+      // Internal fields for form logic
+      loai: z.enum(['thu', 'chi', 'luan_chuyen']).optional(), // Dùng để điều khiển form UI
     })
     .refine(
       (data) => {
@@ -81,12 +72,12 @@ const createGiaoDichSchema = (editId?: number | null) =>
         if (data.loai === 'thu' && !data.tai_khoan_den_id) {
           return false
         }
-        // Chi: cần tai_khoan_id
-        if (data.loai === 'chi' && !data.tai_khoan_id) {
+        // Chi: cần tai_khoan_di_id
+        if (data.loai === 'chi' && !data.tai_khoan_di_id) {
           return false
         }
         // Luân chuyển: cần cả hai
-        if (data.loai === 'luan_chuyen' && (!data.tai_khoan_id || !data.tai_khoan_den_id)) {
+        if (data.loai === 'luan_chuyen' && (!data.tai_khoan_di_id || !data.tai_khoan_den_id)) {
           return false
         }
         return true
@@ -113,24 +104,6 @@ const createGiaoDichSchema = (editId?: number | null) =>
         path: ['danh_muc_id'],
       }
     )
-    .superRefine(async (data, ctx) => {
-      // Validate mã phiếu không trùng (async)
-      if (data.ma_phieu) {
-        try {
-          const exists = await checkMaPhieuExistsService(data.ma_phieu, editId || undefined)
-          if (exists) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: 'Mã phiếu đã tồn tại',
-              path: ['ma_phieu'],
-            })
-          }
-        } catch (error) {
-          // Ignore validation error if service fails
-          console.error('Error checking ma_phieu:', error)
-        }
-      }
-    })
 
 type GiaoDichFormData = z.infer<ReturnType<typeof createGiaoDichSchema>>
 
@@ -149,10 +122,12 @@ function MultipleImageUpload({
   onChange,
   disabled,
 }: {
-  value: string[]
-  onChange: (urls: string[]) => void
+  value: string[] | any
+  onChange: (urls: string[] | any) => void
   disabled?: boolean
 }) {
+  // Normalize value to array
+  const normalizedValue = Array.isArray(value) ? value : value ? [value] : []
   const [uploading, setUploading] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -183,7 +158,8 @@ function MultipleImageUpload({
       })
 
       const urls = await Promise.all(uploadPromises)
-      onChange([...value, ...urls])
+      const newValue = [...normalizedValue, ...urls]
+      onChange(newValue.length === 1 ? newValue[0] : newValue)
       toast.success(`Upload ${urls.length} hình ảnh thành công`)
     } catch (error: any) {
       toast.error(error.message || 'Lỗi khi upload hình ảnh')
@@ -194,7 +170,8 @@ function MultipleImageUpload({
   }
 
   const handleRemove = (index: number) => {
-    onChange(value.filter((_, i) => i !== index))
+    const newValue = normalizedValue.filter((_: any, i: number) => i !== index)
+    onChange(newValue.length === 1 ? newValue[0] : newValue)
   }
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -225,9 +202,9 @@ function MultipleImageUpload({
   return (
     <div className="space-y-3">
       {/* Preview images */}
-      {value.length > 0 && (
+      {normalizedValue.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {value.map((url, index) => (
+          {normalizedValue.map((url: string, index: number) => (
             <div key={index} className="relative group">
               <img
                 src={url}
@@ -326,7 +303,6 @@ export function GiaoDichFormView({
   const { data: chiTiet, isLoading: dangTaiChiTiet } = useGiaoDichById(editId || null)
   const { data: danhSachDanhMuc } = useDanhMucList()
   const { data: danhSachTaiKhoan } = useTaiKhoanList()
-  const { data: danhSachDoiTac } = useDoiTacList()
   const { data: danhSachTyGia } = useTyGiaList()
   const taoMoi = useCreateGiaoDich()
   const capNhat = useUpdateGiaoDich()
@@ -334,21 +310,20 @@ export function GiaoDichFormView({
   const { nguoiDung } = useAuthStore()
 
   const form = useForm<GiaoDichFormData>({
-    resolver: zodResolver(createGiaoDichSchema(editId || null)),
+    resolver: zodResolver(createGiaoDichSchema()),
     defaultValues: {
       ngay: editId ? '' : new Date().toISOString().split('T')[0], // Tự lấy today khi tạo mới
-      loai: 'thu',
-      ma_phieu: '',
+      hang_muc: 'thu', // Default
+      loai: 'thu', // Internal field for UI logic
       danh_muc_id: null,
       mo_ta: null,
       so_tien: 0,
       ty_gia_id: null,
       ty_gia_value: null,
-      tai_khoan_id: null,
+      tai_khoan_di_id: null,
       tai_khoan_den_id: null,
-      doi_tac_id: null,
-      so_chung_tu: null,
-      hinh_anh: [],
+      chung_tu: null,
+      hinh_anh: null,
       ghi_chu: null,
     },
   })
@@ -361,40 +336,33 @@ export function GiaoDichFormView({
   } = form
 
   const loai = watch('loai')
+  // const hangMuc = watch('hang_muc') // Unused
   const ngay = watch('ngay')
-  const taiKhoanId = watch('tai_khoan_id')
+  const taiKhoanDiId = watch('tai_khoan_di_id')
   const taiKhoanDenId = watch('tai_khoan_den_id')
   const tyGiaValue = watch('ty_gia_value')
+  const danhMucId = watch('danh_muc_id')
 
-  // Tự động tạo mã phiếu khi thay đổi loại (chỉ khi tạo mới)
+  // Sync hang_muc với loai khi thay đổi loai
   useEffect(() => {
-    if (!editId && loai) {
-      getNextMaPhieuService(loai as LoaiGiaoDich).then((maPhieu) => {
-        setValue('ma_phieu', maPhieu)
-      })
+    if (loai) {
+      setValue('hang_muc', loai)
     }
-  }, [loai, editId, setValue])
+  }, [loai, setValue])
 
   // Kiểm tra và tự động lấy tỷ giá khi có tài khoản USD
   useEffect(() => {
     if (!ngay) return
 
-    const taiKhoan =
-      danhSachTaiKhoan?.find((tk) => tk.id === taiKhoanId) ||
-      danhSachTaiKhoan?.find((tk) => tk.id === taiKhoanDenId)
-    const taiKhoanDen = danhSachTaiKhoan?.find((tk) => tk.id === taiKhoanDenId)
+    const taiKhoanDi = danhSachTaiKhoan?.find((tk) => String(tk.id) === String(taiKhoanDiId))
+    const taiKhoanDen = danhSachTaiKhoan?.find((tk) => String(tk.id) === String(taiKhoanDenId))
 
     const canCoTyGia =
-      taiKhoan?.loai_tien === 'USD' || taiKhoanDen?.loai_tien === 'USD'
+      taiKhoanDi?.don_vi === 'USD' || taiKhoanDen?.don_vi === 'USD'
 
-    if (canCoTyGia) {
-      // Lấy tỷ giá mới nhất (ngày áp dụng gần nhất với ngày giao dịch hoặc trước đó)
-      // Danh sách đã sắp xếp theo ngay_ap_dung giảm dần
-      const tyGiaMoiNhat = danhSachTyGia?.find((tg) => {
-        const ngayApDung = new Date(tg.ngay_ap_dung)
-        const ngayGD = new Date(ngay)
-        return ngayApDung <= ngayGD
-      }) || danhSachTyGia?.[0] // Nếu không có tỷ giá trước ngày giao dịch, lấy tỷ giá mới nhất
+    if (canCoTyGia && danhSachTyGia && danhSachTyGia.length > 0) {
+      // Lấy tỷ giá mới nhất
+      const tyGiaMoiNhat = danhSachTyGia[0]
 
       if (tyGiaMoiNhat && !tyGiaValue) {
         setValue('ty_gia_id', tyGiaMoiNhat.id)
@@ -406,7 +374,7 @@ export function GiaoDichFormView({
     }
   }, [
     ngay,
-    taiKhoanId,
+    taiKhoanDiId,
     taiKhoanDenId,
     danhSachTaiKhoan,
     danhSachTyGia,
@@ -419,19 +387,18 @@ export function GiaoDichFormView({
   useEffect(() => {
     if (chiTiet) {
       reset({
-        ngay: chiTiet.ngay,
-        loai: chiTiet.loai,
-        ma_phieu: chiTiet.ma_phieu,
+        ngay: chiTiet.ngay || '',
+        hang_muc: (chiTiet.hang_muc || chiTiet.loai || 'thu') as 'thu' | 'chi' | 'luan_chuyen',
+        loai: (chiTiet.loai || chiTiet.hang_muc || 'thu') as 'thu' | 'chi' | 'luan_chuyen', // Internal field
         danh_muc_id: chiTiet.danh_muc_id || null,
         mo_ta: chiTiet.mo_ta || null,
-        so_tien: chiTiet.so_tien,
+        so_tien: chiTiet.so_tien || 0,
         ty_gia_id: chiTiet.ty_gia_id || null,
-        ty_gia_value: chiTiet.ty_gia?.ty_gia || null,
-        tai_khoan_id: chiTiet.tai_khoan_id || null,
+        ty_gia_value: chiTiet.ty_gia?.ty_gia || chiTiet.so_ty_gia || null,
+        tai_khoan_di_id: chiTiet.tai_khoan_di_id || null,
         tai_khoan_den_id: chiTiet.tai_khoan_den_id || null,
-        doi_tac_id: chiTiet.doi_tac_id || null,
-        so_chung_tu: chiTiet.so_chung_tu || null,
-        hinh_anh: chiTiet.hinh_anh || [],
+        chung_tu: chiTiet.chung_tu || chiTiet.so_chung_tu || null,
+        hinh_anh: chiTiet.hinh_anh || null,
         ghi_chu: chiTiet.ghi_chu || null,
       })
     }
@@ -439,34 +406,40 @@ export function GiaoDichFormView({
 
   const onSubmit = async (data: GiaoDichFormData) => {
     try {
-      // Tính so_tien_vnd nếu có tỷ giá USD (tính theo tỷ giá hiện tại)
-      let soTienVnd: number | null = null
+      // Lấy thông tin danh mục để populate ten_danh_muc, danh_muc_cha_id, ten_danh_muc_cha
+      const danhMuc = danhMucId ? danhSachDanhMuc?.find((dm) => dm.id === Number(danhMucId)) : null
+      const danhMucCha = danhMuc?.parent_id ? danhSachDanhMuc?.find((dm) => dm.id === Number(danhMuc.parent_id)) : null
+
+      // Lấy thông tin tài khoản để populate ten_tai_khoan_di, ten_tai_khoan_den
+      const taiKhoanDi = taiKhoanDiId ? danhSachTaiKhoan?.find((tk) => String(tk.id) === String(taiKhoanDiId)) : null
+      const taiKhoanDen = taiKhoanDenId ? danhSachTaiKhoan?.find((tk) => String(tk.id) === String(taiKhoanDenId)) : null
+
+      // Tính so_tien_quy_doi nếu có tỷ giá USD
+      let soTienQuyDoi: number | null = null
+      let soTyGia: number | null = null
+      
       if (data.ty_gia_value && data.so_tien && data.ty_gia_value > 0) {
+        soTyGia = data.ty_gia_value
+        
         // Xác định tài khoản nào cần tính VND
-        let taiKhoanCanTinh: { id: string; loai_tien: string } | null = null
+        let taiKhoanCanTinh: { don_vi: string } | null = null
         
         if (data.loai === 'thu') {
-          // Thu: tính theo tài khoản đến
-          taiKhoanCanTinh = danhSachTaiKhoan?.find((tk) => tk.id === data.tai_khoan_den_id) || null
+          taiKhoanCanTinh = taiKhoanDen && taiKhoanDen.don_vi ? { don_vi: taiKhoanDen.don_vi } : null
         } else if (data.loai === 'chi') {
-          // Chi: tính theo tài khoản đi
-          taiKhoanCanTinh = danhSachTaiKhoan?.find((tk) => tk.id === data.tai_khoan_id) || null
+          taiKhoanCanTinh = taiKhoanDi && taiKhoanDi.don_vi ? { don_vi: taiKhoanDi.don_vi } : null
         } else if (data.loai === 'luan_chuyen') {
-          // Luân chuyển: tính theo tỷ giá hiện tại của tài khoản đi (hoặc tài khoản đến nếu tài khoản đi không phải USD)
-          const taiKhoanDi = danhSachTaiKhoan?.find((tk) => tk.id === data.tai_khoan_id)
-          const taiKhoanDen = danhSachTaiKhoan?.find((tk) => tk.id === data.tai_khoan_den_id)
-          
           // Ưu tiên tài khoản đi, nếu không phải USD thì lấy tài khoản đến
-          if (taiKhoanDi?.loai_tien === 'USD') {
-            taiKhoanCanTinh = taiKhoanDi
-          } else if (taiKhoanDen?.loai_tien === 'USD') {
-            taiKhoanCanTinh = taiKhoanDen
+          if (taiKhoanDi?.don_vi === 'USD') {
+            taiKhoanCanTinh = { don_vi: taiKhoanDi.don_vi }
+          } else if (taiKhoanDen?.don_vi === 'USD') {
+            taiKhoanCanTinh = { don_vi: taiKhoanDen.don_vi }
           }
         }
         
         // Tính VND nếu tài khoản là USD
-        if (taiKhoanCanTinh?.loai_tien === 'USD') {
-          soTienVnd = data.so_tien * data.ty_gia_value
+        if (taiKhoanCanTinh?.don_vi === 'USD') {
+          soTienQuyDoi = data.so_tien * data.ty_gia_value
         }
       }
 
@@ -484,28 +457,33 @@ export function GiaoDichFormView({
           // Tạo tỷ giá mới
           const newTyGia = await taoTyGia.mutateAsync({
             ty_gia: data.ty_gia_value,
-            ngay_ap_dung: data.ngay,
-            created_by: nguoiDung?.id || null,
           })
           finalTyGiaId = newTyGia.id
+          soTyGia = data.ty_gia_value
+        } else if (tyGiaHienTai) {
+          soTyGia = tyGiaHienTai.ty_gia
         }
       }
 
       const formData: GiaoDichInsert | GiaoDichUpdate = {
         ngay: data.ngay,
-        loai: data.loai,
-        ma_phieu: data.ma_phieu,
+        hang_muc: data.hang_muc,
         danh_muc_id: data.loai === 'luan_chuyen' ? null : data.danh_muc_id || null,
+        ten_danh_muc: danhMuc?.ten_danh_muc || null,
+        danh_muc_cha_id: danhMuc?.parent_id ? Number(danhMuc.parent_id) : null,
+        ten_danh_muc_cha: danhMucCha?.ten_danh_muc || null,
         mo_ta: data.mo_ta || null,
+        tai_khoan_di_id: data.tai_khoan_di_id || null,
+        ten_tai_khoan_di: taiKhoanDi?.ten_tai_khoan || null,
+        tai_khoan_den_id: data.tai_khoan_den_id || null,
+        ten_tai_khoan_den: taiKhoanDen?.ten_tai_khoan || null,
         so_tien: data.so_tien,
         ty_gia_id: finalTyGiaId || null,
-        tai_khoan_id: data.tai_khoan_id || null,
-        tai_khoan_den_id: data.tai_khoan_den_id || null,
-        doi_tac_id: data.doi_tac_id || null,
-        so_chung_tu: data.so_chung_tu || null,
+        so_ty_gia: soTyGia,
+        so_tien_quy_doi: soTienQuyDoi,
+        chung_tu: data.chung_tu || null,
         hinh_anh: data.hinh_anh || null,
         ghi_chu: data.ghi_chu || null,
-        so_tien_vnd: soTienVnd,
       }
 
       if (editId) {
@@ -513,7 +491,7 @@ export function GiaoDichFormView({
       } else {
         await taoMoi.mutateAsync({
           ...(formData as GiaoDichInsert),
-          created_by: nguoiDung?.id || null,
+          nguoi_tao_id: nguoiDung?.id ? Number(nguoiDung.id) : null,
         })
       }
 
@@ -534,41 +512,10 @@ export function GiaoDichFormView({
   const title = editId ? 'Chỉnh sửa giao dịch' : 'Thêm giao dịch mới'
   const isLoading = isSubmitting || taoMoi.isPending || capNhat.isPending
 
-  // Đối tác options với group cho AutocompleteInput
-  const doiTacAutocompleteOptions = useMemo(() => {
-    if (!danhSachDoiTac) {
-      return []
-    }
-    const options: AutocompleteOption[] = []
-    const khachHang = danhSachDoiTac.filter((dt) => dt.loai === 'khach_hang' && dt.trang_thai)
-    const nhaCungCap = danhSachDoiTac.filter((dt) => dt.loai === 'nha_cung_cap' && dt.trang_thai)
-
-    if (khachHang.length > 0) {
-      khachHang.forEach((dt) => {
-        options.push({
-          value: dt.id,
-          label: dt.ten,
-          description: 'Khách hàng',
-        })
-      })
-    }
-    if (nhaCungCap.length > 0) {
-      nhaCungCap.forEach((dt) => {
-        options.push({
-          value: dt.id,
-          label: dt.ten,
-          description: 'Nhà cung cấp',
-        })
-      })
-    }
-
-    return options
-  }, [danhSachDoiTac])
-
   // Kiểm tra có cần tỷ giá không
   const canCoTyGia =
-    danhSachTaiKhoan?.find((tk) => tk.id === taiKhoanId)?.loai_tien === 'USD' ||
-    danhSachTaiKhoan?.find((tk) => tk.id === taiKhoanDenId)?.loai_tien === 'USD'
+    danhSachTaiKhoan?.find((tk) => String(tk.id) === String(taiKhoanDiId))?.don_vi === 'USD' ||
+    danhSachTaiKhoan?.find((tk) => String(tk.id) === String(taiKhoanDenId))?.don_vi === 'USD'
 
   // Định nghĩa các nhóm fields
   const fieldGroups: FormFieldGroup<GiaoDichFormData>[] = [
@@ -601,13 +548,14 @@ export function GiaoDichFormView({
                       variant={isSelected ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => {
-                        setValue('loai', loaiOption.value as LoaiGiaoDich, { shouldValidate: true })
+                        setValue('loai', loaiOption.value as any, { shouldValidate: true })
+                        setValue('hang_muc', loaiOption.value, { shouldValidate: true })
                         // Reset các field liên quan khi đổi loại
                         if (loaiOption.value === 'luan_chuyen') {
                           setValue('danh_muc_id', null)
                         }
                         if (loaiOption.value === 'thu') {
-                          setValue('tai_khoan_id', null)
+                          setValue('tai_khoan_di_id', null)
                         }
                         if (loaiOption.value === 'chi') {
                           setValue('tai_khoan_den_id', null)
@@ -626,13 +574,6 @@ export function GiaoDichFormView({
               </div>
             )
           },
-        },
-        {
-          key: 'ma_phieu',
-          label: 'Mã phiếu',
-          type: 'text',
-          required: true,
-          helperText: 'Mã phiếu được tự động tạo, có thể chỉnh sửa. Không được trùng.',
         },
         {
           key: 'danh_muc_id',
@@ -660,8 +601,11 @@ export function GiaoDichFormView({
 
             return (
               <DanhMucCombobox
-                value={currentValue}
-                onChange={(value) => setValue('danh_muc_id', value, { shouldValidate: true })}
+                value={currentValue ? String(currentValue) : null}
+                onChange={(value) => {
+                  const numValue = value ? Number(value) : null
+                  setValue('danh_muc_id', numValue, { shouldValidate: true })
+                }}
                 loai={loai as 'thu' | 'chi'}
                 danhSachDanhMuc={danhSachDanhMuc || []}
                 placeholder="Chọn danh mục..."
@@ -767,7 +711,7 @@ export function GiaoDichFormView({
           },
         },
         {
-          key: 'tai_khoan_id',
+          key: 'tai_khoan_di_id',
           label: loai === 'thu' ? 'Tài khoản đi (không dùng)' : 'Tài khoản đi',
           type: 'select',
           required: loai !== 'thu',
@@ -775,10 +719,10 @@ export function GiaoDichFormView({
           options: [
             { value: '', label: '-- Chọn tài khoản đi --' },
             ...(danhSachTaiKhoan
-              ?.filter((tk) => tk.is_active)
+              ?.filter((tk) => tk.trang_thai === 'hoat_dong')
               .map((tk) => ({
-                value: tk.id,
-                label: `${tk.ten} (${tk.loai_tien})`,
+                value: String(tk.id),
+                label: `${tk.ten_tai_khoan || tk.ten} (${tk.don_vi || tk.loai_tien})`,
               })) || []),
           ],
           helperText: loai === 'thu' ? 'Thu không cần tài khoản đi' : 'Chọn tài khoản đi',
@@ -792,48 +736,19 @@ export function GiaoDichFormView({
           options: [
             { value: '', label: '-- Chọn tài khoản đến --' },
             ...(danhSachTaiKhoan
-              ?.filter((tk) => tk.is_active)
+              ?.filter((tk) => tk.trang_thai === 'hoat_dong')
               .map((tk) => ({
-                value: tk.id,
-                label: `${tk.ten} (${tk.loai_tien})`,
+                value: String(tk.id),
+                label: `${tk.ten_tai_khoan || tk.ten} (${tk.don_vi || tk.loai_tien})`,
               })) || []),
           ],
           helperText: loai === 'chi' ? 'Chi không cần tài khoản đến' : 'Chọn tài khoản đến',
         },
         {
-          key: 'doi_tac_id',
-          label: 'Đối tác',
-          type: 'custom',
-          render: (form) => {
-            const { formState, watch, setValue } = form
-            const error = formState.errors.doi_tac_id
-            const value = watch('doi_tac_id')
-
-            return (
-              <div className="space-y-1">
-                <AutocompleteInput
-                  options={doiTacAutocompleteOptions}
-                  value={value || undefined}
-                  onChange={(newValue) => setValue('doi_tac_id', newValue as string | null, { shouldValidate: true })}
-                  placeholder="Tìm kiếm đối tác (khách hàng hoặc nhà cung cấp)..."
-                  emptyMessage="Không tìm thấy đối tác"
-                  disabled={isLoading}
-                  className={cn(
-                    error && 'border-destructive focus-visible:ring-destructive'
-                  )}
-                />
-                {error && (
-                  <p className="text-xs text-destructive">{translateZodError(error.message as string)}</p>
-                )}
-              </div>
-            )
-          },
-        },
-        {
-          key: 'so_chung_tu',
-          label: 'Số chứng từ',
+          key: 'chung_tu',
+          label: 'Chứng từ',
           type: 'text',
-          placeholder: 'Nhập số chứng từ',
+          placeholder: 'Nhập chứng từ',
         },
       ],
     },
@@ -847,10 +762,11 @@ export function GiaoDichFormView({
           span: 3,
           render: (form) => {
             const { watch, setValue } = form
-            const hinhAnh = watch('hinh_anh') || []
+            const hinhAnh = watch('hinh_anh')
+            const normalizedHinhAnh = Array.isArray(hinhAnh) ? hinhAnh : hinhAnh ? [hinhAnh] : []
             return (
               <MultipleImageUpload
-                value={hinhAnh}
+                value={normalizedHinhAnh}
                 onChange={(urls) => setValue('hinh_anh', urls)}
                 disabled={isLoading}
               />

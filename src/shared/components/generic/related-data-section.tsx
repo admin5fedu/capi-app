@@ -9,7 +9,7 @@ import {
 } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Plus, Pencil, Trash2, Eye } from 'lucide-react'
+import { Plus, Edit2, Trash2, Eye } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
   AlertDialog,
@@ -84,7 +84,7 @@ export function RelatedDataSection<TData extends Record<string, any>>({
     if (onEdit || editFormComponent) {
       items.push({
         label: 'Sửa',
-        icon: Pencil,
+        icon: Edit2,
         onClick: (item) => {
           if (editFormComponent) {
             // Mở popup edit form

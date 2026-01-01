@@ -94,16 +94,49 @@ CommandSeparator.displayName = CommandPrimitive.Separator.displayName
 const CommandItem = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Item>
->(({ className, ...props }, ref) => (
-  <CommandPrimitive.Item
-    ref={ref}
-    className={cn(
-      'relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
-      className
-    )}
-    {...props}
-  />
-))
+>(({ className, onSelect, disabled, value, ...props }, ref) => {
+  // Xử lý onSelect để đảm bảo hoạt động với cả click chuột và keyboard
+  const handleSelect = React.useCallback((selectedValue: string) => {
+    // Gọi onSelect nếu có và không bị disabled
+    if (onSelect && !disabled) {
+      onSelect(selectedValue)
+    }
+  }, [onSelect, disabled])
+
+  // Handler cho onClick tường minh - gọi onSelect trực tiếp
+  const handleClick = React.useCallback((e: React.MouseEvent) => {
+    if (disabled) return
+    
+    // Gọi onSelect trực tiếp khi click với value hiện tại
+    if (onSelect && value) {
+      e.preventDefault()
+      e.stopPropagation()
+      onSelect(String(value))
+    }
+  }, [onSelect, disabled, value])
+
+  return (
+    <CommandPrimitive.Item
+      ref={ref}
+      disabled={disabled}
+      value={value}
+      className={cn(
+        'relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed',
+        className
+      )}
+      onSelect={handleSelect}
+      onMouseDown={(e) => {
+        // Ngăn chặn mất focus khiến dropdown đóng lại trước khi kịp chọn bằng chuột
+        // Chỉ preventDefault nếu item không bị disabled
+        if (!disabled) {
+          e.preventDefault()
+        }
+      }}
+      onClick={handleClick}
+      {...props}
+    />
+  )
+})
 
 CommandItem.displayName = CommandPrimitive.Item.displayName
 

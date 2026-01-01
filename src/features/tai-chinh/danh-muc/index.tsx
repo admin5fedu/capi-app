@@ -6,12 +6,12 @@ import { KiemTraQuyen } from '@/shared/components/auth'
 import { useModuleNavigation } from '@/shared/hooks/use-module-navigation'
 
 /**
- * Module Danh mục - File điều phối chính
+ * Module Danh mục tài chính - File điều phối chính
  * Sử dụng React Router với nested routes để URL thay đổi
  */
 export function DanhMucModule() {
   const navigate = useNavigate()
-  const basePath = '/tai-chinh/danh-muc'
+  const basePath = '/tai-chinh/danh-muc-tai-chinh'
   
   const {
     isNew,
@@ -29,7 +29,7 @@ export function DanhMucModule() {
   })
 
   // Handler để thêm danh mục con (truyền parent_id qua location.state)
-  const handleAddChild = (parentId: string, parentLoai: string) => {
+  const handleAddChild = (parentId: number, parentLoai: string) => {
     navigate(`${basePath}/moi`, {
       state: {
         from: 'list',
@@ -66,10 +66,10 @@ export function DanhMucModule() {
         ) : (
           <div className="bg-card border rounded-lg p-6 flex-1 flex flex-col min-h-0">
             <DanhMucListView
-              onEdit={(id) => handleEdit(id, 'list')}
+              onEdit={(id) => handleEdit(String(id), 'list')}
               onAddNew={() => handleAddNew('list')}
               onAddChild={handleAddChild}
-              onView={handleView}
+              onView={(id) => handleView(String(id))}
             />
           </div>
         )}

@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Edit2, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { CotHienThi, HanhDongItem } from './types'
 import { User } from 'lucide-react'
@@ -394,7 +394,7 @@ export function MobileCardView<TData extends Record<string, any>>({
                         }}
                         title={editAction.label}
                       >
-                        <Pencil className="h-3 w-3 mr-0.5" />
+                        <Edit2 className="h-3 w-3 mr-0.5" />
                         Sửa
                       </Button>
                     )}

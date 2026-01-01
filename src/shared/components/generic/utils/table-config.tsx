@@ -4,7 +4,7 @@
 import { ColumnDef } from '@tanstack/react-table'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
-import { Pencil, Trash2, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react'
+import { Edit2, Trash2, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { CotHienThi, HanhDongItem } from '../types'
 
@@ -182,7 +182,7 @@ export function createActionsColumn<TData extends Record<string, any>>(
               {viewAction.icon ? (
                 <viewAction.icon className="h-4 w-4" />
               ) : (
-                <Pencil className="h-4 w-4" />
+                <Edit2 className="h-4 w-4" />
               )}
             </Button>
           )}
@@ -205,7 +205,7 @@ export function createActionsColumn<TData extends Record<string, any>>(
               {action.icon ? (
                 <action.icon className="h-4 w-4" />
               ) : (
-                <Pencil className="h-4 w-4" />
+                <Edit2 className="h-4 w-4" />
               )}
             </Button>
           ))}
@@ -224,7 +224,7 @@ export function createActionsColumn<TData extends Record<string, any>>(
               {editAction.icon ? (
                 <editAction.icon className="h-4 w-4" />
               ) : (
-                <Pencil className="h-4 w-4" />
+                <Edit2 className="h-4 w-4" />
               )}
             </Button>
           )}

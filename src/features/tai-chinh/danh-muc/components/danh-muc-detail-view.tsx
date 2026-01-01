@@ -9,7 +9,7 @@ import { toast } from 'sonner'
 import dayjs from 'dayjs'
 import 'dayjs/locale/vi'
 import { Badge } from '@/components/ui/badge'
-import { getThuChiBadgeVariant, getStatusBadgeVariant } from '@/shared/utils/color-utils'
+import { getThuChiBadgeVariant } from '@/shared/utils/color-utils'
 
 interface DanhMucDetailViewProps {
   id: string
@@ -114,20 +114,10 @@ export function DanhMucDetailView({ id, onEdit, onDelete, onBack }: DanhMucDetai
           render: (value) => value || <span className="text-muted-foreground">—</span>,
         },
         {
-          key: 'thu_tu',
-          label: 'Thứ tự',
-          accessor: 'thu_tu',
-          render: (value) => value ?? 0,
-        },
-        {
-          key: 'is_active',
-          label: 'Trạng thái',
-          accessor: 'is_active',
-          render: (value) => (
-            <Badge variant={getStatusBadgeVariant(value)}>
-              {value ? 'Hoạt động' : 'Vô hiệu hóa'}
-            </Badge>
-          ),
+          key: 'cap',
+          label: 'Cấp độ',
+          accessor: 'cap',
+          render: (value) => value ? `Cấp ${value}` : '—',
         },
       ],
     },
@@ -156,9 +146,6 @@ export function DanhMucDetailView({ id, onEdit, onDelete, onBack }: DanhMucDetai
                         className="flex items-center justify-between p-2 border rounded-md hover:bg-accent/50"
                       >
                         <span>{child.ten}</span>
-                        <Badge variant={getStatusBadgeVariant(child.is_active)}>
-                          {child.is_active ? 'Hoạt động' : 'Vô hiệu hóa'}
-                        </Badge>
                       </div>
                     ))}
                   </div>

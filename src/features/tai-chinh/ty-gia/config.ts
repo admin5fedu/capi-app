@@ -25,33 +25,6 @@ export const COT_HIEN_THI: CotHienThi<TyGia>[] = [
     },
   },
   {
-    key: 'ngay_ap_dung',
-    label: 'Ngày áp dụng',
-    accessorKey: 'ngay_ap_dung',
-    sortable: true,
-    width: 150,
-    align: 'left',
-    defaultVisible: true,
-    cell: (value) => {
-      if (!value) return '—'
-      return new Date(value).toLocaleDateString('vi-VN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      })
-    },
-  },
-  {
-    key: 'ghi_chu',
-    label: 'Ghi chú',
-    accessorKey: 'ghi_chu',
-    sortable: false,
-    width: 300,
-    align: 'left',
-    defaultVisible: true,
-    cell: (value) => (value ? String(value) : '—'),
-  },
-  {
     key: 'tg_tao',
     label: 'Ngày tạo',
     accessorKey: (row: any) => row.tg_tao || row.created_at || null,
@@ -65,6 +38,8 @@ export const COT_HIEN_THI: CotHienThi<TyGia>[] = [
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
       })
     },
   },
@@ -75,13 +50,15 @@ export const COT_HIEN_THI: CotHienThi<TyGia>[] = [
     sortable: true,
     width: 150,
     align: 'left',
-    defaultVisible: false,
+    defaultVisible: true,
     cell: (value) => {
       if (!value) return '—'
       return new Date(value).toLocaleDateString('vi-VN', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
       })
     },
   },

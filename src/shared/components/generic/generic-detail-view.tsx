@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react'
+import { ArrowLeft, Edit2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useMobile } from './hooks/use-mobile'
@@ -107,16 +107,16 @@ export function GenericDetailView<TData extends Record<string, any>>({
         <div
           key={field.key}
           className={cn(
-            'flex items-start gap-2 py-2 border-b last:border-b-0',
+            'flex items-start gap-3 py-2 border-b last:border-b-0',
             span === 1 && 'col-span-1',
             span === 2 && 'col-span-2',
             span === 3 && 'col-span-3'
           )}
         >
-          <label className="text-sm font-medium text-muted-foreground flex-shrink-0 min-w-[100px]">
+          <label className="text-sm font-medium text-muted-foreground flex-shrink-0 w-[120px]">
             {field.label}:
           </label>
-          <div className="text-sm flex-1 text-right">
+          <div className="text-sm flex-1 text-left">
             {field.render ? field.render(value, data!) : value ?? <span className="text-muted-foreground">—</span>}
           </div>
         </div>
@@ -252,16 +252,16 @@ export function GenericDetailView<TData extends Record<string, any>>({
             
             {/* Hàng 2: Actions */}
             {(renderHeaderActions || onEdit || onDelete) && (
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap justify-end">
                 {renderHeaderActions && renderHeaderActions(data)}
                 {onEdit && (
                   <Button 
                     onClick={onEdit} 
                     variant="outline" 
                     size="sm"
-                    className="flex-1 min-w-[100px] gap-2 h-11"
+                    className="gap-2 h-9"
                   >
-                    <Pencil className="h-4 w-4" />
+                    <Edit2 className="h-4 w-4" />
                     Sửa
                   </Button>
                 )}
@@ -270,7 +270,7 @@ export function GenericDetailView<TData extends Record<string, any>>({
                     onClick={() => setShowDeleteDialog(true)} 
                     variant="destructive" 
                     size="sm"
-                    className="flex-1 min-w-[100px] gap-2 h-11"
+                    className="gap-2 h-9"
                   >
                     <Trash2 className="h-4 w-4" />
                     Xóa
@@ -301,11 +301,11 @@ export function GenericDetailView<TData extends Record<string, any>>({
               )}
             </div>
             
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
               {renderHeaderActions && renderHeaderActions(data)}
               {onEdit && (
-                <Button onClick={onEdit} variant="outline" className="gap-2">
-                  <Pencil className="h-4 w-4" />
+                <Button onClick={onEdit} variant="outline" size="sm" className="gap-2">
+                  <Edit2 className="h-4 w-4" />
                   Sửa
                 </Button>
               )}
@@ -313,6 +313,7 @@ export function GenericDetailView<TData extends Record<string, any>>({
                 <Button 
                   onClick={() => setShowDeleteDialog(true)} 
                   variant="destructive" 
+                  size="sm"
                   className="gap-2"
                 >
                   <Trash2 className="h-4 w-4" />

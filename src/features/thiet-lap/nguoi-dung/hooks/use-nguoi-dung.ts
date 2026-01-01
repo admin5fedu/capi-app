@@ -75,7 +75,7 @@ export function useNguoiDungList(filters?: BoLocNguoiDung) {
         // Lọc theo trạng thái
         if (filters.is_active !== undefined) {
           // Convert boolean filter to text comparison
-          const trangThaiFilter = filters.is_active ? 'hoạt động' : 'vô hiệu hóa'
+          // const trangThaiFilter = filters.is_active ? 'hoạt động' : 'vô hiệu hóa' // Unused
           data = data.filter((item: any) => {
             const trangThai = item.trang_thai?.toLowerCase()
             if (filters.is_active) {

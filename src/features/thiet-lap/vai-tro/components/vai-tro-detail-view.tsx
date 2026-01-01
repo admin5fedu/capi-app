@@ -109,7 +109,7 @@ export function VaiTroDetailView({ id, onEdit, onDelete, onBack }: VaiTroDetailV
 
   const handleDeleteNguoiDung = async (nguoiDung: NguoiDung) => {
     try {
-      await deleteNguoiDung.mutateAsync(nguoiDung.id)
+      await deleteNguoiDung.mutateAsync(String(nguoiDung.id))
       toast.success('Xóa người dùng thành công')
       refetchNguoiDung()
     } catch (error: any) {
@@ -163,12 +163,12 @@ export function VaiTroDetailView({ id, onEdit, onDelete, onBack }: VaiTroDetailV
               onCancel={onClose}
               mode="modal"
               initialData={{
-                vai_tro_id: id, // Tự động set vai_tro_id từ vai trò hiện tại
+                vai_tro_id: id != null ? (typeof id === 'string' ? id : String(id)) : undefined, // Tự động set vai_tro_id từ vai trò hiện tại
                 ...(initialData && {
                   ...initialData,
                   avatar_url: initialData.avatar_url ?? undefined,
                 }),
-              }}
+              } as any}
             />
           )
         }}

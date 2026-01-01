@@ -209,14 +209,14 @@ export function BaoCaoFilters({
           <MultiSelectPopover
             keyName="danhMuc"
             label="Chọn danh mục"
-            options={danhMucList.map((dm) => ({ value: dm.id, label: dm.ten }))}
+            options={danhMucList.map((dm) => ({ value: String(dm.id), label: dm.ten || '' }))}
             selectedValues={filters.danhMucIds}
             onToggle={(value) => toggleArrayFilter('danhMucIds', value, filters.danhMucIds)}
           />
           {filters.danhMucIds && filters.danhMucIds.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-2">
               {filters.danhMucIds.map((id) => {
-                const danhMuc = danhMucList.find((dm) => dm.id === id)
+                const danhMuc = danhMucList.find((dm) => String(dm.id) === id)
                 return (
                   <Badge key={id} variant="secondary" className="gap-1">
                     {danhMuc?.ten || id}
@@ -237,17 +237,17 @@ export function BaoCaoFilters({
           <MultiSelectPopover
             keyName="doiTac"
             label="Chọn đối tác"
-            options={doiTacList.map((dt) => ({ value: dt.id, label: dt.ten }))}
+            options={doiTacList.map((dt) => ({ value: String(dt.id), label: dt.ten_doi_tac || '' }))}
             selectedValues={filters.doiTacIds}
             onToggle={(value) => toggleArrayFilter('doiTacIds', value, filters.doiTacIds)}
           />
           {filters.doiTacIds && filters.doiTacIds.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-2">
               {filters.doiTacIds.map((id) => {
-                const doiTac = doiTacList.find((dt) => dt.id === id)
+                const doiTac = doiTacList.find((dt) => String(dt.id) === id)
                 return (
                   <Badge key={id} variant="secondary" className="gap-1">
-                    {doiTac?.ten || id}
+                    {doiTac?.ten_doi_tac || id}
                     <X
                       className="h-3 w-3 cursor-pointer"
                       onClick={() => toggleArrayFilter('doiTacIds', id, filters.doiTacIds)}
@@ -306,8 +306,8 @@ export function BaoCaoFilters({
             keyName="nguoiTao"
             label="Chọn người tạo"
             options={nguoiDungList.map((nd) => ({
-              value: nd.id,
-              label: nd.ho_va_ten || nd.ho_ten || nd.email,
+              value: String(nd.id),
+              label: nd.ho_va_ten || nd.ho_ten || nd.email || '',
             }))}
             selectedValues={filters.nguoiTaoIds}
             onToggle={(value) => toggleArrayFilter('nguoiTaoIds', value, filters.nguoiTaoIds)}
@@ -315,7 +315,7 @@ export function BaoCaoFilters({
           {filters.nguoiTaoIds && filters.nguoiTaoIds.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-2">
               {filters.nguoiTaoIds.map((id) => {
-                const nguoiDung = nguoiDungList.find((nd) => nd.id === id)
+                const nguoiDung = nguoiDungList.find((nd) => String(nd.id) === id)
                 return (
                   <Badge key={id} variant="secondary" className="gap-1">
                     {nguoiDung?.ho_va_ten || nguoiDung?.ho_ten || nguoiDung?.email || id}
@@ -336,17 +336,17 @@ export function BaoCaoFilters({
           <MultiSelectPopover
             keyName="taiKhoan"
             label="Chọn tài khoản"
-            options={taiKhoanList.map((tk) => ({ value: tk.id, label: tk.ten }))}
+            options={taiKhoanList.map((tk) => ({ value: String(tk.id), label: tk.ten_tai_khoan || tk.ten || '' }))}
             selectedValues={filters.taiKhoanIds}
             onToggle={(value) => toggleArrayFilter('taiKhoanIds', value, filters.taiKhoanIds)}
           />
           {filters.taiKhoanIds && filters.taiKhoanIds.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-2">
               {filters.taiKhoanIds.map((id) => {
-                const taiKhoan = taiKhoanList.find((tk) => tk.id === id)
+                const taiKhoan = taiKhoanList.find((tk) => String(tk.id) === id)
                 return (
                   <Badge key={id} variant="secondary" className="gap-1">
-                    {taiKhoan?.ten || id}
+                    {taiKhoan?.ten_tai_khoan || taiKhoan?.ten || id}
                     <X
                       className="h-3 w-3 cursor-pointer"
                       onClick={() => toggleArrayFilter('taiKhoanIds', id, filters.taiKhoanIds)}

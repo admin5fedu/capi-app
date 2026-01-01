@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { KeyRound, Pencil, User, Image } from 'lucide-react'
+import { KeyRound, Edit2, User, Image } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { useAuthStore } from '@/store/auth-store'
@@ -22,7 +22,7 @@ export function HoSoPage() {
 
     try {
       await updateAvatarMutation.mutateAsync({
-        id: nguoiDung.id,
+        id: String(nguoiDung.id),
         avatarUrl,
       })
       // Refresh auth store để cập nhật avatar trong navbar
@@ -63,7 +63,7 @@ export function HoSoPage() {
             className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
             title="Sửa hình ảnh"
           >
-            <Pencil className="h-4 w-4 text-white" />
+            <Edit2 className="h-4 w-4 text-white" />
           </button>
         </div>
         <h1 className="text-xl sm:text-2xl font-bold truncate">{hoTen}</h1>
@@ -147,7 +147,7 @@ export function HoSoPage() {
         renderTitle={renderTitle}
         groups={fieldGroups}
         emptyMessage="Không có thông tin hồ sơ"
-        renderHeaderActions={(data) => (
+        renderHeaderActions={() => (
           <>
             <Button
               onClick={() => setShowAvatarUploadDialog(true)}

@@ -10,7 +10,7 @@ import { PersistQueryClientOptions } from '@tanstack/query-persist-client-core'
  * Chỉ persist các query keys quan trọng để tránh localStorage quá lớn
  */
 export const persistConfig: Omit<PersistQueryClientOptions, 'queryClient'> = {
-  persister: undefined, // Sẽ được set trong main.tsx sau khi import createSyncStoragePersister
+  persister: undefined as any, // Sẽ được set trong main.tsx sau khi import createSyncStoragePersister
   maxAge: 24 * 60 * 60 * 1000, // 24 giờ
   buster: '', // Version buster - thay đổi để invalidate cache khi cần
   dehydrateOptions: {
@@ -19,9 +19,6 @@ export const persistConfig: Omit<PersistQueryClientOptions, 'queryClient'> = {
       // Persist tất cả queries trừ những query có meta.skipPersist = true
       return query.meta?.skipPersist !== true
     },
-  },
-  serializeOptions: {
-    // Sử dụng JSON.stringify/parse mặc định
   },
 }
 

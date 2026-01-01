@@ -46,7 +46,7 @@ export function TablePagination<TData extends Record<string, any>>({
   )
 
   return (
-    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 px-3 py-2 border-t bg-muted/50">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 px-3 py-2 border-t bg-card shadow-sm">
       {/* Left: Info & Page Size - Responsive */}
       <div className="flex items-center gap-2 sm:gap-3 flex-wrap text-xs sm:text-sm text-muted-foreground">
         {/* Desktop: Full info */}

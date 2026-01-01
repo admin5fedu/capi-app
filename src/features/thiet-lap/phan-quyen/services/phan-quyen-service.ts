@@ -159,7 +159,7 @@ export async function getPhanQuyenVaiTroMatrix(module: string): Promise<PhanQuye
     })
 
     return {
-      vai_tro_id: vaiTro.id,
+      vai_tro_id: String(vaiTro.id),
       vai_tro_ten: vaiTro.ten_vai_tro || vaiTro.ten || '',
       permissions,
     }

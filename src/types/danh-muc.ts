@@ -1,40 +1,43 @@
 /**
- * Type definitions cho bảng zz_capi_danh_muc (Danh mục)
+ * Type definitions cho bảng zz_capi_danh_muc_tai_chinh (Danh mục tài chính)
  */
 
 export interface DanhMuc {
   id: number // bigint (int8) từ DB
-  ten: string
-  loai: string
-  parent_id: string | null
+  hang_muc: string | null // Loại danh mục (thu/chi)
+  ten_danh_muc: string | null
   mo_ta: string | null
-  thu_tu: number | null
-  is_active: boolean | null
-  created_by: string | null
+  danh_muc_cha_id: number | null
+  ten_danh_muc_cha: string | null
+  cap: number | null
+  nguoi_tao_id: number | null
   tg_tao: string | null
   tg_cap_nhat: string | null
   // Computed fields for backward compatibility
+  ten?: string | null // Alias cho ten_danh_muc
+  loai?: string | null // Alias cho hang_muc
+  parent_id?: string | null // Alias cho danh_muc_cha_id
+  created_by?: string | null // Alias cho nguoi_tao_id
   created_at?: string | null
   updated_at?: string | null
+  parent_ten?: string | null // Alias cho ten_danh_muc_cha
 }
 
 export interface DanhMucInsert {
-  ten: string
-  loai: string
-  parent_id?: string | null
+  hang_muc: string
+  ten_danh_muc: string
   mo_ta?: string | null
-  thu_tu?: number | null
-  is_active?: boolean | null
-  created_by?: string | null
+  danh_muc_cha_id?: number | null
+  cap?: number | null
+  nguoi_tao_id?: number | null
 }
 
 export interface DanhMucUpdate {
-  ten?: string
-  loai?: string
-  parent_id?: string | null
+  hang_muc?: string
+  ten_danh_muc?: string
   mo_ta?: string | null
-  thu_tu?: number | null
-  is_active?: boolean | null
+  danh_muc_cha_id?: number | null
+  cap?: number | null
 }
 
 // Danh mục với thông tin parent (cho hiển thị)

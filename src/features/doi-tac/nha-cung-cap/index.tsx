@@ -1,4 +1,4 @@
-import { useLocation, Navigate, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { NhomDoiTacListView } from '../nhom-doi-tac/components'
 import { NhomDoiTacFormView } from '../nhom-doi-tac/components'
 import { NhomDoiTacDetailView } from '../nhom-doi-tac/components'
@@ -48,79 +48,112 @@ export function NhaCungCapModule() {
     }
   }
 
+  // Chỉ hiển thị tab group khi cả hai sub-module đều ở list view
+  const isNhomListView = !navNhom.isNew && !navNhom.isEdit && !navNhom.isDetail
+  const isDanhSachListView = !navDanhSach.isNew && !navDanhSach.isEdit && !navDanhSach.isDetail
+  const showTabGroup = isNhomListView && isDanhSachListView
+
+  // Render content cho từng sub-module
+  const renderNhomContent = () => {
+    if (navNhom.isNew || navNhom.isEdit) {
+      return (
+        <div className="flex-1 flex flex-col min-h-0">
+          <NhomDoiTacFormView
+            editId={navNhom.isEdit ? navNhom.currentId || null : null}
+            onComplete={navNhom.handleComplete}
+            onCancel={navNhom.handleCancel}
+            mode="page"
+            defaultLoai="nha_cung_cap"
+          />
+        </div>
+      )
+    }
+    if (navNhom.isDetail && navNhom.currentId) {
+      return (
+        <div className="bg-card border rounded-lg overflow-hidden flex-1 flex flex-col min-h-0">
+          <NhomDoiTacDetailView
+            id={navNhom.currentId}
+            onEdit={() => navNhom.handleEdit(navNhom.currentId!, 'detail')}
+            onDelete={navNhom.navigateToList}
+            onBack={navNhom.navigateToList}
+          />
+        </div>
+      )
+    }
+    return (
+      <div className="bg-card border rounded-lg p-6 flex-1 flex flex-col min-h-0">
+        <NhomDoiTacListView
+          onEdit={(id) => navNhom.handleEdit(String(id), 'list')}
+          onAddNew={() => navNhom.handleAddNew('list')}
+          onView={(id) => navNhom.handleView(String(id))}
+          defaultTab="nha_cung_cap"
+          hideTabs={true}
+        />
+      </div>
+    )
+  }
+
+  const renderDanhSachContent = () => {
+    if (navDanhSach.isNew || navDanhSach.isEdit) {
+      return (
+        <div className="flex-1 flex flex-col min-h-0">
+          <DoiTacFormView
+            editId={navDanhSach.isEdit ? navDanhSach.currentId || null : null}
+            onComplete={navDanhSach.handleComplete}
+            onCancel={navDanhSach.handleCancel}
+            mode="page"
+            defaultLoai="nha_cung_cap"
+          />
+        </div>
+      )
+    }
+    if (navDanhSach.isDetail && navDanhSach.currentId) {
+      return (
+        <div className="bg-card border rounded-lg overflow-hidden flex-1 flex flex-col min-h-0">
+          <DoiTacDetailView
+            id={navDanhSach.currentId}
+            onEdit={() => navDanhSach.handleEdit(navDanhSach.currentId!, 'detail')}
+            onDelete={navDanhSach.navigateToList}
+            onBack={navDanhSach.navigateToList}
+          />
+        </div>
+      )
+    }
+    return (
+      <div className="bg-card border rounded-lg p-6 flex-1 flex flex-col min-h-0">
+        <DoiTacListView
+          onEdit={(id) => navDanhSach.handleEdit(String(id), 'list')}
+          onAddNew={() => navDanhSach.handleAddNew('list')}
+          onView={(id) => navDanhSach.handleView(String(id))}
+          defaultTab="nha_cung_cap"
+          hideTabs={true}
+        />
+      </div>
+    )
+  }
+
   return (
     <KiemTraQuyen>
-      <div className="flex flex-col h-full overflow-hidden">
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="flex flex-col h-full overflow-hidden">
-          <TabsList className="grid w-full max-w-md grid-cols-2 mb-4 flex-shrink-0">
-            <TabsTrigger value="nhom">Nhóm nhà cung cấp</TabsTrigger>
-            <TabsTrigger value="danh-sach">Nhà cung cấp</TabsTrigger>
-          </TabsList>
+      <div className="flex-1 flex flex-col min-h-0">
+        {showTabGroup ? (
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <TabsList className="grid w-full max-w-md grid-cols-2 mb-4 flex-shrink-0">
+              <TabsTrigger value="nhom">Nhóm nhà cung cấp</TabsTrigger>
+              <TabsTrigger value="danh-sach">Nhà cung cấp</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="nhom" className="mt-0 flex-1 min-h-0 overflow-hidden">
-            {navNhom.isNew || navNhom.isEdit ? (
-              <div className="flex-1 flex flex-col min-h-0">
-                <NhomDoiTacFormView
-                  editId={navNhom.isEdit ? navNhom.currentId || null : null}
-                  onComplete={navNhom.handleComplete}
-                  onCancel={navNhom.handleCancel}
-                  mode="page"
-                  defaultLoai="nha_cung_cap"
-                />
-              </div>
-            ) : navNhom.isDetail && navNhom.currentId ? (
-              <div className="bg-card border rounded-lg overflow-hidden flex-1 flex flex-col min-h-0">
-                <NhomDoiTacDetailView
-                  id={navNhom.currentId}
-                  onEdit={() => navNhom.handleEdit(navNhom.currentId!, 'detail')}
-                  onDelete={navNhom.navigateToList}
-                  onBack={navNhom.navigateToList}
-                />
-              </div>
-            ) : (
-              <div className="bg-card border rounded-lg p-6 flex-1 flex flex-col min-h-0">
-                <NhomDoiTacListView
-                  onEdit={(id) => navNhom.handleEdit(id, 'list')}
-                  onAddNew={() => navNhom.handleAddNew('list')}
-                  onView={navNhom.handleView}
-                  defaultTab="nha_cung_cap"
-                />
-              </div>
-            )}
-          </TabsContent>
+            <TabsContent value="nhom" className="mt-0 flex-1 min-h-0 overflow-hidden">
+              {renderNhomContent()}
+            </TabsContent>
 
-          <TabsContent value="danh-sach" className="mt-0 flex-1 min-h-0 overflow-hidden">
-            {navDanhSach.isNew || navDanhSach.isEdit ? (
-              <div className="flex-1 flex flex-col min-h-0">
-                <DoiTacFormView
-                  editId={navDanhSach.isEdit ? navDanhSach.currentId || null : null}
-                  onComplete={navDanhSach.handleComplete}
-                  onCancel={navDanhSach.handleCancel}
-                  mode="page"
-                  defaultLoai="nha_cung_cap"
-                />
-              </div>
-            ) : navDanhSach.isDetail && navDanhSach.currentId ? (
-              <div className="bg-card border rounded-lg overflow-hidden flex-1 flex flex-col min-h-0">
-                <DoiTacDetailView
-                  id={navDanhSach.currentId}
-                  onEdit={() => navDanhSach.handleEdit(navDanhSach.currentId!, 'detail')}
-                  onDelete={navDanhSach.navigateToList}
-                  onBack={navDanhSach.navigateToList}
-                />
-              </div>
-            ) : (
-              <div className="bg-card border rounded-lg p-6 flex-1 flex flex-col min-h-0">
-                <DoiTacListView
-                  onEdit={(id) => navDanhSach.handleEdit(id, 'list')}
-                  onAddNew={() => navDanhSach.handleAddNew('list')}
-                  onView={navDanhSach.handleView}
-                  defaultTab="nha_cung_cap"
-                />
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="danh-sach" className="mt-0 flex-1 min-h-0 overflow-hidden">
+              {renderDanhSachContent()}
+            </TabsContent>
+          </Tabs>
+        ) : (
+          // Không có tab group, render trực tiếp content dựa trên activeTab
+          activeTab === 'nhom' ? renderNhomContent() : renderDanhSachContent()
+        )}
       </div>
     </KiemTraQuyen>
   )
