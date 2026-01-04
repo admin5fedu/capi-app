@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuthStore } from '@/store/auth-store'
 import { toast } from 'sonner'
+import { getAuthErrorMessage } from '@/lib/auth-error-handler'
 
 /**
  * Component ví dụ: Form đăng nhập
@@ -16,7 +17,8 @@ export function DangNhap() {
       await dangNhap(email, password)
       toast.success('Đăng nhập thành công!')
     } catch (error: any) {
-      toast.error(`Đăng nhập thất bại: ${error.message}`)
+      const errorMessage = getAuthErrorMessage(error)
+      toast.error(errorMessage)
     }
   }
 

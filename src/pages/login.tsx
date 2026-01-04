@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { Chrome } from 'lucide-react'
+import { getAuthErrorMessage } from '@/lib/auth-error-handler'
 
 export function LoginPage() {
   const [email, setEmail] = useState('')
@@ -21,7 +22,8 @@ export function LoginPage() {
       toast.success('Đăng nhập thành công!')
       navigate('/')
     } catch (error: any) {
-      toast.error(`Đăng nhập thất bại: ${error.message}`)
+      const errorMessage = getAuthErrorMessage(error)
+      toast.error(errorMessage)
     }
   }
 
@@ -30,7 +32,8 @@ export function LoginPage() {
       await dangNhapGoogle()
       // Google OAuth sẽ redirect, không cần navigate
     } catch (error: any) {
-      toast.error(`Đăng nhập Google thất bại: ${error.message}`)
+      const errorMessage = getAuthErrorMessage(error)
+      toast.error(errorMessage)
     }
   }
 

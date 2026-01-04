@@ -91,7 +91,9 @@ export const useAuthStore = create<AuthState & AuthActions>()(
           const { error } = await supabase.auth.signOut()
           if (error) throw error
 
+          // Reset state và đảm bảo isLoading = false
           get().reset()
+          set({ isLoading: false })
         } catch (error) {
           set({ isLoading: false })
           throw error

@@ -52,6 +52,8 @@ export function Navbar({ onToggleSidebar, onToggleDesktopSidebar }: NavbarProps)
     try {
       await dangXuat()
       toast.success('Đăng xuất thành công')
+      // Redirect về trang đăng nhập sau khi đăng xuất thành công
+      navigate('/dang-nhap', { replace: true })
     } catch (error: any) {
       toast.error(`Lỗi: ${error.message}`)
     }
