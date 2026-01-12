@@ -1,0 +1,54 @@
+features/bao-cao/components/BaoCaoChiPhiTheoHangMuc.tsx(6,84): error TS2307: Cannot find module 'recharts' or its corresponding type declarations.
+features/bao-cao/components/BaoCaoChiPhiTheoNCC.tsx(6,98): error TS2307: Cannot find module 'recharts' or its corresponding type declarations.
+features/bao-cao/components/BaoCaoChiPhiTheoNCC.tsx(60,58): error TS7006: Parameter 'tick' implicitly has an 'any' type.
+features/bao-cao/components/BaoCaoDoanhThuTheoKH.tsx(6,90): error TS2307: Cannot find module 'recharts' or its corresponding type declarations.
+features/bao-cao/components/BaoCaoDoanhThuTheoKH.tsx(59,58): error TS7006: Parameter 'tick' implicitly has an 'any' type.
+features/bao-cao/components/BaoCaoDongTien.tsx(6,98): error TS2307: Cannot find module 'recharts' or its corresponding type declarations.
+features/bao-cao/components/BaoCaoDongTien.tsx(83,37): error TS7006: Parameter 'tick' implicitly has an 'any' type.
+features/bao-cao/components/BaoCaoDongTien.tsx(89,37): error TS7006: Parameter 'tick' implicitly has an 'any' type.
+features/bao-cao/components/BaoCaoLaiLo.tsx(6,90): error TS2307: Cannot find module 'recharts' or its corresponding type declarations.
+features/bao-cao/components/BaoCaoLaiLo.tsx(71,38): error TS7006: Parameter 'tick' implicitly has an 'any' type.
+features/bao-cao/components/BaoCaoSoQuy.tsx(6,92): error TS2307: Cannot find module 'recharts' or its corresponding type declarations.
+features/bao-cao/components/BaoCaoSoQuy.tsx(111,35): error TS7006: Parameter 'tick' implicitly has an 'any' type.
+features/bao-cao/components/BaoCaoSoQuy.tsx(117,35): error TS7006: Parameter 'tick' implicitly has an 'any' type.
+features/bao-cao/components/ChiPhiHangMucTable.tsx(61,39): error TS18048: 'item.children' is possibly 'undefined'.
+features/bao-cao/components/PnlBreakdownCard.tsx(3,67): error TS2307: Cannot find module 'recharts' or its corresponding type declarations.
+features/danh-muc-tai-chinh/components/dmtc-form-view.tsx(3,31): error TS2307: Cannot find module 'react-hook-form' or its corresponding type declarations.
+features/danh-muc-tai-chinh/components/dmtc-form-view.tsx(51,28): error TS7006: Parameter 'value' implicitly has an 'any' type.
+features/danh-muc-tai-chinh/components/dmtc-table.tsx(73,39): error TS18048: 'item.children' is possibly 'undefined'.
+features/danh-muc-tai-chinh/index.tsx(29,28): error TS2345: Argument of type '{ children: never[]; id: number; hang_muc: HangMucTaiChinh | string | null; ten_danh_muc: string | null; mo_ta: string | null; danh_muc_cha_id: number | null; ten_danh_muc_cha: string | null; cap: number | null; nguoi_tao_id: number | null; tg_tao: string | null; tg_cap_nhat: string | null; }' is not assignable to parameter of type 'never'.
+features/danh-muc-tai-chinh/index.tsx(204,11): error TS2322: Type '{ hang_muc: HangMucTaiChinh; id: number; ten_danh_muc: string | null; mo_ta: string | null; danh_muc_cha_id: number | null; ten_danh_muc_cha: string | null; cap: number | null; nguoi_tao_id: number | null; tg_tao: string | null; tg_cap_nhat: string | null; children?: DanhMucTaiChinh[] | undefined; } | { ...; }' is not assignable to type 'Partial<DanhMucTaiChinhInput> | undefined'.
+  Type '{ hang_muc: HangMucTaiChinh; id: number; ten_danh_muc: string | null; mo_ta: string | null; danh_muc_cha_id: number | null; ten_danh_muc_cha: string | null; cap: number | null; nguoi_tao_id: number | null; tg_tao: string | null; tg_cap_nhat: string | null; children?: DanhMucTaiChinh[]; }' is not assignable to type 'Partial<DanhMucTaiChinhInput>'.
+    Types of property 'ten_danh_muc' are incompatible.
+      Type 'string | null' is not assignable to type 'string | undefined'.
+        Type 'null' is not assignable to type 'string | undefined'.
+features/giao-dich/components/giao-dich-form-view.tsx(3,43): error TS2307: Cannot find module 'react-hook-form' or its corresponding type declarations.
+features/giao-dich/components/giao-dich-form-view.tsx(107,22): error TS7031: Binding element 'field' implicitly has an 'any' type.
+features/giao-dich/components/giao-dich-form-view.tsx(123,66): error TS7006: Parameter 'v' implicitly has an 'any' type.
+features/giao-dich/components/giao-dich-form-view.tsx(147,72): error TS7006: Parameter 'v' implicitly has an 'any' type.
+features/giao-dich/components/giao-dich-form-view.tsx(157,73): error TS7006: Parameter 'v' implicitly has an 'any' type.
+features/giao-dich/components/giao-dich-form-view.tsx(169,28): error TS7031: Binding element 'field' implicitly has an 'any' type.
+features/khach-hang/components/kh-form-view.tsx(3,31): error TS2307: Cannot find module 'react-hook-form' or its corresponding type declarations.
+features/khach-hang/components/nhom-kh-form-view.tsx(3,31): error TS2307: Cannot find module 'react-hook-form' or its corresponding type declarations.
+features/nha-cung-cap/components/ncc-form-view.tsx(3,31): error TS2307: Cannot find module 'react-hook-form' or its corresponding type declarations.
+features/nha-cung-cap/components/nhom-ncc-form-view.tsx(3,31): error TS2307: Cannot find module 'react-hook-form' or its corresponding type declarations.
+features/tai-khoan/components/tai-khoan-form-view.tsx(2,43): error TS2307: Cannot find module 'react-hook-form' or its corresponding type declarations.
+features/tai-khoan/components/tai-khoan-form-view.tsx(84,22): error TS7031: Binding element 'field' implicitly has an 'any' type.
+features/tai-khoan/index.tsx(201,24): error TS2872: This kind of expression is always truthy.
+features/thiet-lap/ho-so/index.tsx(27,25): error TS2307: Cannot find module 'react-hook-form' or its corresponding type declarations.
+features/thiet-lap/ho-so/index.tsx(364,25): error TS7006: Parameter 'value' implicitly has an 'any' type.
+features/thiet-lap/nhan-vien/components/nhan-vien-form-view.tsx(3,31): error TS2307: Cannot find module 'react-hook-form' or its corresponding type declarations.
+features/thiet-lap/vai-tro/components/vai-tro-form-view.tsx(3,31): error TS2307: Cannot find module 'react-hook-form' or its corresponding type declarations.
+features/ty-gia/components/ty-gia-form-view.tsx(3,43): error TS2307: Cannot find module 'react-hook-form' or its corresponding type declarations.
+features/ty-gia/components/ty-gia-form-view.tsx(27,22): error TS7031: Binding element 'field' implicitly has an 'any' type.
+features/ty-gia/index.tsx(150,11): error TS2322: Type 'TyGia | undefined' is not assignable to type 'Partial<TyGiaInput> | undefined'.
+  Type 'TyGia' is not assignable to type 'Partial<TyGiaInput>'.
+    Types of property 'ty_gia' are incompatible.
+      Type 'number | null' is not assignable to type 'number | undefined'.
+        Type 'null' is not assignable to type 'number | undefined'.
+pages/Dashboard.tsx(23,92): error TS2307: Cannot find module 'recharts' or its corresponding type declarations.
+pages/Dashboard.tsx(247,42): error TS7006: Parameter 'tick' implicitly has an 'any' type.
+pages/Login.tsx(4,25): error TS2307: Cannot find module 'react-hook-form' or its corresponding type declarations.
+pages/Login.tsx(5,29): error TS2307: Cannot find module '@hookform/resolvers/zod' or its corresponding type declarations.
+pages/Login.tsx(6,20): error TS2307: Cannot find module 'zod' or its corresponding type declarations.
+shared/components/GenericFormView.tsx(3,40): error TS2307: Cannot find module 'react-hook-form' or its corresponding type declarations.

@@ -1,0 +1,8 @@
+{
+  "name": "Capi ERP",
+  "description": "Hệ thống quản trị doanh nghiệp toàn diện (ERP) hiện đại, tinh gọn và chuyên nghiệp.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
