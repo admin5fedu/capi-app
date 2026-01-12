@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { cn } from '../../lib/utils';
 
 const Navbar: React.FC = () => {
-  const { setSidebarOpen } = useAppStore();
+  const { toggleSidebar } = useAppStore();
   const { logout, user } = useAuthStore();
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -62,9 +62,9 @@ const Navbar: React.FC = () => {
   return (
     <header className="h-20 flex items-center justify-between px-4 sm:px-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-50 dark:border-slate-800 sticky top-0 z-40">
       <div className="flex items-center gap-6">
-        <button 
-          onClick={() => setSidebarOpen(true)}
-          className="p-2 rounded-lg text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all lg:hidden"
+        <button
+          onClick={toggleSidebar}
+          className="p-2 rounded-lg text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
         >
           <Menu size={20} />
         </button>
@@ -79,7 +79,7 @@ const Navbar: React.FC = () => {
         <div className="h-6 w-px bg-slate-100 dark:bg-slate-800 mx-2 hidden sm:block"></div>
 
         <div className="relative" ref={dropdownRef}>
-          <button 
+          <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className={cn(
               "flex items-center gap-3 pl-2 pr-3 py-1.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer group",
@@ -93,9 +93,9 @@ const Navbar: React.FC = () => {
               <p className="text-[10px] text-slate-400 mt-1 font-bold uppercase tracking-wider">Quản trị viên</p>
             </div>
             <div className="relative shrink-0">
-              <img 
-                src={avatarUrl} 
-                alt="Avatar" 
+              <img
+                src={avatarUrl}
+                alt="Avatar"
                 className="w-10 h-10 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm object-cover"
               />
               <div className="absolute -bottom-1 -right-1 bg-white dark:bg-slate-900 rounded-full p-0.5 shadow-sm">
@@ -111,7 +111,7 @@ const Navbar: React.FC = () => {
                 <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mt-1 truncate">{user?.email}</p>
               </div>
 
-              <Link 
+              <Link
                 to="/ho-so"
                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary transition-all"
                 onClick={() => setIsDropdownOpen(false)}
@@ -120,7 +120,7 @@ const Navbar: React.FC = () => {
                 <span>Xem hồ sơ</span>
               </Link>
 
-              <button 
+              <button
                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary transition-all"
                 onClick={() => { toast.info('Chức năng Cài đặt đang phát triển.'); setIsDropdownOpen(false); }}
               >
@@ -130,7 +130,7 @@ const Navbar: React.FC = () => {
 
               <div className="h-px bg-slate-50 dark:bg-slate-800 my-2"></div>
 
-              <button 
+              <button
                 className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
                 onClick={toggleDarkMode}
               >
@@ -151,7 +151,7 @@ const Navbar: React.FC = () => {
 
               <div className="h-px bg-slate-50 dark:bg-slate-800 my-2"></div>
 
-              <button 
+              <button
                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all"
                 onClick={handleLogout}
               >

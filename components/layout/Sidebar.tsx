@@ -65,7 +65,6 @@ const Sidebar: React.FC = () => {
     <aside 
       className={cn(
         "fixed inset-y-0 left-0 z-50 flex flex-col bg-white border-r border-slate-100 transition-all duration-300 ease-in-out",
-        "lg:w-64", // Desktop open width
         isSidebarOpen ? "w-64 translate-x-0" : "w-20 -translate-x-full lg:translate-x-0"
       )}
     >
