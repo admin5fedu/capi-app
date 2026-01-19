@@ -17,6 +17,7 @@ export interface GiaoDich {
   tai_khoan_den_id: number | null;
   ten_tai_khoan_den: string | null;
   so_tien: number | null;
+  don_vi: string | null;
   ty_gia_id: number | null;
   so_ty_gia: number | null;
   so_tien_quy_doi_di: number | null;

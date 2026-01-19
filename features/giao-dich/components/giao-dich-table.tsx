@@ -4,7 +4,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '.
 import Button from '../../../components/ui/Button';
 import { Edit, Trash2, ArrowDown, ArrowUp, ArrowRightLeft, CornerDownRight, Landmark, User } from 'lucide-react';
 import { GiaoDich } from '../core/types';
-import { formatDate, formatCurrency } from '../../../shared/utils/format';
+import { formatDate, formatCurrency, formatDualCurrency } from '../../../shared/utils/format';
 import { cn } from '../../../lib/utils';
 
 interface GiaoDichTableProps {
@@ -55,7 +55,7 @@ const GiaoDichTable: React.FC<GiaoDichTableProps> = ({ data, onEdit, onDelete, o
                           </div>
                         )}
                         {gd.ten_doi_tac && (
-                           <div className="flex items-center gap-1.5">
+                          <div className="flex items-center gap-1.5">
                             <User size={12} />
                             <span>{gd.ten_doi_tac}</span>
                           </div>
@@ -78,12 +78,29 @@ const GiaoDichTable: React.FC<GiaoDichTableProps> = ({ data, onEdit, onDelete, o
                     )}
                   </div>
                 </TableCell>
-                <TableCell className={cn("text-right font-bold", 
-                  gd.hang_muc === 'thu' && 'text-emerald-600',
-                  gd.hang_muc === 'chi' && 'text-rose-600',
-                  gd.hang_muc === 'chuyen_tien' && 'text-slate-700'
-                )}>
-                  {gd.hang_muc !== 'chi' && '+ '}{gd.hang_muc === 'chi' && '- '}{formatCurrency(gd.so_tien || 0)}
+                <TableCell className="text-right">
+                  {(() => {
+                    const soTienQuyDoi = gd.hang_muc === 'thu' ? gd.so_tien_quy_doi_den : gd.so_tien_quy_doi_di;
+                    console.log('GD:', gd.mo_ta, 'Don vi:', gd.don_vi, 'So tien:', gd.so_tien, 'Quy doi:', soTienQuyDoi);
+                    const { primary, secondary } = formatDualCurrency(gd.so_tien || 0, gd.don_vi, soTienQuyDoi);
+                    console.log('Primary:', primary, 'Secondary:', secondary);
+                    return (
+                      <div>
+                        <p className={cn("font-bold",
+                          gd.hang_muc === 'thu' && 'text-emerald-600',
+                          gd.hang_muc === 'chi' && 'text-rose-600',
+                          gd.hang_muc === 'chuyen_tien' && 'text-slate-700'
+                        )}>
+                          {gd.hang_muc !== 'chi' && '+ '}{gd.hang_muc === 'chi' && '- '}{primary}
+                        </p>
+                        {secondary && (
+                          <p className="text-xs text-slate-400 font-medium mt-0.5">
+                            ≈ {secondary}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
@@ -97,7 +114,7 @@ const GiaoDichTable: React.FC<GiaoDichTableProps> = ({ data, onEdit, onDelete, o
         </Table>
       </div>
 
-       {/* Mobile Card View */}
+      {/* Mobile Card View */}
       <div className="md:hidden space-y-4 px-4 py-4">
         {data.map((gd) => (
           <div key={gd.id} className="bg-white rounded-2xl p-4 shadow-soft border border-slate-50" onClick={() => onView(gd)}>
@@ -109,14 +126,29 @@ const GiaoDichTable: React.FC<GiaoDichTableProps> = ({ data, onEdit, onDelete, o
                   <p className="text-xs text-slate-400 font-medium">{formatDate(gd.ngay || '')}</p>
                 </div>
               </div>
-              <p className={cn("font-bold text-sm shrink-0",
-                  gd.hang_muc === 'thu' && 'text-emerald-600',
-                  gd.hang_muc === 'chi' && 'text-rose-600'
-                )}>
-                  {gd.hang_muc !== 'chi' && '+ '}{gd.hang_muc === 'chi' && '- '}{formatCurrency(gd.so_tien || 0)}
-              </p>
+              <div className="text-right shrink-0">
+                {(() => {
+                  const soTienQuyDoi = gd.hang_muc === 'thu' ? gd.so_tien_quy_doi_den : gd.so_tien_quy_doi_di;
+                  const { primary, secondary } = formatDualCurrency(gd.so_tien || 0, gd.don_vi, soTienQuyDoi);
+                  return (
+                    <>
+                      <p className={cn("font-bold text-sm",
+                        gd.hang_muc === 'thu' && 'text-emerald-600',
+                        gd.hang_muc === 'chi' && 'text-rose-600'
+                      )}>
+                        {gd.hang_muc !== 'chi' && '+ '}{gd.hang_muc === 'chi' && '- '}{primary}
+                      </p>
+                      {secondary && (
+                        <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+                          ≈ {secondary}
+                        </p>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
             </div>
-             <div className="mt-4 pt-3 border-t border-slate-50 flex items-center justify-between text-xs">
+            <div className="mt-4 pt-3 border-t border-slate-50 flex items-center justify-between text-xs">
               <div className="flex items-center gap-2 text-slate-500 truncate">
                 {gd.hang_muc === 'thu' && <> <Landmark size={12} /> <span>{gd.ten_tai_khoan_den}</span> </>}
                 {gd.hang_muc === 'chi' && <> <Landmark size={12} /> <span>{gd.ten_tai_khoan_di}</span> </>}

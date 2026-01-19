@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { GiaoDich } from '../core/types';
-import { 
-  ArrowDown, ArrowUp, ArrowRightLeft, Calendar, Tag, LogIn, LogOut, Repeat, FileText, MessageSquare, Clock, User 
+import {
+  ArrowDown, ArrowUp, ArrowRightLeft, Calendar, Tag, LogIn, LogOut, Repeat, FileText, MessageSquare, Clock, User
 } from 'lucide-react';
 import { formatDate, formatCurrency } from '../../../shared/utils/format';
 
@@ -50,7 +50,7 @@ const GiaoDichDetailView: React.FC<GiaoDichDetailViewProps> = ({ data }) => {
 
   const exchangeInfo = [
     { label: 'Tỷ giá áp dụng', value: new Intl.NumberFormat('vi-VN').format(data.so_ty_gia || 0), icon: Repeat },
-    { label: 'Số tiền quy đổi', value: formatCurrency(data.so_tien_quy_doi_den || data.so_tien_quy_doi_di || 0), icon: Repeat },
+    { label: 'Số tiền quy đổi', value: formatCurrency(data.so_tien_quy_doi_den || data.so_tien_quy_doi_di || 0, 'VND'), icon: Repeat },
   ];
 
   const additionalInfo = [
@@ -70,7 +70,12 @@ const GiaoDichDetailView: React.FC<GiaoDichDetailViewProps> = ({ data }) => {
           <Icon size={40} />
         </div>
         <h3 className="text-xl font-bold text-slate-900">{data.mo_ta}</h3>
-        <p className="text-3xl font-extrabold text-slate-800 mt-2">{formatCurrency(data.so_tien || 0)}</p>
+        <p className="text-3xl font-extrabold text-slate-800 mt-2">{formatCurrency(data.so_tien || 0, data.don_vi)}</p>
+        {data.don_vi === 'USD' && (data.so_tien_quy_doi_den || data.so_tien_quy_doi_di) && (
+          <p className="text-base text-slate-400 font-medium mt-1">
+            ≈ {formatCurrency(data.so_tien_quy_doi_den || data.so_tien_quy_doi_di || 0, 'VND')}
+          </p>
+        )}
         <p className="text-sm text-slate-500 mt-1">{title}</p>
       </div>
 
@@ -123,7 +128,7 @@ const GiaoDichDetailView: React.FC<GiaoDichDetailViewProps> = ({ data }) => {
             </div>
           </div>
         )}
-        
+
         <div>
           <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Thông tin hệ thống</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

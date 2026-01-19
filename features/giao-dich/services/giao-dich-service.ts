@@ -31,7 +31,7 @@ const getRelatedData = async (input: Partial<GiaoDichInput>) => {
 
   // 2. SMART EXCHANGE RATE HANDLING
   let ty_gia_id: number | null = latestTyGia?.id || null;
-  let so_ty_gia: number = latestTyGia?.ty_gia || 1; 
+  let so_ty_gia: number = latestTyGia?.ty_gia || 1;
 
   const isNgoaiTe = tkDi?.don_vi === 'USD' || tkDen?.don_vi === 'USD';
   const userProvidedRate = input.so_ty_gia;
@@ -55,7 +55,7 @@ const getRelatedData = async (input: Partial<GiaoDichInput>) => {
   // 3. Calculate converted amounts (quy đổi ra VND)
   const final_ty_gia = so_ty_gia;
   const so_tien = input.so_tien || 0;
-  
+
   let so_tien_quy_doi_di: number | null = null;
   if (tkDi) {
     so_tien_quy_doi_di = tkDi.don_vi === 'USD' ? so_tien * final_ty_gia : so_tien;
@@ -65,7 +65,7 @@ const getRelatedData = async (input: Partial<GiaoDichInput>) => {
   if (tkDen) {
     so_tien_quy_doi_den = tkDen.don_vi === 'USD' ? so_tien * final_ty_gia : so_tien;
   }
-  
+
   // 4. Return all denormalized and calculated fields
   return {
     ten_danh_muc: danhMuc?.ten_danh_muc || null,
@@ -74,6 +74,7 @@ const getRelatedData = async (input: Partial<GiaoDichInput>) => {
     ten_tai_khoan_di: tkDi?.ten_tai_khoan || null,
     ten_tai_khoan_den: tkDen?.ten_tai_khoan || null,
     ten_doi_tac: doiTac?.ten_doi_tac || null,
+    don_vi: input.hang_muc === 'thu' ? tkDen?.don_vi : tkDi?.don_vi,
     ty_gia_id,
     so_ty_gia: final_ty_gia,
     so_tien_quy_doi_di,
@@ -88,7 +89,7 @@ export const giaoDichService = {
       .select('*')
       .order('ngay', { ascending: false })
       .order('id', { ascending: false });
-    
+
     if (error) throw error;
     return data as GiaoDich[];
   },
@@ -110,7 +111,7 @@ export const giaoDichService = {
   update: async (id: number, input: Partial<GiaoDichInput>): Promise<void> => {
     const relatedData = await getRelatedData(input);
     const payload = { ...input, ...relatedData, tg_cap_nhat: new Date().toISOString() };
-    
+
     const { error } = await supabase
       .from(TABLE_NAME)
       .update(payload)

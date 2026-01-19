@@ -16,6 +16,8 @@ import TyGiaModule from './features/ty-gia';
 import GiaoDichModule from './features/giao-dich';
 import HoSoModule from './features/thiet-lap/ho-so';
 import BaoCaoModule from './features/bao-cao';
+import CaiDatHeThongModule from './features/thiet-lap/he-thong';
+import ThemeInitializer from './components/ThemeInitializer';
 import { useAuthStore } from './store/auth-store';
 import { supabase } from './lib/supabase';
 
@@ -45,6 +47,7 @@ const App: React.FC = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <ThemeInitializer />
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -61,6 +64,7 @@ const App: React.FC = () => {
             <Route path="giao-dich" element={<GiaoDichModule />} />
             <Route path="ho-so" element={<HoSoModule />} />
             <Route path="bao-cao" element={<BaoCaoModule />} />
+            <Route path="cai-dat" element={<CaiDatHeThongModule />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

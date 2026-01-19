@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { cn } from '../../lib/utils';
 
 const Navbar: React.FC = () => {
-  const { toggleSidebar } = useAppStore();
+  const { setSidebarOpen } = useAppStore();
   const { logout, user } = useAuthStore();
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -63,8 +63,8 @@ const Navbar: React.FC = () => {
     <header className="h-20 flex items-center justify-between px-4 sm:px-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-50 dark:border-slate-800 sticky top-0 z-40">
       <div className="flex items-center gap-6">
         <button
-          onClick={toggleSidebar}
-          className="p-2 rounded-lg text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+          onClick={() => setSidebarOpen(true)}
+          className="p-2 rounded-lg text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all lg:hidden"
         >
           <Menu size={20} />
         </button>
@@ -120,13 +120,14 @@ const Navbar: React.FC = () => {
                 <span>Xem hồ sơ</span>
               </Link>
 
-              <button
+              <Link
+                to="/cai-dat"
                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary transition-all"
-                onClick={() => { toast.info('Chức năng Cài đặt đang phát triển.'); setIsDropdownOpen(false); }}
+                onClick={() => setIsDropdownOpen(false)}
               >
                 <Settings size={18} />
                 <span>Cài đặt hệ thống</span>
-              </button>
+              </Link>
 
               <div className="h-px bg-slate-50 dark:bg-slate-800 my-2"></div>
 
