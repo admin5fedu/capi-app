@@ -12,7 +12,6 @@ export const MOCK_NHAN_VIEN: NhanVien[] = [
     trang_thai: 'dang_hoat_dong',
     // Bổ sung avatar để fix lỗi thiếu property
     avatar: null,
-    nguoi_tao_id: null,
     tg_tao: '2024-01-01T08:00:00Z',
     tg_cap_nhat: null,
   },
@@ -24,7 +23,6 @@ export const MOCK_NHAN_VIEN: NhanVien[] = [
     trang_thai: 'dang_hoat_dong',
     // Bổ sung avatar để fix lỗi thiếu property
     avatar: null,
-    nguoi_tao_id: null,
     tg_tao: '2024-03-15T09:30:00Z',
     tg_cap_nhat: null,
   },
@@ -36,7 +34,6 @@ export const MOCK_NHAN_VIEN: NhanVien[] = [
     trang_thai: 'da_khoa',
     // Bổ sung avatar để fix lỗi thiếu property
     avatar: null,
-    nguoi_tao_id: null,
     tg_tao: '2024-06-01T10:00:00Z',
     tg_cap_nhat: null,
   }

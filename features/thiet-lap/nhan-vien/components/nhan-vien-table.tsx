@@ -6,6 +6,7 @@ import Button from '../../../../components/ui/Button';
 import { Edit, Trash2, Eye, UserCheck, Shield, MoreVertical, Mail } from 'lucide-react';
 import { NhanVien } from '../core/types';
 import { formatDate } from '../../../../shared/utils/format';
+import { AvatarImage } from '../../../../shared/components/AvatarImage';
 
 interface NhanVienTableProps {
   data: NhanVien[];
@@ -33,8 +34,8 @@ const NhanVienTable: React.FC<NhanVienTableProps> = ({ data, onEdit, onDelete, o
           </TableHeader>
           <TableBody>
             {data.map((nv) => (
-              <TableRow 
-                key={nv.id} 
+              <TableRow
+                key={nv.id}
                 className="group cursor-pointer hover:bg-slate-50/80 transition-colors"
                 onClick={() => onView(nv)}
               >
@@ -43,7 +44,7 @@ const NhanVienTable: React.FC<NhanVienTableProps> = ({ data, onEdit, onDelete, o
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-primary/10 group-hover:text-primary transition-all overflow-hidden border border-slate-50">
                       {nv.avatar ? (
-                        <img src={nv.avatar} alt={nv.ho_va_ten || ''} className="w-full h-full object-cover" />
+                        <AvatarImage avatarPath={nv.avatar} fallbackSeed={nv.id} alt={nv.ho_va_ten || ''} className="w-full h-full object-cover" />
                       ) : (
                         <UserCheck size={18} />
                       )}
@@ -69,7 +70,7 @@ const NhanVienTable: React.FC<NhanVienTableProps> = ({ data, onEdit, onDelete, o
                   {nv.tg_tao ? formatDate(nv.tg_tao) : '-'}
                 </TableCell>
                 <TableCell className="text-right">
-                  <div 
+                  <div
                     className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={(e) => e.stopPropagation()}
                   >
@@ -93,7 +94,7 @@ const NhanVienTable: React.FC<NhanVienTableProps> = ({ data, onEdit, onDelete, o
       {/* Mobile Card View */}
       <div className="md:hidden space-y-4 px-4 py-4">
         {data.map((nv) => (
-          <div 
+          <div
             key={nv.id}
             className="bg-white rounded-2xl p-4 shadow-soft border border-slate-50 cursor-pointer"
             onClick={() => onView(nv)}
@@ -102,7 +103,7 @@ const NhanVienTable: React.FC<NhanVienTableProps> = ({ data, onEdit, onDelete, o
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 overflow-hidden border border-slate-100">
                   {nv.avatar ? (
-                    <img src={nv.avatar} alt={nv.ho_va_ten || ''} className="w-full h-full object-cover" />
+                    <AvatarImage avatarPath={nv.avatar} fallbackSeed={nv.id} alt={nv.ho_va_ten || ''} className="w-full h-full object-cover" />
                   ) : (
                     <UserCheck size={20} />
                   )}
@@ -113,26 +114,26 @@ const NhanVienTable: React.FC<NhanVienTableProps> = ({ data, onEdit, onDelete, o
                 </div>
               </div>
               <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                 <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg" onClick={() => onEdit(nv)}>
-                    <Edit size={14} className="text-primary" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg" onClick={() => onDelete(nv)}>
-                    <Trash2 size={14} className="text-destructive" />
-                  </Button>
+                <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg" onClick={() => onEdit(nv)}>
+                  <Edit size={14} className="text-primary" />
+                </Button>
+                <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg" onClick={() => onDelete(nv)}>
+                  <Trash2 size={14} className="text-destructive" />
+                </Button>
               </div>
             </div>
 
             <div className="mt-4 space-y-3 text-xs">
-               <div className="flex items-center gap-2 text-slate-600">
-                  <Mail size={14} className="text-slate-400" />
-                  <span>{nv.email}</span>
-                </div>
-               <div className="flex items-center gap-2">
-                  <Shield size={14} className="text-slate-400" />
-                  <span className="font-bold text-slate-700 uppercase">
-                    {nv.zz_capi_vai_tro?.ten_vai_tro || 'Chưa gán'}
-                  </span>
-                </div>
+              <div className="flex items-center gap-2 text-slate-600">
+                <Mail size={14} className="text-slate-400" />
+                <span>{nv.email}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Shield size={14} className="text-slate-400" />
+                <span className="font-bold text-slate-700 uppercase">
+                  {nv.zz_capi_vai_tro?.ten_vai_tro || 'Chưa gán'}
+                </span>
+              </div>
               <div className="pt-3 border-t border-slate-50 flex justify-between items-center">
                 <Badge variant={nv.trang_thai === 'dang_hoat_dong' ? 'success' : 'outline'}>
                   {nv.trang_thai === 'dang_hoat_dong' ? 'Đang hoạt động' : (nv.trang_thai || 'N/A')}

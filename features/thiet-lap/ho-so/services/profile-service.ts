@@ -27,21 +27,39 @@ export const profileService = {
 
   uploadAvatar: async (userId: string | number, file: File) => {
     const fileExt = file.name.split('.').pop();
-    // Thay đổi: Sử dụng lại thư mục private 'avatars'
     const fileName = `avatars/${userId}_${Date.now()}.${fileExt}`;
 
     // 1. Upload to Storage
-    const { error: uploadError, data } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from(BUCKET_NAME)
       .upload(fileName, file, { upsert: true });
 
     if (uploadError) throw uploadError;
 
-    // 2. Get Public URL (Lưu ý: URL này vẫn cần quyền để truy cập)
-    const { data: { publicUrl } } = supabase.storage
-      .from(BUCKET_NAME)
-      .getPublicUrl(fileName);
+    // 2. Trả về file path thay vì public URL (vì bucket là private)
+    return fileName;
+  },
 
-    return publicUrl;
+  /**
+   * Lấy signed URL cho avatar (bucket private)
+   * @param filePath - Đường dẫn file trong bucket (ví dụ: avatars/123_1234567890.jpg)
+   * @param expiresIn - Thời gian hết hạn tính bằng giây (mặc định 1 giờ)
+   */
+  getAvatarUrl: async (filePath: string, expiresIn: number = 3600) => {
+    if (!filePath) return null;
+
+    // Nếu là URL đầy đủ (legacy data), trả về luôn
+    if (filePath.startsWith('http')) return filePath;
+
+    const { data, error } = await supabase.storage
+      .from(BUCKET_NAME)
+      .createSignedUrl(filePath, expiresIn);
+
+    if (error) {
+      console.error('Error creating signed URL:', error);
+      return null;
+    }
+
+    return data.signedUrl;
   }
 };

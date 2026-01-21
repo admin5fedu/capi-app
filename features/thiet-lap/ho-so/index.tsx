@@ -7,14 +7,14 @@ import Card from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Badge from '../../../components/ui/Badge';
-import { 
-  User, 
-  Mail, 
-  Shield, 
-  Calendar, 
-  Camera, 
-  Save, 
-  Lock, 
+import {
+  User,
+  Mail,
+  Shield,
+  Calendar,
+  Camera,
+  Save,
+  Lock,
   CheckCircle2,
   AlertCircle,
   Eye,
@@ -26,6 +26,7 @@ import { toast } from 'sonner';
 import { formatDate } from '../../../shared/utils/format';
 import { useForm } from 'react-hook-form';
 import { supabase } from '../../../lib/supabase';
+import { useAvatarUrl } from '../../../shared/hooks/use-avatar-url';
 
 const HoSoModule: React.FC = () => {
   const { user } = useAuthStore();
@@ -68,10 +69,10 @@ const HoSoModule: React.FC = () => {
 
     setIsUploading(true);
     const toastId = toast.loading('Đang tải ảnh lên...');
-    
+
     try {
-      const publicUrl = await profileService.uploadAvatar(profile.id, file);
-      await updateMutation.mutateAsync({ avatar: publicUrl });
+      const filePath = await profileService.uploadAvatar(profile.id, file);
+      await updateMutation.mutateAsync({ avatar: filePath });
       toast.success('Đã cập nhật ảnh đại diện!', { id: toastId });
     } catch (error: any) {
       toast.error('Lỗi tải ảnh: ' + error.message, { id: toastId });
@@ -98,7 +99,7 @@ const HoSoModule: React.FC = () => {
     );
   }
 
-  const avatarUrl = profile?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id || 'CapiAdmin'}`;
+  const { avatarUrl } = useAvatarUrl(profile?.avatar, user?.id || 'CapiAdmin');
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -106,13 +107,13 @@ const HoSoModule: React.FC = () => {
         <div className="h-48 w-full bg-gradient-to-r from-primary/80 to-blue-600 rounded-[32px] shadow-lg shadow-primary/10"></div>
         <div className="absolute -bottom-16 left-8 flex flex-col md:flex-row items-end gap-6 px-4">
           <div className="relative group">
-            <div 
+            <div
               className="w-32 h-32 rounded-[40px] bg-white p-2 shadow-2xl border-4 border-white dark:border-slate-800 cursor-pointer overflow-hidden relative"
               onClick={handleAvatarClick}
             >
-              <img 
-                src={avatarUrl} 
-                alt="Avatar Large" 
+              <img
+                src={avatarUrl}
+                alt="Avatar Large"
                 className={`w-full h-full rounded-[32px] bg-slate-50 object-cover transition-all duration-300 ${isUploading ? 'opacity-40 scale-90' : 'group-hover:scale-110'}`}
               />
               {isUploading && (
@@ -124,14 +125,14 @@ const HoSoModule: React.FC = () => {
                 <Camera size={24} className="text-white" />
               </div>
             </div>
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              className="hidden" 
-              accept="image/*" 
-              onChange={handleFileChange} 
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept="image/*"
+              onChange={handleFileChange}
             />
-            <button 
+            <button
               onClick={handleAvatarClick}
               className="absolute bottom-1 right-1 p-2 bg-primary text-white rounded-xl shadow-lg hover:scale-110 transition-transform"
             >
@@ -192,7 +193,7 @@ const HoSoModule: React.FC = () => {
 
           <Card title="Hành động" noPadding className="overflow-hidden">
             <div className="divide-y divide-slate-50">
-              <button 
+              <button
                 onClick={() => setShowPasswordModal(true)}
                 className="w-full flex items-center gap-3 px-6 py-4 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-primary transition-all text-left"
               >
@@ -204,8 +205,8 @@ const HoSoModule: React.FC = () => {
         </div>
 
         <div className="lg:col-span-2 space-y-6">
-          <Card 
-            title="Thông tin cá nhân" 
+          <Card
+            title="Thông tin cá nhân"
             description="Cập nhật thông tin định danh của bạn trong tổ chức."
             headerAction={
               !isEditing ? (
@@ -218,18 +219,18 @@ const HoSoModule: React.FC = () => {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="col-span-1 md:col-span-2">
-                  <Input 
-                    label="Họ và tên hiển thị" 
+                  <Input
+                    label="Họ và tên hiển thị"
                     disabled={!isEditing}
                     placeholder="Nhập tên của bạn..."
                     {...register('ho_va_ten', { required: true })}
                   />
                 </div>
-                
+
                 <div className="opacity-60 cursor-not-allowed">
-                  <Input 
-                    label="Email (Không thể thay đổi)" 
-                    value={user?.email || ''} 
+                  <Input
+                    label="Email (Không thể thay đổi)"
+                    value={user?.email || ''}
                     disabled
                   />
                 </div>
@@ -260,22 +261,22 @@ const HoSoModule: React.FC = () => {
           </Card>
 
           <Card title="Ghi chú & Bảo mật">
-             <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 flex gap-4">
-                <AlertCircle className="text-blue-500 shrink-0 mt-0.5" size={20} />
-                <div className="space-y-1">
-                  <p className="text-sm font-bold text-blue-900 leading-tight">Mẹo bảo mật tài khoản</p>
-                  <p className="text-xs text-blue-700 leading-relaxed font-medium">
-                    Để đảm bảo an toàn cho dữ liệu ERP, hãy đảm bảo bạn không chia sẻ mật khẩu của mình with bất kỳ ai khác và thường xuyên thay đổi mật khẩu định kỳ 90 ngày.
-                  </p>
-                </div>
-             </div>
+            <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 flex gap-4">
+              <AlertCircle className="text-blue-500 shrink-0 mt-0.5" size={20} />
+              <div className="space-y-1">
+                <p className="text-sm font-bold text-blue-900 leading-tight">Mẹo bảo mật tài khoản</p>
+                <p className="text-xs text-blue-700 leading-relaxed font-medium">
+                  Để đảm bảo an toàn cho dữ liệu ERP, hãy đảm bảo bạn không chia sẻ mật khẩu của mình with bất kỳ ai khác và thường xuyên thay đổi mật khẩu định kỳ 90 ngày.
+                </p>
+              </div>
+            </div>
           </Card>
         </div>
       </div>
 
       {showPasswordModal && (
-        <PasswordChangeModal 
-          onClose={() => setShowPasswordModal(false)} 
+        <PasswordChangeModal
+          onClose={() => setShowPasswordModal(false)}
         />
       )}
     </div>
@@ -289,7 +290,7 @@ interface PasswordChangeModalProps {
 const PasswordChangeModal: React.FC<PasswordChangeModalProps> = ({ onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
-  
+
   const { register, handleSubmit, watch, formState: { errors } } = useForm({
     defaultValues: {
       password: '',
@@ -307,7 +308,7 @@ const PasswordChangeModal: React.FC<PasswordChangeModalProps> = ({ onClose }) =>
       });
 
       if (error) throw error;
-      
+
       toast.success('Mật khẩu đã được thay đổi thành công!');
       onClose();
     } catch (error: any) {
@@ -334,18 +335,18 @@ const PasswordChangeModal: React.FC<PasswordChangeModalProps> = ({ onClose }) =>
 
         <form onSubmit={handleSubmit(onUpdatePassword)} className="p-8 space-y-6">
           <div className="relative">
-            <Input 
+            <Input
               label="Mật khẩu mới"
               type={showPass ? "text" : "password"}
               placeholder="••••••••"
               required
-              {...register('password', { 
+              {...register('password', {
                 required: 'Vui lòng nhập mật khẩu mới',
                 minLength: { value: 6, message: 'Mật khẩu phải từ 6 ký tự' }
               })}
               error={errors.password?.message}
             />
-            <button 
+            <button
               type="button"
               onClick={() => setShowPass(!showPass)}
               className="absolute right-3 top-[38px] text-slate-400 hover:text-slate-600"
@@ -354,12 +355,12 @@ const PasswordChangeModal: React.FC<PasswordChangeModalProps> = ({ onClose }) =>
             </button>
           </div>
 
-          <Input 
+          <Input
             label="Xác nhận mật khẩu"
             type={showPass ? "text" : "password"}
             placeholder="••••••••"
             required
-            {...register('confirmPassword', { 
+            {...register('confirmPassword', {
               required: 'Vui lòng xác nhận mật khẩu',
               validate: value => value === newPassword || 'Mật khẩu xác nhận không khớp'
             })}

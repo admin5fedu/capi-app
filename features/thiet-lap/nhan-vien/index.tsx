@@ -13,11 +13,9 @@ import { nhanVienService } from './services/nhan-vien-service';
 import { profileService } from '../ho-so/services/profile-service';
 import { toast } from 'sonner';
 import { Edit, Trash2 } from 'lucide-react';
-import { useAuthStore } from '../../../store/auth-store';
 
 const NhanVienModule: React.FC = () => {
   const { data, isLoading, refetch } = useNhanVienList();
-  const { profile } = useAuthStore();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<NhanVien | null>(null);
   const [detailItem, setDetailItem] = useState<NhanVien | null>(null);
@@ -43,48 +41,47 @@ const NhanVienModule: React.FC = () => {
   const handleSubmit = async (formData: NhanVienInput) => {
     setIsActionLoading(true);
     try {
-        const avatarFile = formData.avatarFile?.[0];
-        const payload: Partial<NhanVienInput> = { ...formData };
-        delete payload.avatarFile;
-        
-        // Loại bỏ trường dữ liệu join không tồn tại trong bảng gốc
-        delete (payload as any).zz_capi_vai_tro;
+      const avatarFile = formData.avatarFile?.[0];
+      const payload: Partial<NhanVienInput> = { ...formData };
+      delete payload.avatarFile;
 
-        if (selectedItem) { // UPDATE logic
-            if (avatarFile) {
-                const toastId = toast.loading('Đang tải ảnh đại diện...');
-                try {
-                    const avatarUrl = await profileService.uploadAvatar(selectedItem.id, avatarFile);
-                    payload.avatar = avatarUrl;
-                    toast.dismiss(toastId);
-                } catch (uploadError) {
-                    toast.error('Tải ảnh thất bại.', { id: toastId });
-                    throw uploadError;
-                }
-            }
-            await nhanVienService.update(selectedItem.id, payload);
-            toast.success('Cập nhật người dùng thành công!');
-        } else { // CREATE logic
-            const payloadWithCreator = { ...payload, nguoi_tao_id: profile?.id || null };
-            const newUser = await nhanVienService.create(payloadWithCreator as NhanVienInput);
-            if (avatarFile && newUser.id) {
-                const toastId = toast.loading('Đang tải ảnh đại diện...');
-                try {
-                    const avatarUrl = await profileService.uploadAvatar(newUser.id, avatarFile);
-                    await nhanVienService.update(newUser.id, { avatar: avatarUrl });
-                    toast.dismiss(toastId);
-                } catch (uploadError) {
-                    toast.error('Tải ảnh thất bại, nhưng người dùng đã được tạo.', { id: toastId });
-                }
-            }
-            toast.success('Thêm người dùng mới thành công!');
+      // Loại bỏ trường dữ liệu join không tồn tại trong bảng gốc
+      delete (payload as any).zz_capi_vai_tro;
+
+      if (selectedItem) { // UPDATE logic
+        if (avatarFile) {
+          const toastId = toast.loading('Đang tải ảnh đại diện...');
+          try {
+            const avatarUrl = await profileService.uploadAvatar(selectedItem.id, avatarFile);
+            payload.avatar = avatarUrl;
+            toast.dismiss(toastId);
+          } catch (uploadError) {
+            toast.error('Tải ảnh thất bại.', { id: toastId });
+            throw uploadError;
+          }
         }
-        handleCancelForm();
-        refetch();
+        await nhanVienService.update(selectedItem.id, payload);
+        toast.success('Cập nhật người dùng thành công!');
+      } else { // CREATE logic
+        const newUser = await nhanVienService.create(payload as NhanVienInput);
+        if (avatarFile && newUser.id) {
+          const toastId = toast.loading('Đang tải ảnh đại diện...');
+          try {
+            const avatarUrl = await profileService.uploadAvatar(newUser.id, avatarFile);
+            await nhanVienService.update(newUser.id, { avatar: avatarUrl });
+            toast.dismiss(toastId);
+          } catch (uploadError) {
+            toast.error('Tải ảnh thất bại, nhưng người dùng đã được tạo.', { id: toastId });
+          }
+        }
+        toast.success('Thêm người dùng mới thành công!');
+      }
+      handleCancelForm();
+      refetch();
     } catch (error: any) {
-        toast.error('Lỗi: ' + error.message);
+      toast.error('Lỗi: ' + error.message);
     } finally {
-        setIsActionLoading(false);
+      setIsActionLoading(false);
     }
   };
 
@@ -113,9 +110,9 @@ const NhanVienModule: React.FC = () => {
         searchKey="ho_va_ten"
         onAdd={handleAdd}
         renderTable={(filteredData) => (
-          <NhanVienTable 
-            data={filteredData} 
-            onEdit={handleEdit} 
+          <NhanVienTable
+            data={filteredData}
+            onEdit={handleEdit}
             onView={(nv) => setDetailItem(nv)}
             onDelete={(nv) => setDeleteId(nv.id)}
           />
@@ -133,8 +130,8 @@ const NhanVienModule: React.FC = () => {
               <Button variant="outline" onClick={() => setDetailItem(null)}>Đóng</Button>
               <div className="flex items-center gap-3">
                 <Button onClick={() => handleEdit(detailItem)} className="gap-2"> <Edit size={16} /> Sửa </Button>
-                <Button 
-                  variant="danger" 
+                <Button
+                  variant="danger"
                   onClick={() => {
                     setDeleteId(detailItem.id);
                     setDetailItem(null);
@@ -148,23 +145,23 @@ const NhanVienModule: React.FC = () => {
       >
         {detailItem && <NhanVienDetailView data={detailItem} />}
       </Sheet>
-      
+
       <Sheet
         isOpen={isFormOpen}
         onClose={handleCancelForm}
         title={selectedItem ? "Chỉnh sửa thông tin" : "Thêm người dùng mới"}
         description="Dữ liệu được quản lý tập trung và liên kết với bảng Vai trò."
       >
-        <NhanVienFormView 
+        <NhanVienFormView
           key={selectedItem?.id}
-          initialData={selectedItem || undefined} 
+          initialData={selectedItem || undefined}
           onSubmit={handleSubmit}
           onCancel={handleCancelForm}
           isLoading={isActionLoading}
         />
       </Sheet>
 
-      <ConfirmModal 
+      <ConfirmModal
         isOpen={!!deleteId}
         title="Xác nhận xóa"
         message="Dữ liệu sẽ bị xóa vĩnh viễn khỏi bảng zz_capi_nguoi_dung. Bạn có chắc chắn không?"

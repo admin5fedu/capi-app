@@ -2,46 +2,49 @@
 import React from 'react';
 import { NhanVien } from '../core/types';
 import Badge from '../../../../components/ui/Badge';
-import { 
-  Mail, 
-  Shield, 
-  Calendar, 
-  Clock, 
-  User, 
+import {
+  Mail,
+  Shield,
+  Calendar,
+  Clock,
+  User,
   Info,
   ChevronRight
 } from 'lucide-react';
 import { formatDate } from '../../../../shared/utils/format';
 import { cn } from '../../../../lib/utils';
+import { useAvatarUrl } from '../../../../shared/hooks/use-avatar-url';
 
 interface NhanVienDetailViewProps {
   data: NhanVien;
 }
 
 const NhanVienDetailView: React.FC<NhanVienDetailViewProps> = ({ data }) => {
+  const { avatarUrl } = useAvatarUrl(data.avatar, data.id);
+
   const infoItems = [
-    { 
-      label: 'Họ và tên', 
-      value: data.ho_va_ten || 'Chưa cập nhật', 
+    {
+      label: 'Họ và tên',
+      value: data.ho_va_ten || 'Chưa cập nhật',
       icon: User,
       color: 'text-blue-500'
     },
-    { 
-      label: 'Email công việc', 
-      value: data.email || 'N/A', 
+    {
+      label: 'Email công việc',
+      value: data.email || 'N/A',
       icon: Mail,
       color: 'text-indigo-500'
     },
-    { 
-      label: 'Trạng thái tài khoản', 
-      value: data.trang_thai === 'dang_hoat_dong' ? 'Đang hoạt động' : 'Đã khóa', 
+    {
+      label: 'Trạng thái tài khoản',
+      value: data.trang_thai === 'dang_hoat_dong' ? 'Đang hoạt động' : 'Đã khóa',
       icon: Info,
       color: 'text-emerald-500',
       badge: true
     },
-    { 
-      label: 'Vai trò hệ thống', 
-      value: data.zz_capi_vai_tro?.ten_vai_tro || `Mã ID: ${data.vai_tro_id || '0'}`, 
+    {
+      label: 'Vai trò hệ thống',
+      value: data.zz_capi_vai_tro?.ten_vai_tro || `Mã ID: ${data.vai_tro_id || '0'}`,
       icon: Shield,
       color: 'text-orange-500'
     },
@@ -51,8 +54,6 @@ const NhanVienDetailView: React.FC<NhanVienDetailViewProps> = ({ data }) => {
     { label: 'Ngày tạo hệ thống', value: data.tg_tao ? formatDate(data.tg_tao) : 'N/A', icon: Calendar },
     { label: 'Cập nhật lần cuối', value: data.tg_cap_nhat ? formatDate(data.tg_cap_nhat) : 'Chưa có cập nhật', icon: Clock },
   ];
-
-  const avatarUrl = data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.id}`;
 
   return (
     <div className="space-y-8 p-6">

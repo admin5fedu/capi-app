@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, Bell, User, Settings, LogOut, Sun, Moon, ChevronDown } from 'lucide-react';
+import { Menu, Bell, User, Settings, LogOut, Sun, Moon, ChevronDown, Key } from 'lucide-react';
 import { useAppStore } from '../../store/app-store';
 import { useAuthStore } from '../../store/auth-store';
 import { useQuery } from '@tanstack/react-query';
@@ -8,6 +8,7 @@ import { profileService } from '../../features/thiet-lap/ho-so/services/profile-
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { cn } from '../../lib/utils';
+import { useAvatarUrl } from '../../shared/hooks/use-avatar-url';
 
 const Navbar: React.FC = () => {
   const { setSidebarOpen } = useAppStore();
@@ -57,7 +58,7 @@ const Navbar: React.FC = () => {
     }
   };
 
-  const avatarUrl = profile?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.id || 'CapiAdmin'}`;
+  const { avatarUrl } = useAvatarUrl(profile?.avatar, user?.id || 'CapiAdmin');
 
   return (
     <header className="h-20 flex items-center justify-between px-4 sm:px-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-50 dark:border-slate-800 sticky top-0 z-40">
@@ -128,6 +129,18 @@ const Navbar: React.FC = () => {
                 <Settings size={18} />
                 <span>Cài đặt hệ thống</span>
               </Link>
+
+              <button
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary transition-all"
+                onClick={() => {
+                  setIsDropdownOpen(false);
+                  // TODO: Open change password modal/dialog
+                  toast.info('Chức năng đổi mật khẩu đang được phát triển');
+                }}
+              >
+                <Key size={18} />
+                <span>Đổi mật khẩu</span>
+              </button>
 
               <div className="h-px bg-slate-50 dark:bg-slate-800 my-2"></div>
 

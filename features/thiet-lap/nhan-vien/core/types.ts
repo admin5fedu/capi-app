@@ -21,7 +21,6 @@ export interface NhanVien {
   vai_tro_id: number | null;
   email: string | null;
   avatar: string | null;
-  nguoi_tao_id: number | null;
   tg_tao: string | null;
   tg_cap_nhat: string | null;
   // Join data
@@ -35,5 +34,4 @@ export type NhanVienInput = {
   email: string | null;
   avatar?: string | null;
   avatarFile?: FileList | null;
-  nguoi_tao_id?: number | null;
 };
